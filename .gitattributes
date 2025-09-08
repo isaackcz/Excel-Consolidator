@@ -1,0 +1,7 @@
+dist/Excel[[:space:]]Consolidate.exe filter=lfs diff=lfs merge=lfs -text
+build/Excel[[:space:]]Consolidate/Excel[[:space:]]Consolidate.pkg filter=lfs diff=lfs merge=lfs -text
+build/main/main.pkg filter=lfs diff=lfs merge=lfs -text
+*.exe filter=lfs diff=lfs merge=lfs -text
+*.pkg filter=lfs diff=lfs merge=lfs -text
+dist/** filter=lfs diff=lfs merge=lfs -text
+build/** filter=lfs diff=lfs merge=lfs -text
