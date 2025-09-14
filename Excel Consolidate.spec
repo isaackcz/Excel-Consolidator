@@ -5,7 +5,7 @@ a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[('resources\\app.ico', 'resources'), ('resources\\logo.png', 'resources'), ('resources\\check.svg', 'resources'), ('resources\\check_disabled.svg', 'resources')],
+    datas=[('assets\\icons\\app.ico', 'assets\\icons'), ('assets\\icons\\logo.png', 'assets\\icons'), ('assets\\icons\\check.svg', 'assets\\icons'), ('assets\\icons\\check_disabled.svg', 'assets\\icons')],
     hiddenimports=['PyQt5', 'PyQt5.QtCore', 'PyQt5.QtGui', 'PyQt5.QtWidgets', 'openpyxl'],
     hookspath=[],
     hooksconfig={},
@@ -35,5 +35,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['resources\\app.ico'],
+    icon=['assets\\icons\\app.ico'],
 )

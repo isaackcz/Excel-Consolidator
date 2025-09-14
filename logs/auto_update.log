@@ -1,0 +1,14 @@
+2025-09-14 22:35:53,714 - src.modules.auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-14 22:35:55,043 - src.modules.auto_update - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/isaackcz/Excel-Consolidator/releases/latest
+2025-09-14 22:35:55,045 - src.modules.auto_update - WARNING - Could not fetch latest release information
+2025-09-14 22:35:55,054 - src.modules.auto_update - INFO - Background update checker started
+2025-09-14 22:35:55,054 - src.modules.auto_update - INFO - Background update checker started successfully
+2025-09-14 22:36:05,059 - src.modules.auto_update - INFO - Stopping background update checker
+2025-09-14 22:36:15,060 - src.modules.auto_update - WARNING - Background thread did not stop gracefully
+2025-09-14 23:05:26,423 - src.modules.auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-14 23:05:27,535 - src.modules.auto_update - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/isaackcz/Excel-Consolidator/releases/latest
+2025-09-14 23:05:27,537 - src.modules.auto_update - WARNING - Could not fetch latest release information
+2025-09-14 23:05:27,541 - src.modules.auto_update - INFO - Background update checker started
+2025-09-14 23:05:27,541 - src.modules.auto_update - INFO - Background update checker started successfully
+2025-09-14 23:05:32,542 - src.modules.auto_update - INFO - Stopping background update checker
+2025-09-14 23:05:42,559 - src.modules.auto_update - WARNING - Background thread did not stop gracefully

@@ -1,0 +1,162 @@
+2025-09-14 00:12:51,803 - google_sheets_reporter - INFO - Error data formatted for spreadsheet:
+2025-09-14 00:12:51,803 - google_sheets_reporter - INFO - Row: ['ERR_20250914_001251_2', '2025-09-14T00:12:51.802801', '1.0.0', 'Test Function', '1', 'RuntimeError', 'Test error for Google Sheets reporting', 'Windows-11-10.0.26100-SP0', '3.13.7 (tags/v3.13.7:bcee1c3, Aug 14 2025, 14:15:11) [MSC v.1944 64 bit (AMD64)]', 'N/A', '0', 'Traceback (most recent call last):\n  File "D:\\excel consolidator\\test_google_sheets.py", line 67, in test_google_sheets_error_reporting\n    raise RuntimeError("Test error for Google Sheets reporting")\nRuntimeError: Test error for Google Sheets reporting\n']
+2025-09-14 00:12:51,804 - google_sheets_reporter - INFO - Error report sent successfully
+2025-09-14 00:19:35,074 - google_sheets_reporter - INFO - Error data formatted for spreadsheet:
+2025-09-14 00:19:35,075 - google_sheets_reporter - INFO - Row: ['ERR_20250914_001935_2', '2025-09-14T00:19:35.073744', '1.0.0', 'Test Function', '1', 'RuntimeError', 'Test error for Google Sheets reporting', 'Windows-11-10.0.26100-SP0', '3.13.7 (tags/v3.13.7:bcee1c3, Aug 14 2025, 14:15:11) [MSC v.1944 64 bit (AMD64)]', 'N/A', '0', 'Traceback (most recent call last):\n  File "D:\\excel consolidator\\test_google_sheets.py", line 67, in test_google_sheets_error_reporting\n    raise RuntimeError("Test error for Google Sheets reporting")\nRuntimeError: Test error for Google Sheets reporting\n']
+2025-09-14 00:19:35,075 - google_sheets_reporter - INFO - Error report sent successfully
+2025-09-14 00:20:12,759 - google_sheets_reporter - INFO - Error data formatted for spreadsheet:
+2025-09-14 00:20:12,769 - google_sheets_reporter - INFO - Row: ['ERR_20250914_002012_2', '2025-09-14T00:20:12.758727', '1.0.0', 'Test Error Logging Script', '1', 'FileNotFoundError', "Test Excel file 'sample_data.xlsx' not found in specified folder", 'Windows-11-10.0.26100-SP0', '3.13.7 (tags/v3.13.7:bcee1c3, Aug 14 2025, 14:15:11) [MSC v.1944 64 bit (AMD64)]', 'N/A', '0', 'Traceback (most recent call last):\n  File "D:\\excel consolidator\\test_error_logging.py", line 33, in test_error_logging\n    raise FileNotFoundError("Test Excel file \'sample_data.xlsx\' not found in specified folder")\nFileNotFoundError: Test Excel file \'sample_data.xlsx\' not found in specified folder\n']
+2025-09-14 00:23:51,993 - auto_update - INFO - Background update check starting
+2025-09-14 00:23:51,993 - auto_update - INFO - Background update checker started
+2025-09-14 00:23:51,993 - auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-14 00:23:51,994 - auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-14 00:23:53,502 - auto_update - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/isaackcz/Excel-Consolidator/releases/latest
+2025-09-14 00:23:53,504 - auto_update - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/isaackcz/Excel-Consolidator/releases/latest
+2025-09-14 00:23:53,506 - auto_update - WARNING - Could not fetch latest release information
+2025-09-14 00:23:53,509 - auto_update - WARNING - Could not fetch latest release information
+2025-09-14 00:29:05,253 - auto_update - INFO - Background update check starting
+2025-09-14 00:29:05,253 - auto_update - INFO - Background update checker started
+2025-09-14 00:29:05,253 - auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-14 00:29:05,254 - auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-14 00:29:06,647 - auto_update - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/isaackcz/Excel-Consolidator/releases/latest
+2025-09-14 00:29:06,649 - auto_update - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/isaackcz/Excel-Consolidator/releases/latest
+2025-09-14 00:29:06,653 - auto_update - WARNING - Could not fetch latest release information
+2025-09-14 00:29:06,656 - auto_update - WARNING - Could not fetch latest release information
+2025-09-14 00:30:31,269 - auto_update - INFO - Background update check starting
+2025-09-14 00:30:31,269 - auto_update - INFO - Background update checker started
+2025-09-14 00:30:31,269 - auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-14 00:30:31,270 - auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-14 00:30:32,567 - auto_update - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/isaackcz/Excel-Consolidator/releases/latest
+2025-09-14 00:30:32,570 - auto_update - WARNING - Could not fetch latest release information
+2025-09-14 00:30:32,571 - auto_update - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/isaackcz/Excel-Consolidator/releases/latest
+2025-09-14 00:30:32,574 - auto_update - WARNING - Could not fetch latest release information
+2025-09-14 00:36:59,253 - google_sheets_reporter - INFO - Error data formatted for spreadsheet:
+2025-09-14 00:36:59,253 - google_sheets_reporter - INFO - Row: ['ERR_20250914_003659_2', '2025-09-14T00:36:59.253171', '1.0.0', 'Test File Processing Error', '1', 'Exception', 'File is not a zip file', 'Windows-11-10.0.26100-SP0', '3.13.7 (tags/v3.13.7:bcee1c3, Aug 14 2025, 14:15:11) [MSC v.1944 64 bit (AMD64)]', 'N/A', '0', 'Traceback (most recent call last):\n  File "D:\\excel consolidator\\test_error_reporting.py", line 18, in test_error_reporting\n    raise Exception("File is not a zip file")\nException: File is not a zip file\n']
+2025-09-14 00:41:01,314 - auto_update - INFO - Background update check starting
+2025-09-14 00:41:01,315 - auto_update - INFO - Background update checker started
+2025-09-14 00:41:01,315 - auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-14 00:41:01,315 - auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-14 00:41:02,437 - auto_update - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/isaackcz/Excel-Consolidator/releases/latest
+2025-09-14 00:41:02,438 - auto_update - WARNING - Could not fetch latest release information
+2025-09-14 00:41:02,505 - auto_update - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/isaackcz/Excel-Consolidator/releases/latest
+2025-09-14 00:41:02,510 - auto_update - WARNING - Could not fetch latest release information
+2025-09-14 00:48:47,115 - auto_update - INFO - Background update check starting
+2025-09-14 00:48:47,115 - auto_update - INFO - Background update checker started
+2025-09-14 00:48:47,116 - auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-14 00:48:47,117 - auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-14 00:48:48,184 - auto_update - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/isaackcz/Excel-Consolidator/releases/latest
+2025-09-14 00:48:48,186 - auto_update - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/isaackcz/Excel-Consolidator/releases/latest
+2025-09-14 00:48:48,190 - auto_update - WARNING - Could not fetch latest release information
+2025-09-14 00:48:48,193 - auto_update - WARNING - Could not fetch latest release information
+2025-09-14 00:54:49,537 - google_sheets_reporter - INFO - Error data saved to CSV: errors\error_report_20250914_005449.csv
+2025-09-14 00:54:49,537 - google_sheets_reporter - INFO - Error data saved to CSV: errors\error_report_20250914_005449.csv
+2025-09-14 00:54:49,538 - google_sheets_reporter - INFO - Error data saved to CSV: errors\error_report_20250914_005449.csv
+2025-09-14 00:54:49,538 - google_sheets_reporter - INFO - You can import this CSV file into your Google Spreadsheet
+2025-09-14 00:54:49,540 - google_sheets_reporter - INFO - You can import this CSV file into your Google Spreadsheet
+2025-09-14 00:54:49,540 - google_sheets_reporter - INFO - You can import this CSV file into your Google Spreadsheet
+2025-09-14 00:56:03,166 - auto_update - INFO - Background update check starting
+2025-09-14 00:56:03,166 - auto_update - INFO - Background update checker started
+2025-09-14 00:56:03,166 - auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-14 00:56:03,167 - auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-14 00:56:04,404 - auto_update - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/isaackcz/Excel-Consolidator/releases/latest
+2025-09-14 00:56:04,404 - auto_update - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/isaackcz/Excel-Consolidator/releases/latest
+2025-09-14 00:56:04,407 - auto_update - WARNING - Could not fetch latest release information
+2025-09-14 00:56:04,408 - auto_update - WARNING - Could not fetch latest release information
+2025-09-14 01:09:16,636 - auto_update - INFO - Background update check starting
+2025-09-14 01:09:16,636 - auto_update - INFO - Background update checker started
+2025-09-14 01:09:16,648 - auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-14 01:09:16,650 - auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-14 01:09:17,976 - auto_update - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/isaackcz/Excel-Consolidator/releases/latest
+2025-09-14 01:09:17,979 - auto_update - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/isaackcz/Excel-Consolidator/releases/latest
+2025-09-14 01:09:17,983 - auto_update - WARNING - Could not fetch latest release information
+2025-09-14 01:09:17,989 - auto_update - WARNING - Could not fetch latest release information
+2025-09-14 01:12:13,101 - auto_update - INFO - Background update check starting
+2025-09-14 01:12:13,101 - auto_update - INFO - Background update checker started
+2025-09-14 01:12:13,102 - auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-14 01:12:13,103 - auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-14 01:12:14,421 - auto_update - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/isaackcz/Excel-Consolidator/releases/latest
+2025-09-14 01:12:14,427 - auto_update - WARNING - Could not fetch latest release information
+2025-09-14 01:12:14,448 - auto_update - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/isaackcz/Excel-Consolidator/releases/latest
+2025-09-14 01:12:14,454 - auto_update - WARNING - Could not fetch latest release information
+2025-09-14 01:12:58,108 - auto_update - INFO - Background update check starting
+2025-09-14 01:12:58,109 - auto_update - INFO - Background update checker started
+2025-09-14 01:12:58,109 - auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-14 01:12:58,109 - auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-14 01:12:59,124 - auto_update - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/isaackcz/Excel-Consolidator/releases/latest
+2025-09-14 01:12:59,125 - auto_update - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/isaackcz/Excel-Consolidator/releases/latest
+2025-09-14 01:12:59,126 - auto_update - WARNING - Could not fetch latest release information
+2025-09-14 01:12:59,128 - auto_update - WARNING - Could not fetch latest release information
+2025-09-14 21:43:34,821 - auto_update - INFO - Background update check starting
+2025-09-14 21:43:34,821 - auto_update - INFO - Background update checker started
+2025-09-14 21:43:34,821 - auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-14 21:43:34,821 - auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-14 21:43:36,126 - auto_update - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/isaackcz/Excel-Consolidator/releases/latest
+2025-09-14 21:43:36,127 - auto_update - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/isaackcz/Excel-Consolidator/releases/latest
+2025-09-14 21:43:36,129 - auto_update - WARNING - Could not fetch latest release information
+2025-09-14 21:43:36,131 - auto_update - WARNING - Could not fetch latest release information
+2025-09-14 21:49:07,362 - auto_update - INFO - Background update check starting
+2025-09-14 21:49:07,362 - auto_update - INFO - Background update checker started
+2025-09-14 21:49:07,362 - auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-14 21:49:07,363 - auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-14 21:49:08,723 - auto_update - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/isaackcz/Excel-Consolidator/releases/latest
+2025-09-14 21:49:08,724 - auto_update - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/isaackcz/Excel-Consolidator/releases/latest
+2025-09-14 21:49:08,726 - auto_update - WARNING - Could not fetch latest release information
+2025-09-14 21:49:08,727 - auto_update - WARNING - Could not fetch latest release information
+2025-09-14 21:57:24,169 - auto_update - INFO - Background update check starting
+2025-09-14 21:57:24,169 - auto_update - INFO - Background update checker started
+2025-09-14 21:57:24,169 - auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-14 21:57:24,170 - auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-14 21:57:25,300 - auto_update - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/isaackcz/Excel-Consolidator/releases/latest
+2025-09-14 21:57:25,303 - auto_update - WARNING - Could not fetch latest release information
+2025-09-14 21:57:25,340 - auto_update - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/isaackcz/Excel-Consolidator/releases/latest
+2025-09-14 21:57:25,345 - auto_update - WARNING - Could not fetch latest release information
+2025-09-14 22:04:25,902 - auto_update - INFO - Background update check starting
+2025-09-14 22:04:25,902 - auto_update - INFO - Background update checker started
+2025-09-14 22:04:25,903 - auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-14 22:04:25,903 - auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-14 22:04:27,201 - auto_update - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/isaackcz/Excel-Consolidator/releases/latest
+2025-09-14 22:04:27,203 - auto_update - WARNING - Could not fetch latest release information
+2025-09-14 22:04:27,205 - auto_update - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/isaackcz/Excel-Consolidator/releases/latest
+2025-09-14 22:04:27,207 - auto_update - WARNING - Could not fetch latest release information
+2025-09-14 22:04:46,559 - google_sheets_reporter - INFO - Error data sent to spreadsheet via Apps Script
+2025-09-14 22:04:46,562 - google_sheets_reporter - INFO - Error report sent successfully
+2025-09-14 22:05:45,341 - google_sheets_reporter - INFO - Error data sent to spreadsheet via Apps Script
+2025-09-14 22:05:45,346 - google_sheets_reporter - INFO - Error report sent successfully
+2025-09-14 22:13:11,601 - auto_update - INFO - Background update check starting
+2025-09-14 22:13:11,601 - auto_update - INFO - Background update checker started
+2025-09-14 22:13:11,601 - auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-14 22:13:11,602 - auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-14 22:13:13,296 - auto_update - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/isaackcz/Excel-Consolidator/releases/latest
+2025-09-14 22:13:13,298 - auto_update - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/isaackcz/Excel-Consolidator/releases/latest
+2025-09-14 22:13:13,301 - auto_update - WARNING - Could not fetch latest release information
+2025-09-14 22:13:13,303 - auto_update - WARNING - Could not fetch latest release information
+2025-09-14 22:13:41,072 - google_sheets_reporter - INFO - Error data sent to spreadsheet via Apps Script
+2025-09-14 22:13:41,074 - google_sheets_reporter - INFO - Error report sent successfully
+2025-09-14 22:25:54,188 - src.modules.auto_update - INFO - Background update check starting
+2025-09-14 22:25:54,188 - src.modules.auto_update - INFO - Background update checker started
+2025-09-14 22:25:54,188 - src.modules.auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-14 22:25:54,189 - src.modules.auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-14 22:25:55,516 - src.modules.auto_update - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/your_username/excel-consolidator/releases/latest
+2025-09-14 22:25:55,519 - src.modules.auto_update - WARNING - Could not fetch latest release information
+2025-09-14 22:25:56,185 - src.modules.auto_update - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/your_username/excel-consolidator/releases/latest
+2025-09-14 22:25:56,189 - src.modules.auto_update - WARNING - Could not fetch latest release information
+2025-09-14 22:26:49,089 - src.modules.auto_update - INFO - Background update check starting
+2025-09-14 22:26:49,089 - src.modules.auto_update - INFO - Background update checker started
+2025-09-14 22:26:49,090 - src.modules.auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-14 22:26:49,090 - src.modules.auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-14 22:26:50,287 - src.modules.auto_update - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/your_username/excel-consolidator/releases/latest
+2025-09-14 22:26:50,290 - src.modules.auto_update - WARNING - Could not fetch latest release information
+2025-09-14 22:26:50,298 - src.modules.auto_update - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/your_username/excel-consolidator/releases/latest
+2025-09-14 22:26:50,306 - src.modules.auto_update - WARNING - Could not fetch latest release information
+2025-09-14 22:58:14,153 - src.modules.auto_update - INFO - Background update checker started
+2025-09-14 22:58:14,153 - src.modules.auto_update - INFO - Background update checker started successfully
+2025-09-14 22:58:14,154 - src.modules.auto_update - WARNING - Background checker is already running
+2025-09-14 22:58:14,213 - src.modules.auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-14 22:58:15,822 - src.modules.auto_update - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/your_username/excel-consolidator/releases/latest
+2025-09-14 22:58:15,823 - src.modules.auto_update - WARNING - Could not fetch latest release information
+2025-09-14 22:58:44,154 - src.modules.auto_update - INFO - Background update check starting
+2025-09-14 22:58:44,226 - src.modules.auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-14 22:58:45,413 - src.modules.auto_update - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/your_username/excel-consolidator/releases/latest
+2025-09-14 22:58:45,416 - src.modules.auto_update - WARNING - Could not fetch latest release information
+2025-09-14 23:00:03,800 - src.modules.auto_update - INFO - Stopping background update checker
+2025-09-14 23:00:13,809 - src.modules.auto_update - WARNING - Background thread did not stop gracefully
