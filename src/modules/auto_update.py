@@ -39,7 +39,7 @@ class AutoUpdater:
     
     # Configuration
     GITHUB_REPO_OWNER = "isaackcz"  # GitHub username
-    GITHUB_REPO_NAME = "Excel-Consolidator-App"  # Repository name
+    GITHUB_REPO_NAME = "Excel-Consolidator"  # Repository name
     CURRENT_VERSION = "1.0.1"  # Current application version
     CHECK_INTERVAL = 24 * 60 * 60  # Check every 24 hours (in seconds)
     
@@ -810,7 +810,7 @@ if __name__ == "__main__":
     print("Testing Auto-Update System...")
     
     # Setup auto-updater (replace with actual values)
-    updater = setup_auto_updater("1.0.0", "isaackcz", "Excel-Consolidator-App")
+    updater = setup_auto_updater("1.0.0", "isaackcz", "Excel-Consolidator")
     
     if updater:
         print("Auto-updater setup successful!")
