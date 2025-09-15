@@ -35,7 +35,7 @@ class GoogleSheetsErrorReporter:
     SHEET_NAME = "Sheet1"  # Default sheet name
     GOOGLE_APPS_SCRIPT_URL = None  # Optional: Google Apps Script web app URL
     
-    def __init__(self, app_version: str = "1.0.0"):
+    def __init__(self, app_version: str = "1.0.1"):
         """
         Initialize the Google Sheets error reporter.
         
@@ -522,7 +522,7 @@ class GlobalExceptionHandler:
         sys.excepthook = self.original_excepthook
 
 
-def setup_google_sheets_error_reporting(app_version: str = "1.0.0") -> tuple[GoogleSheetsErrorReporter, GlobalExceptionHandler]:
+def setup_google_sheets_error_reporting(app_version: str = "1.0.1") -> tuple[GoogleSheetsErrorReporter, GlobalExceptionHandler]:
     """
     Setup Google Sheets error reporting for the application.
     
@@ -554,7 +554,7 @@ if __name__ == "__main__":
     print("Testing Google Sheets Error Reporting System...")
     
     # Setup error reporting
-    error_reporter, handler = setup_google_sheets_error_reporting("1.0.0")
+    error_reporter, handler = setup_google_sheets_error_reporting("1.0.1")
     
     if error_reporter:
         print("Google Sheets error reporting setup successful!")

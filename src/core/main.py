@@ -2041,7 +2041,7 @@ class ConsolidationWorker(QThread):
                     try:
                         # Try to get the error reporter from the main application
                         from google_sheets_reporter import GoogleSheetsErrorReporter
-                        error_reporter = GoogleSheetsErrorReporter("1.0.0")
+                        error_reporter = GoogleSheetsErrorReporter("1.0.1")
                         error_reporter.report_error(
                             type(e), e, e.__traceback__,
                             triggered_by="File Processing in ConsolidationWorker",

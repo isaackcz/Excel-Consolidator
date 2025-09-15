@@ -12,22 +12,22 @@ APP_DESCRIPTION = "Advanced Excel file consolidation tool"
 
 # Import configuration from config.py
 try:
-    from config import (
+    from config.config import (
         GITHUB_OWNER, GITHUB_REPO, ERROR_REPORT_EMAIL, ERROR_REPORT_SENDER,
         UPDATE_CHECK_INTERVAL, AUTO_UPDATE_ENABLED, ERROR_REPORTING_ENABLED,
         APP_NAME, APP_VERSION, APP_DESCRIPTION
     )
 except ImportError:
     # Fallback values if config.py is not available
-    GITHUB_OWNER = "your_username"
-    GITHUB_REPO = "excel-consolidator"
+    GITHUB_OWNER = "isaackcz"
+    GITHUB_REPO = "Excel-Consolidator"
     ERROR_REPORT_EMAIL = "isaacrita.02@gmail.com"
     ERROR_REPORT_SENDER = "isaacrita.02@gmail.com"
     UPDATE_CHECK_INTERVAL = 24 * 60 * 60
     AUTO_UPDATE_ENABLED = True
     ERROR_REPORTING_ENABLED = True
     APP_NAME = "Excel Consolidator"
-    APP_VERSION = "1.0.0"
+    APP_VERSION = "1.0.1"
     APP_DESCRIPTION = "Advanced Excel file consolidation tool"
 
 # Application Metadata

@@ -40,7 +40,7 @@ class AutoUpdater:
     # Configuration
     GITHUB_REPO_OWNER = "isaackcz"  # GitHub username
     GITHUB_REPO_NAME = "Excel-Consolidator"  # Repository name
-    CURRENT_VERSION = "1.0.1"  # Current application version
+    CURRENT_VERSION = "1.0.1"  # Current application version (will be overridden by config)
     CHECK_INTERVAL = 24 * 60 * 60  # Check every 24 hours (in seconds)
     
     def __init__(self, current_version: str = CURRENT_VERSION, github_owner: str = None, github_repo: str = None):
@@ -60,6 +60,7 @@ class AutoUpdater:
         self.background_thread = None
         self.stop_background = False
         self.internet_available = False
+        self._latest_release_info = None
         self.load_config(github_owner, github_repo)
         self.setup_logging()
     
@@ -162,6 +163,13 @@ class AutoUpdater:
                 self.update_available = True
                 if self.logger:
                     self.logger.info(f"Update available: {self.current_version} -> {self.latest_version}")
+                # Store release info for user notification
+                self._latest_release_info = {
+                    'version': self.latest_version,
+                    'release_notes': latest_release.get('body', ''),
+                    'published_at': latest_release.get('published_at', ''),
+                    'html_url': latest_release.get('html_url', '')
+                }
                 return True
             else:
                 self.update_available = False
@@ -747,13 +755,17 @@ echo Update completed successfully!
         """
         if self.logger:
             self.logger.info("Stopping background update checker")
+        
         self.stop_background = True
         
         if self.background_thread and self.background_thread.is_alive():
-            self.background_thread.join(timeout=10)  # Wait up to 10 seconds
+            # Give the thread time to finish current operation
+            self.background_thread.join(timeout=5)  # Wait up to 5 seconds
             if self.background_thread.is_alive():
                 if self.logger:
-                    self.logger.warning("Background thread did not stop gracefully")
+                    self.logger.warning("Background thread did not stop gracefully - forcing stop")
+                # Force stop by setting daemon flag
+                self.background_thread.daemon = True
     
     def get_update_info(self) -> Dict[str, Any]:
         """
@@ -771,11 +783,21 @@ echo Update completed successfully!
             "last_check": self.last_check_time.isoformat() if self.last_check_time else None,
             "background_running": self.background_thread and self.background_thread.is_alive(),
             "github_repo": f"{self.GITHUB_REPO_OWNER}/{self.GITHUB_REPO_NAME}",
-            "check_interval_hours": self.CHECK_INTERVAL / 3600
+            "check_interval_hours": self.CHECK_INTERVAL / 3600,
+            "release_info": self._latest_release_info
         }
+    
+    def get_latest_release_info(self) -> Optional[Dict[str, Any]]:
+        """
+        Get detailed information about the latest release.
+        
+        Returns:
+            Dictionary with release information or None if no update available
+        """
+        return self._latest_release_info
 
 
-def setup_auto_updater(current_version: str = "1.0.0", 
+def setup_auto_updater(current_version: str = "1.0.1", 
                       github_owner: str = "isaackcz",
                       github_repo: str = "Excel-Consolidator") -> AutoUpdater:
     """
@@ -810,7 +832,7 @@ if __name__ == "__main__":
     print("Testing Auto-Update System...")
     
     # Setup auto-updater (replace with actual values)
-    updater = setup_auto_updater("1.0.0", "isaackcz", "Excel-Consolidator")
+    updater = setup_auto_updater("1.0.1", "isaackcz", "Excel-Consolidator")
     
     if updater:
         print("Auto-updater setup successful!")
