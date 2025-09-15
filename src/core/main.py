@@ -2262,6 +2262,70 @@ class ExcelProcessorApp(QWidget):
         except Exception as e:
             print(f"Error checking for updates on startup: {e}")
     
+    def perform_update_with_progress(self):
+        """
+        Perform update with progress indicator.
+        """
+        try:
+            if not self.auto_updater or not self.auto_updater.update_available:
+                return False
+            
+            # Show update indicator
+            self.show_update_indicator("Checking for updates...")
+            self.update_progress_bar(10, "Checking for updates...")
+            
+            # Check for updates
+            if not self.auto_updater.check_for_updates():
+                self.hide_update_indicator()
+                return False
+            
+            self.update_progress_bar(20, "Update available! Downloading...")
+            
+            # Download update
+            update_path = self.auto_updater.download_update()
+            if not update_path:
+                self.hide_update_indicator()
+                return False
+            
+            self.update_progress_bar(60, "Download complete! Installing...")
+            
+            # Install update
+            success = self.auto_updater.install_update(update_path)
+            
+            if success:
+                self.update_progress_bar(100, "Update complete! Restarting...")
+                # Wait a moment to show completion
+                import time
+                time.sleep(2)
+                self.hide_update_indicator()
+                
+                # Show success message
+                from PyQt5.QtWidgets import QMessageBox
+                QMessageBox.information(
+                    self, 
+                    "Update Complete", 
+                    "Update completed successfully!\n\nThe application will restart automatically."
+                )
+                return True
+            else:
+                self.update_progress_bar(100, "Update failed!")
+                time.sleep(2)
+                self.hide_update_indicator()
+                
+                # Show error message
+                from PyQt5.QtWidgets import QMessageBox
+                QMessageBox.warning(
+                    self, 
+                    "Update Failed", 
+                    "Update failed. Please try downloading the update manually from GitHub."
+                )
+                return False
+                
+        except Exception as e:
+            print(f"Error performing update with progress: {e}")
+            self.hide_update_indicator()
+            return False
+    
     def show_update_notification(self):
         """
         Show a user-friendly notification about available updates.
@@ -2282,6 +2346,122 @@ class ExcelProcessorApp(QWidget):
         except Exception as e:
             print(f"Error showing update notification: {e}")
     
+    def test_update_indicator(self):
+        """
+        Test method to demonstrate the update indicator (for testing purposes).
+        """
+        import threading
+        import time
+        
+        def simulate_update():
+            self.show_update_indicator("Testing update indicator...")
+            
+            # Simulate update progress
+            steps = [
+                (10, "Checking for updates..."),
+                (25, "Update available! Downloading..."),
+                (50, "Downloading update..."),
+                (75, "Download complete! Installing..."),
+                (90, "Installing update..."),
+                (100, "Update complete! Restarting...")
+            ]
+            
+            for progress, message in steps:
+                self.update_progress_bar(progress, message)
+                time.sleep(0.5)  # Simulate work
+            
+            time.sleep(1)  # Show completion
+            self.hide_update_indicator()
+        
+        # Run in background thread
+        thread = threading.Thread(target=simulate_update, daemon=True)
+        thread.start()
+    
+    def check_for_updates_with_indicator(self):
+        """
+        Check for updates and show progress indicator.
+        """
+        import threading
+        
+        def check_updates():
+            try:
+                if not self.auto_updater:
+                    return
+                
+                # Show update indicator
+                self.show_update_indicator("Checking for updates...")
+                self.update_progress_bar(20, "Connecting to update server...")
+                
+                # Check for updates
+                update_available = self.auto_updater.check_for_updates()
+                
+                if update_available:
+                    self.update_progress_bar(50, f"Update available: {self.auto_updater.latest_version}")
+                    
+                    # Show notification about available update
+                    self.show_update_notification()
+                    
+                    # Ask user if they want to update now
+                    from PyQt5.QtWidgets import QMessageBox
+                    reply = QMessageBox.question(
+                        self, 
+                        "Update Available", 
+                        f"Version {self.auto_updater.latest_version} is available!\n\nWould you like to update now?",
+                        QMessageBox.Yes | QMessageBox.No,
+                        QMessageBox.Yes
+                    )
+                    
+                    if reply == QMessageBox.Yes:
+                        self.update_progress_bar(60, "Starting update process...")
+                        # Perform the actual update
+                        success = self.perform_update_with_progress()
+                        if success:
+                            self.update_progress_bar(100, "Update complete!")
+                        else:
+                            self.update_progress_bar(100, "Update failed!")
+                    else:
+                        self.hide_update_indicator()
+                else:
+                    self.update_progress_bar(100, "Application is up to date!")
+                    time.sleep(1)
+                    self.hide_update_indicator()
+                    
+            except Exception as e:
+                print(f"Error checking for updates: {e}")
+                self.hide_update_indicator()
+        
+        # Run in background thread
+        thread = threading.Thread(target=check_updates, daemon=True)
+        thread.start()
+    
+    def show_update_indicator(self, message="Updating..."):
+        """Show the update indicator with progress bar"""
+        try:
+            self.update_status_label.setText(message)
+            self.update_progress.setValue(0)
+            self.update_indicator.show()
+            # Position it correctly
+            self.update_indicator.move(10, self.height() - 80)
+            self.update_indicator.setFixedWidth(self.width() - 20)
+        except Exception as e:
+            print(f"Error showing update indicator: {e}")
+    
+    def hide_update_indicator(self):
+        """Hide the update indicator"""
+        try:
+            self.update_indicator.hide()
+        except Exception as e:
+            print(f"Error hiding update indicator: {e}")
+    
+    def update_progress_bar(self, value, message=None):
+        """Update the progress bar value and optionally the message"""
+        try:
+            self.update_progress.setValue(value)
+            if message:
+                self.update_status_label.setText(message)
+        except Exception as e:
+            print(f"Error updating progress bar: {e}")
+
     def closeEvent(self, event):
         """
         Handle application close event.
@@ -2523,6 +2703,60 @@ class ExcelProcessorApp(QWidget):
         main_layout.setSpacing(15)
         main_layout.setContentsMargins(20, 20, 20, 20)
 
+        # Add update indicator (initially hidden)
+        self.update_indicator = QFrame(self)
+        self.update_indicator.setObjectName("UpdateIndicator")
+        self.update_indicator.setFixedHeight(60)
+        self.update_indicator.setStyleSheet("""
+            QFrame#UpdateIndicator {
+                background-color: rgba(59, 130, 246, 0.1);
+                border: 1px solid rgba(59, 130, 246, 0.3);
+                border-radius: 8px;
+                margin: 10px;
+            }
+        """)
+        self.update_indicator.hide()  # Initially hidden
+        
+        # Update indicator layout
+        update_layout = QVBoxLayout(self.update_indicator)
+        update_layout.setContentsMargins(15, 10, 15, 10)
+        update_layout.setSpacing(8)
+        
+        # Update status label
+        self.update_status_label = QLabel("Updating...", self.update_indicator)
+        self.update_status_label.setStyleSheet("""
+            QLabel {
+                color: #1e40af;
+                font-size: 14px;
+                font-weight: bold;
+            }
+        """)
+        update_layout.addWidget(self.update_status_label)
+        
+        # Progress bar
+        self.update_progress = QProgressBar(self.update_indicator)
+        self.update_progress.setStyleSheet("""
+            QProgressBar {
+                border: 1px solid rgba(59, 130, 246, 0.3);
+                border-radius: 4px;
+                text-align: center;
+                background-color: rgba(255, 255, 255, 0.8);
+                height: 20px;
+            }
+            QProgressBar::chunk {
+                background-color: #3b82f6;
+                border-radius: 3px;
+            }
+        """)
+        self.update_progress.setRange(0, 100)
+        self.update_progress.setValue(0)
+        update_layout.addWidget(self.update_progress)
+        
+        # Position update indicator above watermark
+        def updateIndicatorPos():
+            self.update_indicator.move(10, self.height() - 80)  # Above watermark
+            self.update_indicator.setFixedWidth(self.width() - 20)
+        
         # Add watermark
         watermark = QLabel("© 2025 Izak. All rights reserved.", self)
         watermark.setStyleSheet("""
@@ -2534,10 +2768,13 @@ class ExcelProcessorApp(QWidget):
         """)
         watermark.setAlignment(Qt.AlignRight | Qt.AlignBottom)
         watermark.setGeometry(0, 0, 200, 30)  # Initial geometry
-        # Make sure watermark stays in bottom-right corner when window is resized
+        
+        # Make sure watermark and update indicator stay positioned when window is resized
         def updateWatermarkPos():
             watermark.move(self.width() - watermark.width() - 20, 
                          self.height() - watermark.height() - 5)
+            updateIndicatorPos()
+        
         self.resizeEvent = lambda e: updateWatermarkPos()
 
         # Header with logo and title
@@ -2765,6 +3002,18 @@ class ExcelProcessorApp(QWidget):
         main_layout.addWidget(content_splitter)
 
         self.setLayout(main_layout)
+        
+        # Add keyboard shortcuts
+        from PyQt5.QtWidgets import QShortcut
+        from PyQt5.QtGui import QKeySequence
+        
+        # Ctrl+U: Test update indicator
+        test_shortcut = QShortcut(QKeySequence("Ctrl+U"), self)
+        test_shortcut.activated.connect(self.test_update_indicator)
+        
+        # Ctrl+Shift+U: Check for updates with progress indicator
+        check_updates_shortcut = QShortcut(QKeySequence("Ctrl+Shift+U"), self)
+        check_updates_shortcut.activated.connect(self.check_for_updates_with_indicator)
 
     def _style_button(self, button, color, is_primary=False):
         if is_primary:

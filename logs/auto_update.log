@@ -29,3 +29,18 @@
 2025-09-15 10:15:14,065 - src.modules.auto_update - INFO - Update available: 1.0.0 -> 1.0.1
 2025-09-15 10:16:37,023 - src.modules.auto_update - INFO - Checking for updates (current version: 1.0.0)
 2025-09-15 10:16:37,589 - src.modules.auto_update - INFO - Update available: 1.0.0 -> 1.0.1
+2025-09-15 10:35:19,642 - src.modules.auto_update - INFO - Checking for updates (current version: 1.0.1)
+2025-09-15 10:35:19,643 - src.modules.auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-15 10:35:20,603 - src.modules.auto_update - INFO - Application is up to date
+2025-09-15 10:42:58,223 - src.modules.auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-15 10:42:58,223 - src.modules.auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-15 10:42:58,848 - src.modules.auto_update - INFO - Update available: 1.0.0 -> 1.0.2
+2025-09-15 10:44:02,179 - src.modules.auto_update - INFO - Checking for updates (current version: 1.0.1)
+2025-09-15 10:44:02,179 - src.modules.auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-15 10:44:03,262 - src.modules.auto_update - INFO - Update available: 1.0.1 -> 1.0.2
+2025-09-15 10:44:35,282 - src.modules.auto_update - INFO - Checking for updates (current version: 1.0.1)
+2025-09-15 10:44:35,313 - src.modules.auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-15 10:44:36,009 - src.modules.auto_update - INFO - Update available: 1.0.1 -> 1.0.2
+2025-09-15 10:45:27,691 - src.modules.auto_update - INFO - Checking for updates (current version: 1.0.1)
+2025-09-15 10:45:27,692 - src.modules.auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-15 10:45:28,290 - src.modules.auto_update - INFO - Update available: 1.0.1 -> 1.0.2

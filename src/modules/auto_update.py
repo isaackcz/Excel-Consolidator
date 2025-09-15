@@ -40,7 +40,7 @@ class AutoUpdater:
     # Configuration
     GITHUB_REPO_OWNER = "isaackcz"  # GitHub username
     GITHUB_REPO_NAME = "Excel-Consolidator-App"  # Repository name
-    CURRENT_VERSION = "1.0.2"  # Current application version (will be overridden by config)
+    CURRENT_VERSION = "1.0.3"  # Current application version (will be overridden by config)
     CHECK_INTERVAL = 24 * 60 * 60  # Check every 24 hours (in seconds)
     
     def __init__(self, current_version: str = CURRENT_VERSION, github_owner: str = None, github_repo: str = None):
@@ -147,6 +147,7 @@ class AutoUpdater:
             if self.logger:
                 self.logger.info(f"Checking for updates (current version: {self.current_version})")
                 self.logger.info(f"Repository: {self.GITHUB_REPO_OWNER}/{self.GITHUB_REPO_NAME}")
+                self.logger.info(f"Update check started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
             
             self.last_check_time = datetime.now()
             
@@ -540,28 +541,73 @@ class AutoUpdater:
             Path to created script or None if failed
         """
         try:
-            # Create a temporary batch script
+            # Get current executable path
+            current_exe = sys.executable if getattr(sys, 'frozen', False) else sys.argv[0]
+            current_exe_dir = os.path.dirname(current_exe)
+            current_exe_name = os.path.basename(current_exe)
+            
+            if self.logger:
+                self.logger.info(f"Current executable: {current_exe}")
+                self.logger.info(f"Current directory: {current_exe_dir}")
+                self.logger.info(f"Current name: {current_exe_name}")
+            
+            # Create a more robust batch script
             script_content = f'''@echo off
 echo Updating Excel Consolidator...
+echo Current executable: {current_exe}
+echo Update file: {exe_path}
 
 REM Wait a moment for the application to close
-timeout /t 3 /nobreak >nul
+timeout /t 5 /nobreak >nul
 
-REM Copy the new executable
-copy "{exe_path}" "{app_dir}\\Excel Consolidate.exe" /Y
+REM Try to copy the new executable
+echo Copying new executable...
+copy "{exe_path}" "{current_exe}" /Y
+if errorlevel 1 (
+    echo Error: Failed to copy new executable
+    echo Trying alternative method...
+    
+    REM Try to copy with a temporary name first
+    copy "{exe_path}" "{current_exe}.new" /Y
+    if errorlevel 1 (
+        echo Error: Alternative copy method also failed
+        echo Please update manually by downloading from GitHub
+        pause
+        exit /b 1
+    )
+    
+    REM Replace the old executable
+    del "{current_exe}" /Q
+    ren "{current_exe}.new" "{current_exe_name}"
+)
 
-REM Clean up
+REM Clean up the downloaded file
 del "{exe_path}" /Q
 
+REM Wait for the copy to complete
+timeout /t 3 /nobreak >nul
+
+REM Verify the new executable exists
+if not exist "{current_exe}" (
+    echo Error: New executable not found after update
+    pause
+    exit /b 1
+)
+
 REM Restart the application
-start "" "{app_dir}\\Excel Consolidate.exe"
+echo Restarting application...
+start "" "{current_exe}"
+
+REM Clean up this script after a delay
+timeout /t 2 /nobreak >nul
+del "%~f0" /Q
 
 echo Update completed successfully!
 '''
             
             # Write script to temp file
             script_path = os.path.join(tempfile.gettempdir(), "excel_consolidator_update.bat")
-            with open(script_path, 'w') as f:
+            with open(script_path, 'w', encoding='utf-8') as f:
                 f.write(script_content)
             
             if self.logger:

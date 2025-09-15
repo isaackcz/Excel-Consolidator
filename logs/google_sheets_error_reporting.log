@@ -172,3 +172,15 @@
 2025-09-15 09:59:12,277 - src.modules.auto_update - WARNING - Could not fetch latest release information
 2025-09-15 10:00:13,120 - src.modules.auto_update - INFO - Stopping background update checker
 2025-09-15 10:00:18,136 - src.modules.auto_update - WARNING - Background thread did not stop gracefully - forcing stop
+2025-09-15 10:55:52,385 - src.modules.auto_update - INFO - Background update checker started
+2025-09-15 10:55:52,385 - src.modules.auto_update - INFO - Background update checker started successfully
+2025-09-15 10:55:52,386 - src.modules.auto_update - WARNING - Background checker is already running
+2025-09-15 10:55:52,463 - src.modules.auto_update - INFO - Checking for updates (current version: 1.0.2)
+2025-09-15 10:55:52,463 - src.modules.auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-15 10:55:53,717 - src.modules.auto_update - INFO - Application is up to date
+2025-09-15 10:56:22,386 - src.modules.auto_update - INFO - Background update check starting
+2025-09-15 10:56:22,625 - src.modules.auto_update - INFO - Checking for updates (current version: 1.0.2)
+2025-09-15 10:56:22,627 - src.modules.auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-15 10:56:23,671 - src.modules.auto_update - INFO - Application is up to date
+2025-09-15 10:57:16,370 - src.modules.auto_update - INFO - Stopping background update checker
+2025-09-15 10:57:21,376 - src.modules.auto_update - WARNING - Background thread did not stop gracefully - forcing stop
