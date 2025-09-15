@@ -40,7 +40,7 @@ class AutoUpdater:
     # Configuration
     GITHUB_REPO_OWNER = "isaackcz"  # GitHub username
     GITHUB_REPO_NAME = "Excel-Consolidator-App"  # Repository name
-    CURRENT_VERSION = "1.0.3"  # Current application version (will be overridden by config)
+    CURRENT_VERSION = "1.0.4"  # Current application version (will be overridden by config)
     CHECK_INTERVAL = 24 * 60 * 60  # Check every 24 hours (in seconds)
     
     def __init__(self, current_version: str = CURRENT_VERSION, github_owner: str = None, github_repo: str = None):

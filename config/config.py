@@ -28,7 +28,7 @@ UPDATE_CHECK_INTERVAL = 24 * 60 * 60  # Check every 24 hours (in seconds)
 
 # Application Configuration
 APP_NAME = "Excel Consolidator"
-APP_VERSION = "1.0.3"
+APP_VERSION = "1.0.4"
 APP_DESCRIPTION = "Advanced Excel file consolidation tool"
 
 # Logging Configuration
