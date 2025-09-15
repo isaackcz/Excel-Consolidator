@@ -2239,6 +2239,7 @@ class ExcelProcessorApp(QWidget):
                 self.auto_updater = setup_auto_updater(APP_VERSION, GITHUB_OWNER, GITHUB_REPO)
                 if self.auto_updater:
                     print("Auto-update system initialized successfully")
+                    print(f"📱 Current version: {APP_VERSION}")
                     # Start background update checker
                     self.auto_updater.start_background_checker()
                     # Check for updates on startup (but don't show notification immediately)

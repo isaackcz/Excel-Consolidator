@@ -12,3 +12,20 @@
 2025-09-14 23:05:27,541 - src.modules.auto_update - INFO - Background update checker started successfully
 2025-09-14 23:05:32,542 - src.modules.auto_update - INFO - Stopping background update checker
 2025-09-14 23:05:42,559 - src.modules.auto_update - WARNING - Background thread did not stop gracefully
+2025-09-15 09:57:24,125 - src.modules.auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-15 09:57:25,220 - src.modules.auto_update - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/isaackcz/Excel-Consolidator-App/releases/latest
+2025-09-15 09:57:25,230 - src.modules.auto_update - WARNING - Could not fetch latest release information
+2025-09-15 09:58:13,430 - __main__ - INFO - Background update checker started
+2025-09-15 09:58:13,430 - __main__ - INFO - Background update checker started successfully
+2025-09-15 09:58:13,503 - __main__ - INFO - Checking for updates (current version: 1.0.1)
+2025-09-15 09:58:14,485 - __main__ - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/isaackcz/Excel-Consolidator-App/releases/latest
+2025-09-15 09:58:14,487 - __main__ - WARNING - Could not fetch latest release information
+2025-09-15 10:07:11,379 - src.modules.auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-15 10:07:12,620 - src.modules.auto_update - ERROR - Failed to fetch release info: 404 Client Error: Not Found for url: https://api.github.com/repos/isaackcz/Excel-Consolidator-App/releases/latest
+2025-09-15 10:07:12,622 - src.modules.auto_update - WARNING - Could not fetch latest release information
+2025-09-15 10:14:24,837 - src.modules.auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-15 10:14:25,993 - src.modules.auto_update - INFO - Update available: 1.0.0 -> 1.0.1
+2025-09-15 10:15:13,439 - src.modules.auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-15 10:15:14,065 - src.modules.auto_update - INFO - Update available: 1.0.0 -> 1.0.1
+2025-09-15 10:16:37,023 - src.modules.auto_update - INFO - Checking for updates (current version: 1.0.0)
+2025-09-15 10:16:37,589 - src.modules.auto_update - INFO - Update available: 1.0.0 -> 1.0.1

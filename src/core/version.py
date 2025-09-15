@@ -6,7 +6,7 @@ for the application.
 """
 
 # Application Version Information
-APP_VERSION = "1.0.1"
+APP_VERSION = "1.0.2"
 APP_NAME = "Excel Consolidator"
 APP_DESCRIPTION = "Advanced Excel file consolidation tool"
 
@@ -27,12 +27,12 @@ except ImportError:
     AUTO_UPDATE_ENABLED = True
     ERROR_REPORTING_ENABLED = True
     APP_NAME = "Excel Consolidator"
-    APP_VERSION = "1.0.1"
+    APP_VERSION = "1.0.2"
     APP_DESCRIPTION = "Advanced Excel file consolidation tool"
 
 # Application Metadata
-BUILD_DATE = "2024-01-01"
-BUILD_NUMBER = "1"
+BUILD_DATE = "2025-01-15"
+BUILD_NUMBER = "2"
 DEVELOPER = "Excel Consolidator Team"
 
 def get_version_info():

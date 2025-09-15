@@ -1,4 +1,4 @@
-## Excel Consolidator v1.0.1
+## Excel Consolidator v1.0.2
 
 ### 🚀 New Features & Improvements
 
