@@ -40,7 +40,9 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 
 from src.modules.google_sheets_reporter import setup_google_sheets_error_reporting, GoogleSheetsErrorReporter
 from src.modules.auto_update import setup_auto_updater, AutoUpdater
+from src.modules.optimized_auto_update import setup_optimized_auto_updater, OptimizedAutoUpdater
 from src.core.version import APP_VERSION, APP_NAME, GITHUB_OWNER, GITHUB_REPO, ERROR_REPORTING_ENABLED, AUTO_UPDATE_ENABLED
+from src.ui.update_dialog import create_update_dialog
 
 class FileProcessor:
     """Handles different file formats"""
@@ -1290,6 +1292,54 @@ class AdvancedConfigDialog(QDialog):
         
         layout.addWidget(filter_group)
         
+        # Sheet Selection
+        sheet_group = QGroupBox("Sheet Selection")
+        sheet_layout = QVBoxLayout(sheet_group)
+        
+        self.enable_sheet_selection = QCheckBox("Select specific sheet to process")
+        self.enable_sheet_selection.setToolTip(
+            "When ENABLED: Allows you to choose which sheet to process from multi-sheet workbooks.\n\n"
+            "When DISABLED: Uses the active sheet (default behavior).\n\n"
+            "This is useful when:\n"
+            "• Your template has multiple sheets but you only want to process one\n"
+            "• Source files have data in different sheet names\n"
+            "• You want to process a specific sheet consistently\n\n"
+            "💡 TIP: Keep disabled if your files only have one sheet or you want the default behavior."
+        )
+        sheet_layout.addWidget(self.enable_sheet_selection)
+        
+        sheet_selection_layout = QHBoxLayout()
+        sheet_label = QLabel("Sheet name:")
+        sheet_label.setToolTip(
+            "Enter the exact name of the sheet you want to process.\n\n"
+            "Examples:\n"
+            "• 'Sheet1' - the default first sheet\n"
+            "• 'Data' - a sheet named 'Data'\n"
+            "• 'Sales Report' - a sheet with spaces in the name\n\n"
+            "⚠️ IMPORTANT: The sheet name must match exactly (case-sensitive).\n"
+            "If the sheet doesn't exist, the active sheet will be used instead."
+        )
+        sheet_selection_layout.addWidget(sheet_label)
+        
+        self.sheet_name = QLineEdit("Sheet1")
+        self.sheet_name.setEnabled(False)
+        self.sheet_name.setToolTip(
+            "Type the exact name of the sheet to process.\n\n"
+            "Common sheet names:\n"
+            "• 'Sheet1' - default first sheet\n"
+            "• 'Data' - data sheet\n"
+            "• 'Summary' - summary sheet\n"
+            "• 'Report' - report sheet\n\n"
+            "⚠️ WARNING: Sheet names are case-sensitive!\n"
+            "If the sheet doesn't exist, the active sheet will be used as fallback."
+        )
+        sheet_selection_layout.addWidget(self.sheet_name)
+        sheet_layout.addLayout(sheet_selection_layout)
+        
+        self.enable_sheet_selection.toggled.connect(self.sheet_name.setEnabled)
+        
+        layout.addWidget(sheet_group)
+        
         layout.addStretch()
         return widget
     
@@ -1588,6 +1638,8 @@ class AdvancedConfigDialog(QDialog):
         self.name_filter_pattern.setText("*.xlsx")
         self.enable_date_filter.setChecked(False)
         self.date_filter_days.setValue(30)
+        self.enable_sheet_selection.setChecked(False)
+        self.sheet_name.setText("Sheet1")
         
         # Validation
         self.validate_structure.setChecked(True)
@@ -1623,7 +1675,9 @@ class AdvancedConfigDialog(QDialog):
                 'enable_name_filter': self.enable_name_filter.isChecked(),
                 'name_filter_pattern': self.name_filter_pattern.text(),
                 'enable_date_filter': self.enable_date_filter.isChecked(),
-                'date_filter_days': self.date_filter_days.value()
+                'date_filter_days': self.date_filter_days.value(),
+                'enable_sheet_selection': self.enable_sheet_selection.isChecked(),
+                'sheet_name': self.sheet_name.text()
             },
             'validation': {
                 'validate_structure': self.validate_structure.isChecked(),
@@ -1797,6 +1851,39 @@ class ConsolidationWorker(QThread):
         else:
             return f"File '{filename}' could not be processed: {str(error)}"
 
+    def _get_worksheet(self, workbook, file_type="source"):
+        """Get the appropriate worksheet based on settings.
+        
+        Args:
+            workbook: The openpyxl workbook object
+            file_type: Either "template" or "source" to determine which settings to use
+            
+        Returns:
+            The worksheet object to use
+        """
+        # For template, always use the selected sheet if enabled
+        if file_type == "template":
+            file_handling = self.settings.get('file_handling', {})
+            if file_handling.get('enable_sheet_selection', False):
+                sheet_name = file_handling.get('sheet_name', 'Sheet1')
+                if sheet_name in workbook.sheetnames:
+                    return workbook[sheet_name]
+                # Fallback to active sheet if specified sheet doesn't exist
+                return workbook.active
+            else:
+                return workbook.active
+        
+        # For source files, use the same logic as template
+        file_handling = self.settings.get('file_handling', {})
+        if file_handling.get('enable_sheet_selection', False):
+            sheet_name = file_handling.get('sheet_name', 'Sheet1')
+            if sheet_name in workbook.sheetnames:
+                return workbook[sheet_name]
+            # Fallback to active sheet if specified sheet doesn't exist
+            return workbook.active
+        else:
+            return workbook.active
+
     def _get_template_load_error_message(self, error):
         """Get user-friendly error message for template loading errors."""
         error_str = str(error).lower()
@@ -1890,7 +1977,7 @@ class ConsolidationWorker(QThread):
             keep_vba = template_ext == '.xlsm'
             try:
                 output_wb = openpyxl.load_workbook(self.template_path, keep_vba=keep_vba)
-                output_ws = output_wb.active
+                output_ws = self._get_worksheet(output_wb, "template")
             except Exception as e:
                 # Report error to Google Sheets if error reporter is available
                 if self.error_reporter:
@@ -1947,7 +2034,8 @@ class ConsolidationWorker(QThread):
             template_ws = None
             if validate_structure:
                 try:
-                    template_ws = openpyxl.load_workbook(self.template_path, data_only=True, read_only=True).active
+                    template_wb = openpyxl.load_workbook(self.template_path, data_only=True, read_only=True)
+                    template_ws = self._get_worksheet(template_wb, "template")
                 except Exception:
                     template_ws = None
             for idx, file in enumerate(files, 1):
@@ -1958,7 +2046,7 @@ class ConsolidationWorker(QThread):
 
                     if ext in ('.xlsx', '.xls'):
                         wb = openpyxl.load_workbook(file, data_only=True, read_only=bool(self.settings.get('performance', {}).get('memory_optimization')))
-                        ws = wb.active
+                        ws = self._get_worksheet(wb, "source")
                         # Validate structure against template if enabled
                         if validate_structure and template_ws is not None:
                             try:
@@ -2234,12 +2322,24 @@ class ExcelProcessorApp(QWidget):
                 else:
                     print("Warning: Google Sheets error reporting system failed to initialize")
             
-            # Setup auto-updater
+            # Setup optimized auto-updater
             if AUTO_UPDATE_ENABLED:
-                self.auto_updater = setup_auto_updater(APP_VERSION, GITHUB_OWNER, GITHUB_REPO)
+                try:
+                    # Try to use optimized auto-updater first
+                    self.auto_updater = setup_optimized_auto_updater(APP_VERSION, GITHUB_OWNER, GITHUB_REPO)
+                    if self.auto_updater:
+                        print("🚀 Optimized auto-update system initialized successfully")
+                        print(f"📱 Current version: {APP_VERSION}")
+                        print("⚡ Ultra-fast downloads enabled with parallel processing")
+                except Exception as e:
+                    print(f"⚠️  Optimized auto-updater failed, falling back to standard: {e}")
+                    # Fallback to standard auto-updater
+                    self.auto_updater = setup_auto_updater(APP_VERSION, GITHUB_OWNER, GITHUB_REPO)
+                    if self.auto_updater:
+                        print("Auto-update system initialized successfully (standard mode)")
+                        print(f"📱 Current version: {APP_VERSION}")
+                
                 if self.auto_updater:
-                    print("Auto-update system initialized successfully")
-                    print(f"📱 Current version: {APP_VERSION}")
                     # Start background update checker
                     self.auto_updater.start_background_checker()
                     # Check for updates on startup (but don't show notification immediately)
@@ -2252,13 +2352,36 @@ class ExcelProcessorApp(QWidget):
     
     def check_for_updates_on_startup(self):
         """
-        Check for updates when the application starts (silent check).
+        Check for updates when the application starts and show dialog if available.
         """
         try:
             if self.auto_updater:
-                # Just check for updates silently - background checker will handle the rest
-                self.auto_updater.check_for_updates()
-                # Don't show notification immediately - let background process handle updates
+                # Check for updates
+                update_available = self.auto_updater.check_for_updates()
+                
+                if update_available:
+                    print(f"Update available: {self.auto_updater.latest_version}")
+                    
+                    # Show notification about available update
+                    self.show_update_notification()
+                    
+                    # Ask user if they want to update now
+                    from PyQt5.QtWidgets import QMessageBox
+                    reply = QMessageBox.question(
+                        self, 
+                        "Update Available", 
+                        f"Version {self.auto_updater.latest_version} is available!\n\nWould you like to update now?",
+                        QMessageBox.Yes | QMessageBox.No,
+                        QMessageBox.Yes
+                    )
+                    
+                    if reply == QMessageBox.Yes:
+                        # Show the update dialog and start the update process
+                        self.show_update_dialog()
+                    else:
+                        print("User chose to update later")
+                else:
+                    print("Application is up to date")
         except Exception as e:
             print(f"Error checking for updates on startup: {e}")
     
@@ -2326,6 +2449,42 @@ class ExcelProcessorApp(QWidget):
             self.hide_update_indicator()
             return False
     
+    def show_update_dialog(self):
+        """
+        Show the new update dialog for non-blocking updates.
+        """
+        try:
+            if not self.auto_updater or not self.auto_updater.update_available:
+                from PyQt5.QtWidgets import QMessageBox
+                QMessageBox.information(
+                    self, 
+                    "No Updates", 
+                    "No updates are currently available."
+                )
+                return
+            
+            # Create update callback function that uses the real auto-updater
+            def update_callback(progress_callback, download_progress_callback):
+                """Callback function for the update dialog using real auto-updater."""
+                try:
+                    # Perform the real update with progress callbacks
+                    success = self.auto_updater.perform_update(progress_callback, download_progress_callback)
+                    return success
+                    
+                except Exception as e:
+                    progress_callback(100, f"Update error: {str(e)}")
+                    return False
+            
+            # Create and show the update dialog
+            self.update_dialog = create_update_dialog(self, update_callback)
+            self.update_dialog.show()
+            self.update_dialog.start_update()
+            
+        except Exception as e:
+            print(f"Error showing update dialog: {e}")
+            # Fallback to old method
+            self.perform_update_with_progress()
+    
     def show_update_notification(self):
         """
         Show a user-friendly notification about available updates.
@@ -2377,6 +2536,7 @@ class ExcelProcessorApp(QWidget):
         thread = threading.Thread(target=simulate_update, daemon=True)
         thread.start()
     
+    
     def check_for_updates_with_indicator(self):
         """
         Check for updates and show progress indicator.
@@ -2412,13 +2572,9 @@ class ExcelProcessorApp(QWidget):
                     )
                     
                     if reply == QMessageBox.Yes:
-                        self.update_progress_bar(60, "Starting update process...")
-                        # Perform the actual update
-                        success = self.perform_update_with_progress()
-                        if success:
-                            self.update_progress_bar(100, "Update complete!")
-                        else:
-                            self.update_progress_bar(100, "Update failed!")
+                        self.hide_update_indicator()  # Hide old indicator
+                        # Use the new update dialog
+                        self.show_update_dialog()
                     else:
                         self.hide_update_indicator()
                 else:
@@ -3006,10 +3162,6 @@ class ExcelProcessorApp(QWidget):
         # Add keyboard shortcuts
         from PyQt5.QtWidgets import QShortcut
         from PyQt5.QtGui import QKeySequence
-        
-        # Ctrl+U: Test update indicator
-        test_shortcut = QShortcut(QKeySequence("Ctrl+U"), self)
-        test_shortcut.activated.connect(self.test_update_indicator)
         
         # Ctrl+Shift+U: Check for updates with progress indicator
         check_updates_shortcut = QShortcut(QKeySequence("Ctrl+Shift+U"), self)
