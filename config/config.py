@@ -23,7 +23,7 @@ SMTP_PORT = 587
 # Auto-Update Configuration
 AUTO_UPDATE_ENABLED = True
 GITHUB_OWNER = "isaackcz"
-GITHUB_REPO = "Excel-Consolidator"
+GITHUB_REPO = "Excel-Consolidator-App"
 UPDATE_CHECK_INTERVAL = 24 * 60 * 60  # Check every 24 hours (in seconds)
 
 # Application Configuration
