@@ -2,6 +2,7 @@ import os
 import glob
 import datetime
 from typing import Dict, Iterable, List, Optional, Tuple
+from decimal import Decimal, InvalidOperation, getcontext
 
 import openpyxl
 import fnmatch
@@ -112,12 +113,16 @@ def load_cells(ws, settings: Dict) -> Iterable:
                 yield cell
 
 
-def normalize_value(value, settings: Dict) -> Optional[float]:
-    """Convert a cell value to float if possible according to data_processing settings."""
+def normalize_value(value, settings: Dict) -> Optional[Decimal]:
+    """Convert a cell value to Decimal if possible according to data_processing settings."""
     if value is None:
         return None
     if isinstance(value, (int, float)):
-        return float(value)
+        # Use string conversion to avoid binary float artifacts
+        try:
+            return Decimal(str(value))
+        except (InvalidOperation, ValueError):
+            return None
 
     data_settings = settings.get('data_processing', {}) if settings else {}
     if not data_settings.get('auto_convert_text'):
@@ -136,24 +141,30 @@ def normalize_value(value, settings: Dict) -> Optional[float]:
     # Handle percentages
     if data_settings.get('handle_percentages') and text.endswith('%'):
         try:
-            return float(text[:-1]) / 100.0
-        except ValueError:
+            return (Decimal(text[:-1]) / Decimal('100'))
+        except (InvalidOperation, ValueError):
             return None
 
     # Plain number conversion
     try:
-        return float(text)
-    except ValueError:
+        return Decimal(text)
+    except (InvalidOperation, ValueError):
         return None
 
 
-def validate_value(val: float, settings: Dict) -> bool:
+def validate_value(val: Decimal, settings: Dict) -> bool:
     """Validate numeric value against type/range settings."""
     validation = settings.get('validation', {}) if settings else {}
     if not validation.get('validate_ranges'):
         return True
-    min_v = float(validation.get('min_value', float('-inf')))
-    max_v = float(validation.get('max_value', float('inf')))
+    try:
+        min_raw = validation.get('min_value', float('-inf'))
+        max_raw = validation.get('max_value', float('inf'))
+        min_v = Decimal(str(min_raw))
+        max_v = Decimal(str(max_raw))
+    except (InvalidOperation, ValueError):
+        # If conversion fails, fall back to permissive validation
+        return True
     return (min_v <= val <= max_v)
 
 

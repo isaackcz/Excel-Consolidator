@@ -184,3 +184,548 @@
 2025-09-15 10:56:23,671 - src.modules.auto_update - INFO - Application is up to date
 2025-09-15 10:57:16,370 - src.modules.auto_update - INFO - Stopping background update checker
 2025-09-15 10:57:21,376 - src.modules.auto_update - WARNING - Background thread did not stop gracefully - forcing stop
+2025-09-15 12:47:34,779 - src.modules.auto_update - INFO - Background update checker started
+2025-09-15 12:47:34,779 - src.modules.auto_update - INFO - Background update checker started successfully
+2025-09-15 12:47:34,780 - src.modules.auto_update - WARNING - Background checker is already running
+2025-09-15 12:47:34,871 - src.modules.auto_update - INFO - Checking for updates (current version: 1.0.5)
+2025-09-15 12:47:34,872 - src.modules.auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-15 12:47:34,872 - src.modules.auto_update - INFO - Update check started at: 2025-09-15 12:47:34
+2025-09-15 12:47:35,935 - src.modules.auto_update - INFO - Application is up to date
+2025-09-15 12:48:04,780 - src.modules.auto_update - INFO - Background update check starting
+2025-09-15 12:48:04,855 - src.modules.auto_update - INFO - Checking for updates (current version: 1.0.5)
+2025-09-15 12:48:04,855 - src.modules.auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-15 12:48:04,856 - src.modules.auto_update - INFO - Update check started at: 2025-09-15 12:48:04
+2025-09-15 12:48:05,790 - src.modules.auto_update - INFO - Application is up to date
+2025-09-15 12:48:27,869 - src.modules.auto_update - INFO - Stopping background update checker
+2025-09-15 12:48:32,871 - src.modules.auto_update - WARNING - Background thread did not stop gracefully - forcing stop
+2025-09-15 12:56:46,188 - src.modules.auto_update - INFO - Background update checker started
+2025-09-15 12:56:46,188 - src.modules.auto_update - INFO - Background update checker started successfully
+2025-09-15 12:56:46,188 - src.modules.auto_update - WARNING - Background checker is already running
+2025-09-15 12:56:46,254 - src.modules.auto_update - INFO - Checking for updates (current version: 1.0.5)
+2025-09-15 12:56:46,254 - src.modules.auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-15 12:56:46,255 - src.modules.auto_update - INFO - Update check started at: 2025-09-15 12:56:46
+2025-09-15 12:56:47,526 - src.modules.auto_update - INFO - Application is up to date
+2025-09-15 12:57:00,981 - src.modules.auto_update - INFO - Stopping background update checker
+2025-09-15 12:57:05,986 - src.modules.auto_update - WARNING - Background thread did not stop gracefully - forcing stop
+2025-09-15 12:58:14,791 - src.modules.auto_update - INFO - Background update checker started
+2025-09-15 12:58:14,791 - src.modules.auto_update - INFO - Background update checker started successfully
+2025-09-15 12:58:14,793 - src.modules.auto_update - WARNING - Background checker is already running
+2025-09-15 12:58:14,887 - src.modules.auto_update - INFO - Checking for updates (current version: 1.0.5)
+2025-09-15 12:58:14,888 - src.modules.auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-15 12:58:14,889 - src.modules.auto_update - INFO - Update check started at: 2025-09-15 12:58:14
+2025-09-15 12:58:15,855 - src.modules.auto_update - INFO - Application is up to date
+2025-09-15 12:58:41,923 - src.modules.auto_update - INFO - Checking for updates (current version: 1.0.5)
+2025-09-15 12:58:41,923 - src.modules.auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-15 12:58:41,923 - src.modules.auto_update - INFO - Update check started at: 2025-09-15 12:58:41
+2025-09-15 12:58:42,813 - src.modules.auto_update - INFO - Application is up to date
+2025-09-15 12:58:44,792 - src.modules.auto_update - INFO - Background update check starting
+2025-09-15 12:58:44,845 - src.modules.auto_update - INFO - Checking for updates (current version: 1.0.5)
+2025-09-15 12:58:44,845 - src.modules.auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-15 12:58:44,846 - src.modules.auto_update - INFO - Update check started at: 2025-09-15 12:58:44
+2025-09-15 12:58:45,481 - src.modules.auto_update - INFO - Application is up to date
+2025-09-15 13:02:39,206 - src.modules.auto_update - INFO - Stopping background update checker
+2025-09-15 13:02:44,219 - src.modules.auto_update - WARNING - Background thread did not stop gracefully - forcing stop
+2025-09-15 13:02:48,455 - src.modules.auto_update - INFO - Background update checker started
+2025-09-15 13:02:48,455 - src.modules.auto_update - INFO - Background update checker started successfully
+2025-09-15 13:02:48,456 - src.modules.auto_update - WARNING - Background checker is already running
+2025-09-15 13:02:48,522 - src.modules.auto_update - INFO - Checking for updates (current version: 1.0.5)
+2025-09-15 13:02:48,523 - src.modules.auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-15 13:02:48,523 - src.modules.auto_update - INFO - Update check started at: 2025-09-15 13:02:48
+2025-09-15 13:02:49,507 - src.modules.auto_update - INFO - Application is up to date
+2025-09-15 13:03:18,456 - src.modules.auto_update - INFO - Background update check starting
+2025-09-15 13:03:18,520 - src.modules.auto_update - INFO - Checking for updates (current version: 1.0.5)
+2025-09-15 13:03:18,521 - src.modules.auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-15 13:03:18,521 - src.modules.auto_update - INFO - Update check started at: 2025-09-15 13:03:18
+2025-09-15 13:03:19,505 - src.modules.auto_update - INFO - Application is up to date
+2025-09-15 13:05:35,686 - src.modules.auto_update - INFO - Stopping background update checker
+2025-09-15 13:05:40,687 - src.modules.auto_update - WARNING - Background thread did not stop gracefully - forcing stop
+2025-09-15 13:05:45,793 - src.modules.auto_update - INFO - Background update checker started
+2025-09-15 13:05:45,793 - src.modules.auto_update - INFO - Background update checker started successfully
+2025-09-15 13:05:45,794 - src.modules.auto_update - WARNING - Background checker is already running
+2025-09-15 13:05:45,886 - src.modules.auto_update - INFO - Checking for updates (current version: 1.0.5)
+2025-09-15 13:05:45,886 - src.modules.auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-15 13:05:45,886 - src.modules.auto_update - INFO - Update check started at: 2025-09-15 13:05:45
+2025-09-15 13:05:47,069 - src.modules.auto_update - INFO - Application is up to date
+2025-09-15 13:06:15,794 - src.modules.auto_update - INFO - Background update check starting
+2025-09-15 13:06:15,845 - src.modules.auto_update - INFO - Checking for updates (current version: 1.0.5)
+2025-09-15 13:06:15,846 - src.modules.auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-15 13:06:15,847 - src.modules.auto_update - INFO - Update check started at: 2025-09-15 13:06:15
+2025-09-15 13:06:16,761 - src.modules.auto_update - INFO - Application is up to date
+2025-09-15 13:07:47,879 - src.modules.auto_update - INFO - Stopping background update checker
+2025-09-15 13:07:52,887 - src.modules.auto_update - WARNING - Background thread did not stop gracefully - forcing stop
+2025-09-15 13:07:57,117 - src.modules.auto_update - INFO - Background update checker started
+2025-09-15 13:07:57,117 - src.modules.auto_update - INFO - Background update checker started successfully
+2025-09-15 13:07:57,118 - src.modules.auto_update - WARNING - Background checker is already running
+2025-09-15 13:07:57,253 - src.modules.auto_update - INFO - Checking for updates (current version: 1.0.5)
+2025-09-15 13:07:57,253 - src.modules.auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-15 13:07:57,254 - src.modules.auto_update - INFO - Update check started at: 2025-09-15 13:07:57
+2025-09-15 13:07:58,249 - src.modules.auto_update - INFO - Application is up to date
+2025-09-15 13:08:27,117 - src.modules.auto_update - INFO - Background update check starting
+2025-09-15 13:08:27,192 - src.modules.auto_update - INFO - Checking for updates (current version: 1.0.5)
+2025-09-15 13:08:27,192 - src.modules.auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-15 13:08:27,193 - src.modules.auto_update - INFO - Update check started at: 2025-09-15 13:08:27
+2025-09-15 13:08:28,126 - src.modules.auto_update - INFO - Application is up to date
+2025-09-15 13:15:12,654 - src.modules.auto_update - INFO - Stopping background update checker
+2025-09-15 13:15:17,670 - src.modules.auto_update - WARNING - Background thread did not stop gracefully - forcing stop
+2025-09-15 14:09:00,597 - src.modules.auto_update - INFO - ==================================================
+2025-09-15 14:09:00,597 - src.modules.auto_update - INFO - Excel Consolidator v1.0.7 - Auto-Update System
+2025-09-15 14:09:00,598 - src.modules.auto_update - INFO - ==================================================
+2025-09-15 14:09:00,598 - src.modules.auto_update - INFO - This is a test version to verify auto-update functionality
+2025-09-15 14:09:00,598 - src.modules.auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-15 14:09:00,598 - src.modules.auto_update - INFO - ==================================================
+2025-09-15 14:09:00,599 - src.modules.auto_update - INFO - Background update checker started
+2025-09-15 14:09:00,599 - src.modules.auto_update - INFO - Background update checker started successfully
+2025-09-15 14:09:00,600 - src.modules.auto_update - WARNING - Background checker is already running
+2025-09-15 14:09:00,668 - src.modules.auto_update - INFO - Checking for updates (current version: 1.0.7)
+2025-09-15 14:09:00,668 - src.modules.auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-15 14:09:00,669 - src.modules.auto_update - INFO - Update check started at: 2025-09-15 14:09:00
+2025-09-15 14:09:01,722 - src.modules.auto_update - INFO - Application is up to date
+2025-09-15 14:09:13,896 - src.modules.auto_update - INFO - Stopping background update checker
+2025-09-15 14:09:18,899 - src.modules.auto_update - WARNING - Background thread did not stop gracefully - forcing stop
+2025-09-15 14:14:24,498 - src.modules.auto_update - INFO - ==================================================
+2025-09-15 14:14:24,498 - src.modules.auto_update - INFO - Excel Consolidator v1.0.7 - Auto-Update System
+2025-09-15 14:14:24,498 - src.modules.auto_update - INFO - ==================================================
+2025-09-15 14:14:24,499 - src.modules.auto_update - INFO - This is a test version to verify auto-update functionality
+2025-09-15 14:14:24,499 - src.modules.auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-15 14:14:24,499 - src.modules.auto_update - INFO - ==================================================
+2025-09-15 14:14:24,500 - src.modules.auto_update - INFO - Background update checker started
+2025-09-15 14:14:24,501 - src.modules.auto_update - INFO - Background update checker started successfully
+2025-09-15 14:14:24,501 - src.modules.auto_update - WARNING - Background checker is already running
+2025-09-15 14:14:24,568 - src.modules.auto_update - INFO - Checking for updates (current version: 1.0.7)
+2025-09-15 14:14:24,568 - src.modules.auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-15 14:14:24,568 - src.modules.auto_update - INFO - Update check started at: 2025-09-15 14:14:24
+2025-09-15 14:14:25,818 - src.modules.auto_update - INFO - Application is up to date
+2025-09-15 14:14:31,272 - src.modules.auto_update - INFO - Stopping background update checker
+2025-09-15 14:14:36,282 - src.modules.auto_update - WARNING - Background thread did not stop gracefully - forcing stop
+2025-09-16 12:56:05,507 - src.modules.auto_update - INFO - ==================================================
+2025-09-16 12:56:05,507 - src.modules.auto_update - INFO - Excel Consolidator v1.0.7 - Auto-Update System
+2025-09-16 12:56:05,508 - src.modules.auto_update - INFO - ==================================================
+2025-09-16 12:56:05,508 - src.modules.auto_update - INFO - This is a test version to verify auto-update functionality
+2025-09-16 12:56:05,508 - src.modules.auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-16 12:56:05,508 - src.modules.auto_update - INFO - ==================================================
+2025-09-16 12:56:05,508 - src.modules.auto_update - INFO - Background update checker started
+2025-09-16 12:56:05,509 - src.modules.auto_update - INFO - Background update checker started successfully
+2025-09-16 12:56:32,971 - src.modules.google_sheets_reporter - INFO - Error data sent to spreadsheet via Apps Script
+2025-09-16 12:56:32,975 - src.modules.google_sheets_reporter - INFO - Error report sent successfully
+2025-09-16 12:56:35,509 - src.modules.auto_update - INFO - Background update check starting
+2025-09-16 12:56:35,579 - src.modules.auto_update - INFO - Checking for updates (current version: 1.0.7)
+2025-09-16 12:56:35,579 - src.modules.auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-16 12:56:35,579 - src.modules.auto_update - INFO - Update check started at: 2025-09-16 12:56:35
+2025-09-16 12:56:36,642 - src.modules.auto_update - INFO - Application is up to date
+2025-09-16 13:01:17,760 - src.modules.auto_update - INFO - Stopping background update checker
+2025-09-16 13:01:22,768 - src.modules.auto_update - WARNING - Background thread did not stop gracefully - forcing stop
+2025-09-16 14:46:44,098 - src.modules.optimized_auto_update - WARNING - Failed to initialize ultra-fast downloader: HTTPAdapter.__init__() got an unexpected keyword argument 'socket_options'
+2025-09-16 14:46:44,098 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-16 14:46:44,098 - src.modules.optimized_auto_update - INFO - Excel Consolidator v1.0.7 - Optimized Auto-Update System
+2025-09-16 14:46:44,099 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-16 14:46:44,099 - src.modules.optimized_auto_update - INFO - Enhanced with parallel downloads, resume capability, and caching
+2025-09-16 14:46:44,099 - src.modules.optimized_auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-16 14:46:44,099 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-16 14:46:44,100 - src.modules.optimized_auto_update - INFO - Optimized background update checker started
+2025-09-16 14:46:44,100 - src.modules.optimized_auto_update - INFO - Optimized background update checker started successfully
+2025-09-16 14:46:44,100 - src.modules.optimized_auto_update - WARNING - Background checker is already running
+2025-09-16 14:46:44,166 - src.modules.optimized_auto_update - INFO - Checking for updates (current version: 1.0.7)
+2025-09-16 14:46:45,186 - src.modules.optimized_auto_update - INFO - Update available: 1.0.7 -> 1.0.8
+2025-09-16 14:46:54,192 - src.modules.optimized_auto_update - INFO - Starting optimized update process
+2025-09-16 14:46:54,241 - src.modules.optimized_auto_update - INFO - Starting ultra-fast download to version 1.0.8
+2025-09-16 14:46:54,870 - src.modules.optimized_auto_update - INFO - Starting parallel download from: https://github.com/isaackcz/Excel-Consolidator-App/releases/download/v1.0.8/Excel-Consolidator-v1.0.8-Windows.exe
+2025-09-16 14:46:56,903 - src.modules.optimized_auto_update - ERROR - Error downloading asset: cannot access local variable 'existing_size' where it is not associated with a value
+2025-09-16 14:46:56,905 - src.modules.optimized_auto_update - ERROR - Ultra-fast download failed
+2025-09-16 14:46:56,906 - src.modules.optimized_auto_update - ERROR - Failed to download update
+2025-09-16 14:47:14,100 - src.modules.optimized_auto_update - INFO - Background update check starting
+2025-09-16 14:47:14,168 - src.modules.optimized_auto_update - INFO - Checking for updates (current version: 1.0.7)
+2025-09-16 14:47:14,178 - src.modules.optimized_auto_update - INFO - Using cached release information
+2025-09-16 14:47:14,179 - src.modules.optimized_auto_update - ERROR - Error comparing versions: invalid literal for int() with base 10: ''
+2025-09-16 14:47:14,179 - src.modules.optimized_auto_update - INFO - Application is up to date
+2025-09-16 14:47:22,659 - src.modules.optimized_auto_update - INFO - Stopping background update checker
+2025-09-16 14:47:27,663 - src.modules.optimized_auto_update - WARNING - Background thread did not stop gracefully
+2025-09-16 14:48:25,621 - src.modules.optimized_auto_update - WARNING - Failed to initialize ultra-fast downloader: HTTPAdapter.__init__() got an unexpected keyword argument 'socket_options'
+2025-09-16 14:48:25,622 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-16 14:48:25,622 - src.modules.optimized_auto_update - INFO - Excel Consolidator v1.0.7 - Optimized Auto-Update System
+2025-09-16 14:48:25,622 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-16 14:48:25,622 - src.modules.optimized_auto_update - INFO - Enhanced with parallel downloads, resume capability, and caching
+2025-09-16 14:48:25,622 - src.modules.optimized_auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-16 14:48:25,622 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-16 14:48:25,623 - src.modules.optimized_auto_update - INFO - Optimized background update checker started
+2025-09-16 14:48:25,623 - src.modules.optimized_auto_update - INFO - Optimized background update checker started successfully
+2025-09-16 14:48:25,623 - src.modules.optimized_auto_update - WARNING - Background checker is already running
+2025-09-16 14:48:25,670 - src.modules.optimized_auto_update - INFO - Checking for updates (current version: 1.0.7)
+2025-09-16 14:48:25,671 - src.modules.optimized_auto_update - INFO - Using cached release information
+2025-09-16 14:48:25,672 - src.modules.optimized_auto_update - ERROR - Error comparing versions: invalid literal for int() with base 10: ''
+2025-09-16 14:48:25,672 - src.modules.optimized_auto_update - INFO - Application is up to date
+2025-09-16 14:48:42,067 - src.modules.optimized_auto_update - INFO - Stopping background update checker
+2025-09-16 14:48:47,071 - src.modules.optimized_auto_update - WARNING - Background thread did not stop gracefully
+2025-09-16 14:48:57,070 - src.modules.optimized_auto_update - WARNING - Failed to initialize ultra-fast downloader: HTTPAdapter.__init__() got an unexpected keyword argument 'socket_options'
+2025-09-16 14:48:57,070 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-16 14:48:57,071 - src.modules.optimized_auto_update - INFO - Excel Consolidator v1.0.7 - Optimized Auto-Update System
+2025-09-16 14:48:57,071 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-16 14:48:57,071 - src.modules.optimized_auto_update - INFO - Enhanced with parallel downloads, resume capability, and caching
+2025-09-16 14:48:57,071 - src.modules.optimized_auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-16 14:48:57,071 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-16 14:48:57,071 - src.modules.optimized_auto_update - INFO - Optimized background update checker started
+2025-09-16 14:48:57,072 - src.modules.optimized_auto_update - INFO - Optimized background update checker started successfully
+2025-09-16 14:48:57,072 - src.modules.optimized_auto_update - WARNING - Background checker is already running
+2025-09-16 14:48:57,122 - src.modules.optimized_auto_update - INFO - Checking for updates (current version: 1.0.7)
+2025-09-16 14:48:57,123 - src.modules.optimized_auto_update - INFO - Using cached release information
+2025-09-16 14:48:57,123 - src.modules.optimized_auto_update - ERROR - Error comparing versions: invalid literal for int() with base 10: ''
+2025-09-16 14:48:57,123 - src.modules.optimized_auto_update - INFO - Application is up to date
+2025-09-16 14:49:27,072 - src.modules.optimized_auto_update - INFO - Background update check starting
+2025-09-16 14:49:27,145 - src.modules.optimized_auto_update - INFO - Checking for updates (current version: 1.0.7)
+2025-09-16 14:49:27,146 - src.modules.optimized_auto_update - INFO - Using cached release information
+2025-09-16 14:49:27,146 - src.modules.optimized_auto_update - ERROR - Error comparing versions: invalid literal for int() with base 10: ''
+2025-09-16 14:49:27,147 - src.modules.optimized_auto_update - INFO - Application is up to date
+2025-09-16 14:51:59,915 - src.modules.optimized_auto_update - INFO - Stopping background update checker
+2025-09-16 14:52:04,935 - src.modules.optimized_auto_update - WARNING - Background thread did not stop gracefully
+2025-09-16 14:52:20,493 - src.modules.optimized_auto_update - WARNING - Failed to initialize ultra-fast downloader: HTTPAdapter.__init__() got an unexpected keyword argument 'socket_options'
+2025-09-16 14:52:20,494 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-16 14:52:20,494 - src.modules.optimized_auto_update - INFO - Excel Consolidator v1.0.7 - Optimized Auto-Update System
+2025-09-16 14:52:20,494 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-16 14:52:20,494 - src.modules.optimized_auto_update - INFO - Enhanced with parallel downloads, resume capability, and caching
+2025-09-16 14:52:20,495 - src.modules.optimized_auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-16 14:52:20,495 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-16 14:52:20,496 - src.modules.optimized_auto_update - INFO - Optimized background update checker started
+2025-09-16 14:52:20,496 - src.modules.optimized_auto_update - INFO - Optimized background update checker started successfully
+2025-09-16 14:52:20,496 - src.modules.optimized_auto_update - WARNING - Background checker is already running
+2025-09-16 14:52:20,565 - src.modules.optimized_auto_update - INFO - Checking for updates (current version: 1.0.7)
+2025-09-16 14:52:21,504 - src.modules.optimized_auto_update - INFO - Update available: 1.0.7 -> 1.0.8
+2025-09-16 14:52:31,319 - src.modules.optimized_auto_update - INFO - Starting optimized update process
+2025-09-16 14:52:31,320 - src.modules.optimized_auto_update - INFO - Starting ultra-fast download to version 1.0.8
+2025-09-16 14:52:31,744 - src.modules.optimized_auto_update - INFO - Starting parallel download from: https://github.com/isaackcz/Excel-Consolidator-App/releases/download/v1.0.8/Excel-Consolidator-v1.0.8-Windows.exe
+2025-09-16 14:52:33,291 - src.modules.optimized_auto_update - ERROR - Error downloading asset: cannot access local variable 'existing_size' where it is not associated with a value
+2025-09-16 14:52:33,293 - src.modules.optimized_auto_update - ERROR - Ultra-fast download failed
+2025-09-16 14:52:33,294 - src.modules.optimized_auto_update - ERROR - Failed to download update
+2025-09-16 14:52:50,496 - src.modules.optimized_auto_update - INFO - Background update check starting
+2025-09-16 14:52:50,542 - src.modules.optimized_auto_update - INFO - Checking for updates (current version: 1.0.7)
+2025-09-16 14:52:50,553 - src.modules.optimized_auto_update - INFO - Using cached release information
+2025-09-16 14:52:50,554 - src.modules.optimized_auto_update - INFO - Update available: 1.0.7 -> 1.0.8
+2025-09-16 14:52:50,554 - src.modules.optimized_auto_update - INFO - Update available, notifying user (not performing automatically)
+2025-09-16 14:52:50,589 - src.modules.optimized_auto_update - INFO - Starting optimized update process
+2025-09-16 14:52:50,590 - src.modules.optimized_auto_update - INFO - Starting ultra-fast download to version 1.0.8
+2025-09-16 14:52:50,966 - src.modules.optimized_auto_update - INFO - Starting parallel download from: https://github.com/isaackcz/Excel-Consolidator-App/releases/download/v1.0.8/Excel-Consolidator-v1.0.8-Windows.exe
+2025-09-16 14:52:51,756 - src.modules.optimized_auto_update - ERROR - Error downloading asset: cannot access local variable 'existing_size' where it is not associated with a value
+2025-09-16 14:52:51,758 - src.modules.optimized_auto_update - ERROR - Ultra-fast download failed
+2025-09-16 14:52:51,759 - src.modules.optimized_auto_update - ERROR - Failed to download update
+2025-09-16 14:53:45,180 - src.modules.optimized_auto_update - INFO - Stopping background update checker
+2025-09-16 14:53:50,188 - src.modules.optimized_auto_update - WARNING - Background thread did not stop gracefully
+2025-09-16 14:54:00,205 - src.modules.optimized_auto_update - WARNING - Failed to initialize ultra-fast downloader: HTTPAdapter.__init__() got an unexpected keyword argument 'socket_options'
+2025-09-16 14:54:00,205 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-16 14:54:00,206 - src.modules.optimized_auto_update - INFO - Excel Consolidator v1.0.7 - Optimized Auto-Update System
+2025-09-16 14:54:00,206 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-16 14:54:00,206 - src.modules.optimized_auto_update - INFO - Enhanced with parallel downloads, resume capability, and caching
+2025-09-16 14:54:00,206 - src.modules.optimized_auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-16 14:54:00,207 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-16 14:54:00,207 - src.modules.optimized_auto_update - INFO - Optimized background update checker started
+2025-09-16 14:54:00,207 - src.modules.optimized_auto_update - INFO - Optimized background update checker started successfully
+2025-09-16 14:54:00,208 - src.modules.optimized_auto_update - WARNING - Background checker is already running
+2025-09-16 14:54:00,312 - src.modules.optimized_auto_update - INFO - Checking for updates (current version: 1.0.7)
+2025-09-16 14:54:01,437 - src.modules.optimized_auto_update - INFO - Update available: 1.0.7 -> 1.0.8
+2025-09-16 14:54:03,830 - src.modules.optimized_auto_update - INFO - Starting optimized update process
+2025-09-16 14:54:03,830 - src.modules.optimized_auto_update - INFO - Starting ultra-fast download to version 1.0.8
+2025-09-16 14:54:04,235 - src.modules.optimized_auto_update - INFO - Starting parallel download from: https://github.com/isaackcz/Excel-Consolidator-App/releases/download/v1.0.8/Excel-Consolidator-v1.0.8-Windows.exe
+2025-09-16 14:54:30,208 - src.modules.optimized_auto_update - INFO - Background update check starting
+2025-09-16 14:54:30,258 - src.modules.optimized_auto_update - INFO - Checking for updates (current version: 1.0.7)
+2025-09-16 14:54:30,270 - src.modules.optimized_auto_update - INFO - Using cached release information
+2025-09-16 14:54:30,270 - src.modules.optimized_auto_update - INFO - Update available: 1.0.7 -> 1.0.8
+2025-09-16 14:54:30,271 - src.modules.optimized_auto_update - INFO - Update available, notifying user (not performing automatically)
+2025-09-16 14:54:30,298 - src.modules.optimized_auto_update - INFO - Starting optimized update process
+2025-09-16 14:54:30,299 - src.modules.optimized_auto_update - INFO - Starting ultra-fast download to version 1.0.8
+2025-09-16 14:54:30,657 - src.modules.optimized_auto_update - INFO - Starting parallel download from: https://github.com/isaackcz/Excel-Consolidator-App/releases/download/v1.0.8/Excel-Consolidator-v1.0.8-Windows.exe
+2025-09-16 14:57:39,730 - src.modules.optimized_auto_update - ERROR - Error downloading asset: ('Connection broken: IncompleteRead(73400320 bytes read, 165138235 more expected)', IncompleteRead(73400320 bytes read, 165138235 more expected))
+2025-09-16 14:57:39,730 - src.modules.optimized_auto_update - ERROR - Ultra-fast download failed
+2025-09-16 14:57:39,731 - src.modules.optimized_auto_update - ERROR - Failed to download update
+2025-09-16 14:58:10,107 - src.modules.optimized_auto_update - ERROR - Error downloading asset: ('Connection broken: IncompleteRead(73400320 bytes read, 165138235 more expected)', IncompleteRead(73400320 bytes read, 165138235 more expected))
+2025-09-16 14:58:10,107 - src.modules.optimized_auto_update - ERROR - Ultra-fast download failed
+2025-09-16 14:58:10,108 - src.modules.optimized_auto_update - ERROR - Failed to download update
+2025-09-16 15:01:07,668 - src.modules.optimized_auto_update - INFO - Stopping background update checker
+2025-09-16 15:01:12,672 - src.modules.optimized_auto_update - WARNING - Background thread did not stop gracefully
+2025-09-16 15:01:24,284 - src.modules.optimized_auto_update - WARNING - Failed to initialize ultra-fast downloader: HTTPAdapter.__init__() got an unexpected keyword argument 'socket_options'
+2025-09-16 15:01:24,285 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-16 15:01:24,285 - src.modules.optimized_auto_update - INFO - Excel Consolidator v1.0.7 - Optimized Auto-Update System
+2025-09-16 15:01:24,285 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-16 15:01:24,285 - src.modules.optimized_auto_update - INFO - Enhanced with parallel downloads, resume capability, and caching
+2025-09-16 15:01:24,286 - src.modules.optimized_auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-16 15:01:24,286 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-16 15:01:24,286 - src.modules.optimized_auto_update - INFO - Optimized background update checker started
+2025-09-16 15:01:24,286 - src.modules.optimized_auto_update - INFO - Optimized background update checker started successfully
+2025-09-16 15:01:24,287 - src.modules.optimized_auto_update - WARNING - Background checker is already running
+2025-09-16 15:01:24,382 - src.modules.optimized_auto_update - INFO - Checking for updates (current version: 1.0.7)
+2025-09-16 15:01:25,265 - src.modules.optimized_auto_update - INFO - Update available: 1.0.7 -> 1.0.8
+2025-09-16 15:01:33,724 - src.modules.optimized_auto_update - INFO - Starting optimized update process
+2025-09-16 15:01:33,733 - src.modules.optimized_auto_update - INFO - Starting ultra-fast download to version 1.0.8
+2025-09-16 15:01:34,461 - src.modules.optimized_auto_update - INFO - Starting parallel download from: https://github.com/isaackcz/Excel-Consolidator-App/releases/download/v1.0.8/Excel-Consolidator-v1.0.8-Windows.exe
+2025-09-16 15:01:54,287 - src.modules.optimized_auto_update - INFO - Background update check starting
+2025-09-16 15:01:54,339 - src.modules.optimized_auto_update - INFO - Checking for updates (current version: 1.0.7)
+2025-09-16 15:01:54,350 - src.modules.optimized_auto_update - INFO - Using cached release information
+2025-09-16 15:01:54,351 - src.modules.optimized_auto_update - INFO - Update available: 1.0.7 -> 1.0.8
+2025-09-16 15:01:54,352 - src.modules.optimized_auto_update - INFO - Update available, notifying user (not performing automatically)
+2025-09-16 15:06:58,236 - src.modules.optimized_auto_update - ERROR - Error downloading asset: ('Connection broken: IncompleteRead(125829120 bytes read, 112709435 more expected)', IncompleteRead(125829120 bytes read, 112709435 more expected))
+2025-09-16 15:06:58,237 - src.modules.optimized_auto_update - ERROR - Ultra-fast download failed
+2025-09-16 15:06:58,237 - src.modules.optimized_auto_update - ERROR - Failed to download update
+2025-09-16 15:11:56,812 - src.modules.optimized_auto_update - INFO - Stopping background update checker
+2025-09-16 15:12:01,820 - src.modules.optimized_auto_update - WARNING - Background thread did not stop gracefully
+2025-09-16 15:12:06,291 - src.modules.optimized_auto_update - WARNING - Failed to initialize ultra-fast downloader: HTTPAdapter.__init__() got an unexpected keyword argument 'socket_options'
+2025-09-16 15:12:06,291 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-16 15:12:06,291 - src.modules.optimized_auto_update - INFO - Excel Consolidator v1.0.7 - Optimized Auto-Update System
+2025-09-16 15:12:06,292 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-16 15:12:06,292 - src.modules.optimized_auto_update - INFO - Enhanced with parallel downloads, resume capability, and caching
+2025-09-16 15:12:06,292 - src.modules.optimized_auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-16 15:12:06,292 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-16 15:12:06,293 - src.modules.optimized_auto_update - INFO - Optimized background update checker started
+2025-09-16 15:12:06,293 - src.modules.optimized_auto_update - INFO - Optimized background update checker started successfully
+2025-09-16 15:12:06,294 - src.modules.optimized_auto_update - WARNING - Background checker is already running
+2025-09-16 15:12:06,381 - src.modules.optimized_auto_update - INFO - Checking for updates (current version: 1.0.7)
+2025-09-16 15:12:06,382 - src.modules.optimized_auto_update - INFO - Using cached release information
+2025-09-16 15:12:06,383 - src.modules.optimized_auto_update - INFO - Update available: 1.0.7 -> 1.0.8
+2025-09-16 15:12:08,909 - src.modules.optimized_auto_update - INFO - Starting optimized update process
+2025-09-16 15:12:08,910 - src.modules.optimized_auto_update - INFO - Starting ultra-fast download to version 1.0.8
+2025-09-16 15:12:10,125 - src.modules.optimized_auto_update - INFO - Starting parallel download from: https://github.com/isaackcz/Excel-Consolidator-App/releases/download/v1.0.8/Excel-Consolidator-v1.0.8-Windows.exe
+2025-09-16 15:12:36,294 - src.modules.optimized_auto_update - INFO - Background update check starting
+2025-09-16 15:12:36,340 - src.modules.optimized_auto_update - INFO - Checking for updates (current version: 1.0.7)
+2025-09-16 15:12:36,341 - src.modules.optimized_auto_update - INFO - Using cached release information
+2025-09-16 15:12:36,342 - src.modules.optimized_auto_update - INFO - Update available: 1.0.7 -> 1.0.8
+2025-09-16 15:12:36,342 - src.modules.optimized_auto_update - INFO - Update available, notifying user (not performing automatically)
+2025-09-16 15:20:49,477 - src.modules.optimized_auto_update - ERROR - Error downloading asset: ('Connection broken: IncompleteRead(125829120 bytes read, 112709435 more expected)', IncompleteRead(125829120 bytes read, 112709435 more expected))
+2025-09-16 15:26:02,028 - src.modules.optimized_auto_update - ERROR - Error downloading asset: ('Connection broken: IncompleteRead(136314880 bytes read, 102223675 more expected)', IncompleteRead(136314880 bytes read, 102223675 more expected))
+2025-09-16 15:31:25,262 - src.modules.optimized_auto_update - ERROR - Error downloading asset: ('Connection broken: IncompleteRead(136314880 bytes read, 102223675 more expected)', IncompleteRead(136314880 bytes read, 102223675 more expected))
+2025-09-16 15:37:02,313 - src.modules.optimized_auto_update - ERROR - Error downloading asset: ('Connection broken: IncompleteRead(136314880 bytes read, 102223675 more expected)', IncompleteRead(136314880 bytes read, 102223675 more expected))
+2025-09-16 15:41:55,230 - src.modules.optimized_auto_update - INFO - Stopping background update checker
+2025-09-16 15:42:00,245 - src.modules.optimized_auto_update - WARNING - Background thread did not stop gracefully
+2025-09-16 15:42:00,265 - src.modules.optimized_auto_update - ERROR - Error downloading asset: wrapped C/C++ object of type UpdateProgressWorker has been deleted
+2025-09-16 15:42:00,266 - src.modules.optimized_auto_update - ERROR - Error downloading asset: wrapped C/C++ object of type UpdateProgressWorker has been deleted
+2025-09-16 15:42:00,272 - src.modules.optimized_auto_update - ERROR - Ultra-fast download failed
+2025-09-16 15:42:00,273 - src.modules.optimized_auto_update - ERROR - Error downloading update: wrapped C/C++ object of type UpdateProgressWorker has been deleted
+2025-09-16 15:42:00,273 - src.modules.optimized_auto_update - ERROR - Error performing update: wrapped C/C++ object of type UpdateProgressWorker has been deleted
+2025-09-16 16:21:26,036 - src.modules.optimized_auto_update - WARNING - Failed to initialize ultra-fast downloader: HTTPAdapter.__init__() got an unexpected keyword argument 'socket_options'
+2025-09-16 16:21:26,036 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-16 16:21:26,036 - src.modules.optimized_auto_update - INFO - Excel Consolidator v1.0.7 - Optimized Auto-Update System
+2025-09-16 16:21:26,036 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-16 16:21:26,037 - src.modules.optimized_auto_update - INFO - Enhanced with parallel downloads, resume capability, and caching
+2025-09-16 16:21:26,037 - src.modules.optimized_auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-16 16:21:26,037 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-16 16:21:26,037 - src.modules.optimized_auto_update - INFO - Optimized background update checker started
+2025-09-16 16:21:26,037 - src.modules.optimized_auto_update - INFO - Optimized background update checker started successfully
+2025-09-16 16:21:26,038 - src.modules.optimized_auto_update - WARNING - Background checker is already running
+2025-09-16 16:21:26,110 - src.modules.optimized_auto_update - INFO - Checking for updates (current version: 1.0.7)
+2025-09-16 16:21:27,143 - src.modules.optimized_auto_update - INFO - Update available: 1.0.7 -> 1.0.8
+2025-09-16 16:21:31,189 - src.modules.optimized_auto_update - INFO - Starting optimized update process
+2025-09-16 16:21:31,190 - src.modules.optimized_auto_update - INFO - Starting ultra-fast download to version 1.0.8
+2025-09-16 16:21:31,656 - src.modules.optimized_auto_update - INFO - Starting parallel download from: https://github.com/isaackcz/Excel-Consolidator-App/releases/download/v1.0.8/Excel-Consolidator-v1.0.7_to_v1.0.8-windows-x64.bsdiff
+2025-09-16 16:21:34,769 - src.modules.optimized_auto_update - INFO - Download completed: C:\Users\isaac\AppData\Local\Temp\tmpr0chy0qk\update
+2025-09-16 16:21:34,771 - src.modules.optimized_auto_update - INFO - Installing update from: C:\Users\isaac\AppData\Local\Temp\tmphcao3cnx\update
+2025-09-16 16:21:34,771 - src.modules.optimized_auto_update - ERROR - Unsupported update file format: C:\Users\isaac\AppData\Local\Temp\tmphcao3cnx\update
+2025-09-16 16:21:34,780 - src.modules.optimized_auto_update - ERROR - Update installation failed
+2025-09-16 16:21:56,038 - src.modules.optimized_auto_update - INFO - Background update check starting
+2025-09-16 16:21:56,083 - src.modules.optimized_auto_update - INFO - Checking for updates (current version: 1.0.7)
+2025-09-16 16:21:56,098 - src.modules.optimized_auto_update - INFO - Using cached release information
+2025-09-16 16:21:56,098 - src.modules.optimized_auto_update - INFO - Update available: 1.0.7 -> 1.0.8
+2025-09-16 16:21:56,098 - src.modules.optimized_auto_update - INFO - Update available, notifying user (not performing automatically)
+2025-09-16 16:21:59,368 - src.modules.optimized_auto_update - INFO - Stopping background update checker
+2025-09-16 16:22:04,378 - src.modules.optimized_auto_update - WARNING - Background thread did not stop gracefully
+2025-09-16 16:22:46,668 - src.modules.optimized_auto_update - WARNING - Failed to initialize ultra-fast downloader: HTTPAdapter.__init__() got an unexpected keyword argument 'socket_options'
+2025-09-16 16:22:46,668 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-16 16:22:46,668 - src.modules.optimized_auto_update - INFO - Excel Consolidator v1.0.7 - Optimized Auto-Update System
+2025-09-16 16:22:46,669 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-16 16:22:46,669 - src.modules.optimized_auto_update - INFO - Enhanced with parallel downloads, resume capability, and caching
+2025-09-16 16:22:46,669 - src.modules.optimized_auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-16 16:22:46,669 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-16 16:22:46,669 - src.modules.optimized_auto_update - INFO - Optimized background update checker started
+2025-09-16 16:22:46,670 - src.modules.optimized_auto_update - INFO - Optimized background update checker started successfully
+2025-09-16 16:22:46,670 - src.modules.optimized_auto_update - WARNING - Background checker is already running
+2025-09-16 16:22:46,760 - src.modules.optimized_auto_update - INFO - Checking for updates (current version: 1.0.7)
+2025-09-16 16:22:46,761 - src.modules.optimized_auto_update - INFO - Using cached release information
+2025-09-16 16:22:46,761 - src.modules.optimized_auto_update - INFO - Update available: 1.0.7 -> 1.0.8
+2025-09-16 16:22:49,025 - src.modules.optimized_auto_update - INFO - Starting optimized update process
+2025-09-16 16:22:49,026 - src.modules.optimized_auto_update - INFO - Starting ultra-fast download to version 1.0.8
+2025-09-16 16:22:50,342 - src.modules.optimized_auto_update - INFO - Starting parallel download from: https://github.com/isaackcz/Excel-Consolidator-App/releases/download/v1.0.8/Excel-Consolidator-v1.0.7_to_v1.0.8-windows-x64.bsdiff
+2025-09-16 16:22:51,927 - src.modules.optimized_auto_update - INFO - Download completed: C:\Users\isaac\AppData\Local\Temp\tmpf52y8l1_\update
+2025-09-16 16:22:51,929 - src.modules.optimized_auto_update - INFO - Installing update from: C:\Users\isaac\AppData\Local\Temp\tmpv0ovn0j4\update
+2025-09-16 16:22:51,931 - src.modules.optimized_auto_update - ERROR - Unsupported update file format: C:\Users\isaac\AppData\Local\Temp\tmpv0ovn0j4\update
+2025-09-16 16:22:51,943 - src.modules.optimized_auto_update - ERROR - Update installation failed
+2025-09-16 16:22:59,318 - src.modules.optimized_auto_update - INFO - Stopping background update checker
+2025-09-16 16:23:04,329 - src.modules.optimized_auto_update - WARNING - Background thread did not stop gracefully
+2025-09-16 16:27:04,227 - src.modules.optimized_auto_update - WARNING - Failed to initialize ultra-fast downloader: HTTPAdapter.__init__() got an unexpected keyword argument 'socket_options'
+2025-09-16 16:27:04,227 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-16 16:27:04,227 - src.modules.optimized_auto_update - INFO - Excel Consolidator v1.0.7 - Optimized Auto-Update System
+2025-09-16 16:27:04,228 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-16 16:27:04,228 - src.modules.optimized_auto_update - INFO - Enhanced with parallel downloads, resume capability, and caching
+2025-09-16 16:27:04,228 - src.modules.optimized_auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-16 16:27:04,228 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-16 16:27:04,229 - src.modules.optimized_auto_update - INFO - Optimized background update checker started
+2025-09-16 16:27:04,229 - src.modules.optimized_auto_update - INFO - Optimized background update checker started successfully
+2025-09-16 16:27:04,229 - src.modules.optimized_auto_update - WARNING - Background checker is already running
+2025-09-16 16:27:04,311 - src.modules.optimized_auto_update - INFO - Checking for updates (current version: 1.0.7)
+2025-09-16 16:27:05,244 - src.modules.optimized_auto_update - INFO - Update available: 1.0.7 -> 1.0.8
+2025-09-16 16:27:08,151 - src.modules.optimized_auto_update - INFO - Starting optimized update process
+2025-09-16 16:27:08,158 - src.modules.optimized_auto_update - INFO - Starting ultra-fast download to version 1.0.8
+2025-09-16 16:27:08,543 - src.modules.optimized_auto_update - INFO - Starting parallel download from: https://github.com/isaackcz/Excel-Consolidator-App/releases/download/v1.0.8/Excel-Consolidator-v1.0.8-Windows.exe
+2025-09-16 16:27:34,229 - src.modules.optimized_auto_update - INFO - Background update check starting
+2025-09-16 16:27:34,277 - src.modules.optimized_auto_update - INFO - Checking for updates (current version: 1.0.7)
+2025-09-16 16:27:34,300 - src.modules.optimized_auto_update - INFO - Using cached release information
+2025-09-16 16:27:34,301 - src.modules.optimized_auto_update - INFO - Update available: 1.0.7 -> 1.0.8
+2025-09-16 16:27:34,301 - src.modules.optimized_auto_update - INFO - Update available, notifying user (not performing automatically)
+2025-09-16 16:32:25,314 - src.modules.optimized_auto_update - ERROR - Error downloading asset: ('Connection broken: IncompleteRead(136314880 bytes read, 102242618 more expected)', IncompleteRead(136314880 bytes read, 102242618 more expected))
+2025-09-16 16:37:57,349 - src.modules.optimized_auto_update - ERROR - Error downloading asset: ('Connection broken: IncompleteRead(136314880 bytes read, 102242618 more expected)', IncompleteRead(136314880 bytes read, 102242618 more expected))
+2025-09-16 16:40:22,472 - src.modules.optimized_auto_update - INFO - Stopping background update checker
+2025-09-16 16:40:27,473 - src.modules.optimized_auto_update - WARNING - Background thread did not stop gracefully
+2025-09-16 16:40:27,567 - src.modules.optimized_auto_update - ERROR - Error downloading asset: wrapped C/C++ object of type UpdateProgressWorker has been deleted
+2025-09-17 11:05:52,683 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-17 11:05:52,684 - src.modules.optimized_auto_update - INFO - Excel Consolidator v1.0.7 - Optimized Auto-Update System
+2025-09-17 11:05:52,684 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-17 11:05:52,684 - src.modules.optimized_auto_update - INFO - Enhanced with parallel downloads, resume capability, and caching
+2025-09-17 11:05:52,684 - src.modules.optimized_auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-17 11:05:52,684 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-17 11:05:52,685 - src.modules.optimized_auto_update - INFO - Optimized background update checker started
+2025-09-17 11:05:52,685 - src.modules.optimized_auto_update - INFO - Optimized background update checker started successfully
+2025-09-17 11:05:52,685 - src.modules.optimized_auto_update - WARNING - Background checker is already running
+2025-09-17 11:05:52,776 - src.modules.optimized_auto_update - INFO - Checking for updates (current version: 1.0.7)
+2025-09-17 11:05:53,840 - src.modules.optimized_auto_update - INFO - Update available: 1.0.7 -> 1.0.8
+2025-09-17 11:06:00,208 - src.modules.optimized_auto_update - INFO - Starting optimized update process
+2025-09-17 11:06:00,209 - src.modules.optimized_auto_update - INFO - Starting ultra-fast download to version 1.0.8
+2025-09-17 11:06:00,718 - src.modules.optimized_auto_update - WARNING - No hash found for Excel-Consolidator-v1.0.8-Windows.exe
+2025-09-17 11:06:00,722 - src.modules.optimized_auto_update - INFO - Starting ultra-fast download: https://github.com/isaackcz/Excel-Consolidator-App/releases/download/v1.0.8/Excel-Consolidator-v1.0.8-Windows.exe
+2025-09-17 11:06:02,882 - src.modules.optimized_auto_update - INFO - File size: 227.8 MB, Chunks: 29
+2025-09-17 11:06:22,685 - src.modules.optimized_auto_update - INFO - Background update check starting
+2025-09-17 11:06:22,737 - src.modules.optimized_auto_update - INFO - Checking for updates (current version: 1.0.7)
+2025-09-17 11:06:22,754 - src.modules.optimized_auto_update - INFO - Using cached release information
+2025-09-17 11:06:22,754 - src.modules.optimized_auto_update - INFO - Update available: 1.0.7 -> 1.0.8
+2025-09-17 11:06:22,755 - src.modules.optimized_auto_update - INFO - Update available, notifying user (not performing automatically)
+2025-09-17 11:08:02,351 - src.modules.optimized_auto_update - INFO - Download completed successfully: 227.8 MB
+2025-09-17 11:08:02,353 - src.modules.optimized_auto_update - INFO - Installing update from: C:\Users\isaac\AppData\Local\Temp\tmpjwme33nv\update.exe
+2025-09-17 11:08:02,353 - src.modules.optimized_auto_update - INFO - Installing EXE update
+2025-09-17 11:08:02,371 - src.modules.optimized_auto_update - INFO - Installer launched successfully
+2025-09-17 11:08:02,425 - src.modules.optimized_auto_update - INFO - Update completed successfully
+2025-09-17 11:09:04,872 - src.modules.google_sheets_reporter - INFO - Error data sent to spreadsheet via Apps Script
+2025-09-17 11:09:04,876 - src.modules.google_sheets_reporter - INFO - Error report sent successfully
+2025-09-17 11:10:26,017 - src.modules.optimized_auto_update - INFO - Stopping background update checker
+2025-09-17 11:10:31,021 - src.modules.optimized_auto_update - WARNING - Background thread did not stop gracefully
+2025-09-17 11:24:11,732 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-17 11:24:11,732 - src.modules.optimized_auto_update - INFO - Excel Consolidator v1.0.7 - Optimized Auto-Update System
+2025-09-17 11:24:11,733 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-17 11:24:11,733 - src.modules.optimized_auto_update - INFO - Enhanced with parallel downloads, resume capability, and caching
+2025-09-17 11:24:11,733 - src.modules.optimized_auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-17 11:24:11,733 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-17 11:24:11,734 - src.modules.optimized_auto_update - INFO - Optimized background update checker started
+2025-09-17 11:24:11,734 - src.modules.optimized_auto_update - INFO - Optimized background update checker started successfully
+2025-09-17 11:24:11,735 - src.modules.optimized_auto_update - WARNING - Background checker is already running
+2025-09-17 11:24:11,822 - src.modules.optimized_auto_update - INFO - Checking for updates (current version: 1.0.7)
+2025-09-17 11:24:11,823 - src.modules.optimized_auto_update - INFO - Using cached release information
+2025-09-17 11:24:11,825 - src.modules.optimized_auto_update - INFO - Update available: 1.0.7 -> 1.0.8
+2025-09-17 11:24:14,695 - src.modules.optimized_auto_update - INFO - Starting optimized update process
+2025-09-17 11:24:14,696 - src.modules.optimized_auto_update - INFO - Starting ultra-fast download to version 1.0.8
+2025-09-17 11:24:15,604 - src.modules.optimized_auto_update - WARNING - No hash found for Excel-Consolidator-v1.0.8-Windows.exe
+2025-09-17 11:24:15,607 - src.modules.optimized_auto_update - INFO - Starting ultra-fast download: https://github.com/isaackcz/Excel-Consolidator-App/releases/download/v1.0.8/Excel-Consolidator-v1.0.8-Windows.exe
+2025-09-17 11:24:16,980 - src.modules.optimized_auto_update - INFO - File size: 227.8 MB, Chunks: 29
+2025-09-17 11:24:41,735 - src.modules.optimized_auto_update - INFO - Background update check starting
+2025-09-17 11:24:41,780 - src.modules.optimized_auto_update - INFO - Checking for updates (current version: 1.0.7)
+2025-09-17 11:24:41,782 - src.modules.optimized_auto_update - INFO - Using cached release information
+2025-09-17 11:24:41,782 - src.modules.optimized_auto_update - INFO - Update available: 1.0.7 -> 1.0.8
+2025-09-17 11:24:41,782 - src.modules.optimized_auto_update - INFO - Update available, notifying user (not performing automatically)
+2025-09-17 11:26:15,517 - src.modules.optimized_auto_update - INFO - Download completed successfully: 227.8 MB
+2025-09-17 11:26:15,519 - src.modules.optimized_auto_update - INFO - Installing update from: C:\Users\isaac\AppData\Local\Temp\tmp1p5wzrwb\update.exe
+2025-09-17 11:26:15,519 - src.modules.optimized_auto_update - INFO - Installing EXE update
+2025-09-17 11:26:15,531 - src.modules.optimized_auto_update - INFO - Installer launched successfully
+2025-09-17 11:26:15,536 - src.modules.optimized_auto_update - INFO - Update completed successfully
+2025-09-17 11:26:36,743 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-17 11:26:36,743 - src.modules.optimized_auto_update - INFO - Excel Consolidator v1.0.7 - Optimized Auto-Update System
+2025-09-17 11:26:36,744 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-17 11:26:36,744 - src.modules.optimized_auto_update - INFO - Enhanced with parallel downloads, resume capability, and caching
+2025-09-17 11:26:36,744 - src.modules.optimized_auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-17 11:26:36,744 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-17 11:26:36,744 - src.modules.optimized_auto_update - INFO - Optimized background update checker started
+2025-09-17 11:26:36,744 - src.modules.optimized_auto_update - INFO - Optimized background update checker started successfully
+2025-09-17 11:26:36,744 - src.modules.optimized_auto_update - WARNING - Background checker is already running
+2025-09-17 11:26:36,815 - src.modules.optimized_auto_update - INFO - Checking for updates (current version: 1.0.7)
+2025-09-17 11:26:36,816 - src.modules.optimized_auto_update - INFO - Using cached release information
+2025-09-17 11:26:36,816 - src.modules.optimized_auto_update - INFO - Update available: 1.0.7 -> 1.0.8
+2025-09-17 11:26:41,451 - src.modules.optimized_auto_update - INFO - Starting optimized update process
+2025-09-17 11:26:41,455 - src.modules.optimized_auto_update - INFO - Starting ultra-fast download to version 1.0.8
+2025-09-17 11:26:42,705 - src.modules.optimized_auto_update - WARNING - No hash found for Excel-Consolidator-v1.0.8-Windows.exe
+2025-09-17 11:26:42,707 - src.modules.optimized_auto_update - INFO - Starting ultra-fast download: https://github.com/isaackcz/Excel-Consolidator-App/releases/download/v1.0.8/Excel-Consolidator-v1.0.8-Windows.exe
+2025-09-17 11:26:45,344 - src.modules.optimized_auto_update - INFO - File size: 227.8 MB, Chunks: 29
+2025-09-17 11:27:06,745 - src.modules.optimized_auto_update - INFO - Background update check starting
+2025-09-17 11:27:06,809 - src.modules.optimized_auto_update - INFO - Checking for updates (current version: 1.0.7)
+2025-09-17 11:27:06,810 - src.modules.optimized_auto_update - INFO - Using cached release information
+2025-09-17 11:27:06,810 - src.modules.optimized_auto_update - INFO - Update available: 1.0.7 -> 1.0.8
+2025-09-17 11:27:06,810 - src.modules.optimized_auto_update - INFO - Update available, notifying user (not performing automatically)
+2025-09-17 11:27:14,265 - src.modules.optimized_auto_update - INFO - Stopping background update checker
+2025-09-17 11:27:16,272 - src.modules.optimized_auto_update - WARNING - Background thread did not stop gracefully - marking as daemon
+2025-09-17 11:27:16,272 - src.modules.optimized_auto_update - ERROR - Error stopping background thread: cannot set daemon status of active thread
+2025-09-17 11:28:31,552 - src.modules.optimized_auto_update - INFO - Download completed successfully: 227.8 MB
+2025-09-17 11:28:31,557 - src.modules.optimized_auto_update - INFO - Installing update from: C:\Users\isaac\AppData\Local\Temp\tmp949gvopq\update.exe
+2025-09-17 11:28:31,558 - src.modules.optimized_auto_update - INFO - Installing EXE update
+2025-09-17 11:28:31,592 - src.modules.optimized_auto_update - INFO - Installer launched successfully
+2025-09-17 11:28:31,637 - src.modules.optimized_auto_update - INFO - Update completed successfully
+2025-09-17 11:39:44,296 - src.modules.optimized_auto_update - INFO - Stopping background update checker
+2025-09-17 11:39:49,306 - src.modules.optimized_auto_update - WARNING - Background thread did not stop gracefully
+2025-09-17 11:50:42,034 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-17 11:50:42,034 - src.modules.optimized_auto_update - INFO - Excel Consolidator v1.0.7 - Optimized Auto-Update System
+2025-09-17 11:50:42,034 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-17 11:50:42,034 - src.modules.optimized_auto_update - INFO - Enhanced with parallel downloads, resume capability, and caching
+2025-09-17 11:50:42,034 - src.modules.optimized_auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-17 11:50:42,034 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-17 11:50:42,035 - src.modules.optimized_auto_update - INFO - Optimized background update checker started
+2025-09-17 11:50:42,035 - src.modules.optimized_auto_update - INFO - Optimized background update checker started successfully
+2025-09-17 11:50:42,035 - src.modules.optimized_auto_update - WARNING - Background checker is already running
+2025-09-17 11:50:42,097 - src.modules.optimized_auto_update - INFO - Checking for updates (current version: 1.0.7)
+2025-09-17 11:50:42,099 - src.modules.optimized_auto_update - INFO - Using cached release information
+2025-09-17 11:50:42,099 - src.modules.optimized_auto_update - INFO - Update available: 1.0.7 -> 1.0.8
+2025-09-17 11:50:46,078 - src.modules.optimized_auto_update - INFO - Starting optimized update process
+2025-09-17 11:50:46,084 - src.modules.optimized_auto_update - INFO - Starting ultra-fast download to version 1.0.8
+2025-09-17 11:50:47,351 - src.modules.optimized_auto_update - WARNING - No hash found for Excel-Consolidator-v1.0.8-Windows.exe
+2025-09-17 11:50:47,354 - src.modules.optimized_auto_update - INFO - Starting ultra-fast download: https://github.com/isaackcz/Excel-Consolidator-App/releases/download/v1.0.8/Excel-Consolidator-v1.0.8-Windows.exe
+2025-09-17 11:50:48,881 - src.modules.optimized_auto_update - INFO - File size: 227.8 MB, Chunks: 29
+2025-09-17 11:51:12,035 - src.modules.optimized_auto_update - INFO - Background update check starting
+2025-09-17 11:51:12,107 - src.modules.optimized_auto_update - INFO - Checking for updates (current version: 1.0.7)
+2025-09-17 11:51:12,109 - src.modules.optimized_auto_update - INFO - Using cached release information
+2025-09-17 11:51:12,110 - src.modules.optimized_auto_update - INFO - Update available: 1.0.7 -> 1.0.8
+2025-09-17 11:51:12,110 - src.modules.optimized_auto_update - INFO - Update available, notifying user (not performing automatically)
+2025-09-17 11:52:48,627 - src.modules.optimized_auto_update - INFO - Download completed successfully: 227.8 MB
+2025-09-17 11:52:48,633 - src.modules.optimized_auto_update - INFO - Installing update from: C:\Users\isaac\AppData\Local\Temp\tmpxwkezcb1\update.exe
+2025-09-17 11:52:48,642 - src.modules.optimized_auto_update - INFO - Installing EXE update
+2025-09-17 11:52:48,674 - src.modules.optimized_auto_update - INFO - Copying update file to persistent location: C:\Users\isaac\AppData\Local\Temp\excel_consolidator_update\update.exe
+2025-09-17 11:52:48,820 - src.modules.optimized_auto_update - INFO - Update file copied successfully: 227.8 MB
+2025-09-17 11:52:48,830 - src.modules.optimized_auto_update - INFO - Installer launched: C:\Users\isaac\AppData\Local\Temp\excel_consolidator_update\update.exe
+2025-09-17 11:52:48,831 - src.modules.optimized_auto_update - INFO - Installer launched successfully
+2025-09-17 11:52:48,832 - src.modules.optimized_auto_update - INFO - Update completed successfully
+2025-09-17 11:52:59,684 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-17 11:52:59,684 - src.modules.optimized_auto_update - INFO - Excel Consolidator v1.0.7 - Optimized Auto-Update System
+2025-09-17 11:52:59,684 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-17 11:52:59,684 - src.modules.optimized_auto_update - INFO - Enhanced with parallel downloads, resume capability, and caching
+2025-09-17 11:52:59,684 - src.modules.optimized_auto_update - INFO - Repository: isaackcz/Excel-Consolidator-App
+2025-09-17 11:52:59,684 - src.modules.optimized_auto_update - INFO - ============================================================
+2025-09-17 11:52:59,685 - src.modules.optimized_auto_update - INFO - Optimized background update checker started
+2025-09-17 11:52:59,685 - src.modules.optimized_auto_update - INFO - Optimized background update checker started successfully
+2025-09-17 11:52:59,685 - src.modules.optimized_auto_update - WARNING - Background checker is already running
+2025-09-17 11:52:59,744 - src.modules.optimized_auto_update - INFO - Checking for updates (current version: 1.0.7)
+2025-09-17 11:52:59,745 - src.modules.optimized_auto_update - INFO - Using cached release information
+2025-09-17 11:52:59,745 - src.modules.optimized_auto_update - INFO - Update available: 1.0.7 -> 1.0.8
+2025-09-17 11:53:04,776 - src.modules.optimized_auto_update - INFO - Starting optimized update process
+2025-09-17 11:53:04,777 - src.modules.optimized_auto_update - INFO - Starting ultra-fast download to version 1.0.8
+2025-09-17 11:53:06,103 - src.modules.optimized_auto_update - WARNING - No hash found for Excel-Consolidator-v1.0.8-Windows.exe
+2025-09-17 11:53:06,104 - src.modules.optimized_auto_update - INFO - Starting ultra-fast download: https://github.com/isaackcz/Excel-Consolidator-App/releases/download/v1.0.8/Excel-Consolidator-v1.0.8-Windows.exe
+2025-09-17 11:53:07,689 - src.modules.optimized_auto_update - INFO - File size: 227.8 MB, Chunks: 29
+2025-09-17 11:53:29,685 - src.modules.optimized_auto_update - INFO - Background update check starting
+2025-09-17 11:53:29,753 - src.modules.optimized_auto_update - INFO - Checking for updates (current version: 1.0.7)
+2025-09-17 11:53:29,754 - src.modules.optimized_auto_update - INFO - Using cached release information
+2025-09-17 11:53:29,754 - src.modules.optimized_auto_update - INFO - Update available: 1.0.7 -> 1.0.8
+2025-09-17 11:53:29,754 - src.modules.optimized_auto_update - INFO - Update available, notifying user (not performing automatically)
+2025-09-17 11:55:12,333 - src.modules.optimized_auto_update - INFO - Download completed successfully: 227.8 MB
+2025-09-17 11:55:12,337 - src.modules.optimized_auto_update - INFO - Installing update from: C:\Users\isaac\AppData\Local\Temp\tmpqrlutivw\update.exe
+2025-09-17 11:55:12,337 - src.modules.optimized_auto_update - INFO - Installing EXE update
+2025-09-17 11:55:12,381 - src.modules.optimized_auto_update - INFO - Installer launched successfully
+2025-09-17 11:55:12,424 - src.modules.optimized_auto_update - INFO - Update completed successfully
+2025-09-17 11:56:47,280 - src.modules.optimized_auto_update - INFO - Stopping background update checker
+2025-09-17 11:56:49,292 - src.modules.optimized_auto_update - WARNING - Background thread did not stop gracefully - marking as daemon
+2025-09-17 11:56:49,293 - src.modules.optimized_auto_update - ERROR - Error stopping background thread: cannot set daemon status of active thread
+2025-09-17 11:56:50,721 - src.modules.optimized_auto_update - INFO - Stopping background update checker
+2025-09-17 11:56:55,727 - src.modules.optimized_auto_update - WARNING - Background thread did not stop gracefully
+2025-09-17 12:12:54,612 - google_sheets_error_reporting - INFO - Error data sent to spreadsheet via Apps Script
+2025-09-17 12:12:54,615 - google_sheets_error_reporting - INFO - Error report sent successfully
+2025-09-17 12:12:55,428 - google_sheets_error_reporting - INFO - Error data sent to spreadsheet via Apps Script
+2025-09-17 12:12:55,439 - google_sheets_error_reporting - INFO - Error report sent successfully
+2025-09-17 12:13:18,029 - google_sheets_error_reporting - INFO - Error data sent to spreadsheet via Apps Script
+2025-09-17 12:13:18,038 - google_sheets_error_reporting - INFO - Error report sent successfully
+2025-09-17 12:13:30,018 - google_sheets_error_reporting - INFO - Error data sent to spreadsheet via Apps Script
+2025-09-17 12:13:30,044 - google_sheets_error_reporting - INFO - Error report sent successfully
+2025-09-17 12:13:32,629 - google_sheets_error_reporting - INFO - Error data sent to spreadsheet via Apps Script
+2025-09-17 12:13:32,663 - google_sheets_error_reporting - INFO - Error report sent successfully

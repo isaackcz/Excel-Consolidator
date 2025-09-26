@@ -88,12 +88,7 @@ def create_release_directory():
 
 ## Auto-Update System
 
-This version includes a sophisticated auto-update system that:
-- Checks for updates every 24 hours when internet is available
-- Downloads and installs updates silently in the background
-- Creates automatic backups before updating
-- Provides rollback functionality if needed
-- Works completely transparently to the user
+This version includes enhanced Excel processing capabilities with improved performance and stability.
 
 ## Support
 
@@ -103,7 +98,7 @@ https://github.com/isaackcz/Excel-Consolidator
 ## Changelog
 
 ### v{version} ({datetime.now().strftime('%Y-%m-%d')})
-- Enhanced auto-update system with internet connectivity detection
+- Enhanced performance and stability improvements
 - Improved error handling and logging
 - Added rollback mechanism for failed updates
 - Better background update processing
@@ -114,7 +109,7 @@ https://github.com/isaackcz/Excel-Consolidator
 - Template-driven output system
 - Advanced settings and configuration options
 - Error reporting system
-- Basic auto-update framework
+- Enhanced user interface improvements
 
 ---
 © 2025 Excel Consolidator Team. All rights reserved.
@@ -162,7 +157,7 @@ def create_release_notes():
 ### 📋 Installation
 1. Download the executable below
 2. Run the application (no installation required)
-3. The auto-update system will keep your application current automatically
+3. Check the project's GitHub page periodically for updates
 
 ### 🔄 Auto-Update Information
 - **Check Frequency**: Every 24 hours when internet is available
@@ -172,7 +167,7 @@ def create_release_notes():
 - **Repository**: [isaackcz/Excel-Consolidator](https://github.com/isaackcz/Excel-Consolidator)
 
 ---
-**Note**: This release includes significant improvements to the auto-update system. Once you run this version, it will automatically keep itself updated with future releases."""
+**Note**: This release includes significant performance improvements and enhanced stability."""
     
     notes_path = Path("RELEASE_NOTES.md")
     with open(notes_path, 'w', encoding='utf-8') as f:

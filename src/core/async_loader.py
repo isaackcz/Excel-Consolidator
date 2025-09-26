@@ -61,7 +61,7 @@ class AsyncLoader:
                     try:
                         callback(result)
                     except Exception as e:
-                        self.logger.error(f"Callback error for task {task_id}: {e}")
+                        self.logger.error(f"Callback execution failed for task {task_id}: {self._get_callback_error_message(e)}")
                 
                 # Clean up callbacks
                 del self.callbacks[task_id]
@@ -71,7 +71,7 @@ class AsyncLoader:
                 del self.futures[task_id]
                 
         except Exception as e:
-            self.logger.error(f"Task {task_id} failed: {e}")
+            self.logger.error(f"Task {task_id} failed: {self._get_task_error_message(task_id, e)}")
             self.results[task_id] = None
     
     def add_callback(self, task_id: str, callback: Callable):
@@ -106,7 +106,7 @@ class AsyncLoader:
                 self.results[task_id] = result
                 return result
             except Exception as e:
-                self.logger.error(f"Error getting result for task {task_id}: {e}")
+                self.logger.error(f"Error getting result for task {task_id}: {self._get_result_error_message(task_id, e)}")
                 return None
         
         return None
@@ -148,6 +148,40 @@ class AsyncLoader:
     def shutdown(self, wait: bool = True):
         """Shutdown the executor."""
         self.executor.shutdown(wait=wait)
+    
+    def _get_callback_error_message(self, error: Exception) -> str:
+        """Get user-friendly error message for callback execution errors."""
+        error_str = str(error).lower()
+        if "permission denied" in error_str or "access denied" in error_str:
+            return "Callback failed due to permission issues. Check file access permissions."
+        elif "memory" in error_str or "out of memory" in error_str:
+            return "Callback failed due to insufficient memory. Close other applications and try again."
+        else:
+            return f"Callback execution error: {str(error)}"
+    
+    def _get_task_error_message(self, task_id: str, error: Exception) -> str:
+        """Get user-friendly error message for task execution errors."""
+        error_str = str(error).lower()
+        if "timeout" in error_str:
+            return f"Task '{task_id}' timed out. The operation took longer than expected."
+        elif "cancelled" in error_str:
+            return f"Task '{task_id}' was cancelled before completion."
+        elif "permission denied" in error_str or "access denied" in error_str:
+            return f"Task '{task_id}' failed due to permission issues. Check file access permissions."
+        elif "memory" in error_str or "out of memory" in error_str:
+            return f"Task '{task_id}' failed due to insufficient memory. Close other applications and try again."
+        else:
+            return f"Task '{task_id}' execution error: {str(error)}"
+    
+    def _get_result_error_message(self, task_id: str, error: Exception) -> str:
+        """Get user-friendly error message for result retrieval errors."""
+        error_str = str(error).lower()
+        if "timeout" in error_str:
+            return f"Timeout waiting for task '{task_id}' to complete. The operation is taking longer than expected."
+        elif "cancelled" in error_str:
+            return f"Task '{task_id}' was cancelled and no result is available."
+        else:
+            return f"Error retrieving result for task '{task_id}': {str(error)}"
 
 # Global async loader instance
 async_loader = AsyncLoader()
@@ -236,10 +270,14 @@ class ProgressTracker:
 class AsyncFileProcessor:
     """
     Asynchronous file processor for handling large files without blocking the UI.
+    Uses the centralized FileProcessor to avoid code duplication.
     """
     
     def __init__(self):
         self.loader = AsyncLoader(max_workers=2)  # Limit file processing threads
+        # Use centralized file processor
+        from src.utils.file_processor import file_processor as fp
+        self.file_processor = fp
     
     def process_files_async(self, file_paths: List[str], processor_func: Callable, 
                           progress_callback: Optional[Callable] = None) -> Future:
@@ -260,6 +298,11 @@ class AsyncFileProcessor:
             
             for i, file_path in enumerate(file_paths):
                 try:
+                    # Validate file before processing
+                    if not self.file_processor.validate_file(file_path):
+                        results.append(None)
+                        continue
+                    
                     result = processor_func(file_path)
                     results.append(result)
                     
@@ -281,7 +324,7 @@ class AsyncFileProcessor:
         self.loader.shutdown()
 
 # Global file processor instance
-file_processor = AsyncFileProcessor()
+async_file_processor = AsyncFileProcessor()
 
 def measure_execution_time(func: Callable) -> Callable:
     """

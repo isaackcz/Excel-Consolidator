@@ -9,9 +9,9 @@ Version: 1.0.0
 """
 
 import sys
+import os
 import traceback
 import json
-import os
 import platform
 from datetime import datetime
 from typing import Optional, Dict, Any, List
@@ -50,9 +50,9 @@ class GoogleSheetsErrorReporter:
     def load_config(self):
         """Load configuration from config.py if available."""
         try:
-            import sys
-            import os
-            sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+            # Use centralized path setup to avoid duplication
+            from src.utils.common import setup_project_path
+            setup_project_path()
             from config.config import (
                 GOOGLE_SPREADSHEET_ID, GOOGLE_SHEET_NAME, 
                 GOOGLE_APPS_SCRIPT_URL
@@ -65,20 +65,11 @@ class GoogleSheetsErrorReporter:
             pass
         
     def setup_logging(self):
-        """Setup logging for error reporting."""
+        """Setup logging for error reporting using centralized setup."""
         try:
-            log_dir = Path("logs")
-            log_dir.mkdir(exist_ok=True)
-            
-            logging.basicConfig(
-                level=logging.INFO,
-                format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                handlers=[
-                    logging.FileHandler(log_dir / "google_sheets_error_reporting.log"),
-                    logging.StreamHandler()
-                ]
-            )
-            self.logger = logging.getLogger(__name__)
+            # Use centralized logging setup to avoid duplication
+            from src.utils.common import setup_logging
+            self.logger = setup_logging("google_sheets_error_reporting")
         except Exception:
             # Fallback if logging setup fails
             self.logger = None
@@ -104,14 +95,9 @@ class GoogleSheetsErrorReporter:
             error_message = str(exc_value) if exc_value else "Unknown error"
             stack_trace = ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback))
             
-            # System information
-            system_info = {
-                "platform": platform.platform(),
-                "python_version": sys.version,
-                "architecture": platform.architecture(),
-                "processor": platform.processor(),
-                "machine": platform.machine()
-            }
+            # System information using centralized function
+            from src.utils.common import get_system_info
+            system_info = get_system_info()
             
             # Application context
             app_context = {
@@ -268,7 +254,7 @@ class GoogleSheetsErrorReporter:
         except Exception as e:
             # Fallback formatting
             if self.logger:
-                self.logger.error(f"Error formatting data for spreadsheet: {e}")
+                self.logger.error(f"Error formatting data for spreadsheet: {self._get_formatting_error_message(e)}")
             
             return [[
                 f"ERR_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
@@ -308,7 +294,7 @@ class GoogleSheetsErrorReporter:
             
         except Exception as e:
             if self.logger:
-                self.logger.error(f"Failed to send error to spreadsheet: {e}")
+                self.logger.error(f"Failed to send error to spreadsheet: {self._get_api_error_message(e)}")
             return False
     
     def _send_via_apps_script(self, rows: List[List[str]]) -> bool:
@@ -350,7 +336,7 @@ class GoogleSheetsErrorReporter:
             
         except Exception as e:
             if self.logger:
-                self.logger.error(f"Apps Script method failed: {e}")
+                self.logger.error(f"Apps Script method failed: {self._get_apps_script_error_message(e)}")
             return False
     
     def _send_via_api(self, rows: List[List[str]]) -> bool:
@@ -371,7 +357,7 @@ class GoogleSheetsErrorReporter:
             
         except Exception as e:
             if self.logger:
-                self.logger.error(f"API method failed: {e}")
+                self.logger.error(f"API method failed: {self._get_api_error_message(e)}")
             return False
     
     def _send_via_form(self, rows: List[List[str]]) -> bool:
@@ -416,7 +402,7 @@ class GoogleSheetsErrorReporter:
             
         except Exception as e:
             if self.logger:
-                self.logger.error(f"CSV method failed: {e}")
+                self.logger.error(f"CSV method failed: {self._get_csv_error_message(e)}")
             return False
     
     def report_error(self, exc_type, exc_value, exc_traceback, 
@@ -459,7 +445,7 @@ class GoogleSheetsErrorReporter:
             
         except Exception as e:
             if self.logger:
-                self.logger.error(f"Failed to report error: {e}")
+                self.logger.error(f"Failed to report error: {self._get_report_error_message(e)}")
             return False
     
     def get_user_friendly_message(self) -> str:
@@ -471,6 +457,64 @@ class GoogleSheetsErrorReporter:
         """
         return ("An error occurred and has been automatically reported to the developer. "
                 "This will help improve the application. Please try again or restart the application if the issue persists.")
+    
+    def _get_formatting_error_message(self, error: Exception) -> str:
+        """Get user-friendly error message for data formatting errors."""
+        error_str = str(error).lower()
+        if "encoding" in error_str or "decode" in error_str:
+            return "Data formatting failed due to text encoding issues. Check system locale settings."
+        elif "memory" in error_str:
+            return "Data formatting failed due to insufficient memory. Close other applications and try again."
+        else:
+            return f"Data formatting error: {str(error)}"
+    
+    def _get_api_error_message(self, error: Exception) -> str:
+        """Get user-friendly error message for API-related errors."""
+        error_str = str(error).lower()
+        if "network" in error_str or "connection" in error_str or "timeout" in error_str:
+            return "Error reporting failed due to network issues. Check your internet connection and try again."
+        elif "authentication" in error_str or "unauthorized" in error_str:
+            return "Error reporting failed due to authentication issues. Check Google Sheets API credentials."
+        elif "quota" in error_str or "rate limit" in error_str:
+            return "Error reporting failed due to API rate limits. Please wait a moment and try again."
+        else:
+            return f"API communication error: {str(error)}"
+    
+    def _get_apps_script_error_message(self, error: Exception) -> str:
+        """Get user-friendly error message for Apps Script errors."""
+        error_str = str(error).lower()
+        if "network" in error_str or "connection" in error_str or "timeout" in error_str:
+            return "Google Apps Script communication failed due to network issues. Check your internet connection."
+        elif "404" in error_str or "not found" in error_str:
+            return "Google Apps Script endpoint not found. The error reporting service may be temporarily unavailable."
+        elif "403" in error_str or "forbidden" in error_str:
+            return "Access denied to Google Apps Script. The error reporting service configuration may need updating."
+        else:
+            return f"Google Apps Script error: {str(error)}"
+    
+    def _get_csv_error_message(self, error: Exception) -> str:
+        """Get user-friendly error message for CSV file creation errors."""
+        error_str = str(error).lower()
+        if "permission denied" in error_str or "access denied" in error_str:
+            return "Cannot create error log file due to permission issues. Check write permissions to the logs folder."
+        elif "no space" in error_str or "disk full" in error_str:
+            return "Cannot create error log file due to insufficient disk space. Free up disk space and try again."
+        elif "path" in error_str:
+            return "Cannot create error log file due to path issues. Check that the logs folder exists and is accessible."
+        else:
+            return f"Error log file creation failed: {str(error)}"
+    
+    def _get_report_error_message(self, error: Exception) -> str:
+        """Get user-friendly error message for general error reporting failures."""
+        error_str = str(error).lower()
+        if "network" in error_str or "connection" in error_str:
+            return "Error reporting failed due to network connectivity issues. The error will be logged locally."
+        elif "timeout" in error_str:
+            return "Error reporting timed out. The error will be logged locally and reporting will be retried later."
+        elif "authentication" in error_str:
+            return "Error reporting failed due to authentication issues. The error will be logged locally."
+        else:
+            return f"Error reporting failed: {str(error)}. The error will be logged locally."
 
 
 class GlobalExceptionHandler:

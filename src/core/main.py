@@ -1,6 +1,8 @@
 import sys
 import os
 import pandas as pd
+import logging
+from logging.handlers import RotatingFileHandler
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
     QFileDialog, QMessageBox, QFrame, QSpacerItem, QSizePolicy, QDialog, 
@@ -21,6 +23,7 @@ from openpyxl.utils import get_column_letter, column_index_from_string
 from openpyxl.styles import Font, PatternFill, Border, Side, Alignment
 from openpyxl.comments import Comment
 import glob
+from decimal import Decimal
 from datetime import datetime, timedelta
 import json
 import shutil
@@ -34,57 +37,61 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # Import our custom modules
-import sys
-import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 
 from src.modules.google_sheets_reporter import setup_google_sheets_error_reporting, GoogleSheetsErrorReporter
-from src.modules.auto_update import setup_auto_updater, AutoUpdater
-from src.modules.optimized_auto_update import setup_optimized_auto_updater, OptimizedAutoUpdater
-from src.core.version import APP_VERSION, APP_NAME, GITHUB_OWNER, GITHUB_REPO, ERROR_REPORTING_ENABLED, AUTO_UPDATE_ENABLED
-from src.ui.update_dialog import create_update_dialog
+from src.core.version import APP_VERSION, APP_NAME, GITHUB_OWNER, GITHUB_REPO, ERROR_REPORTING_ENABLED
 
-class FileProcessor:
-    """Handles different file formats"""
+# FileProcessor moved to src/utils/file_processor.py to avoid duplication
+from src.utils.file_processor import FileProcessor
+
+# ---------------- Logging Setup ----------------
+def setup_processing_logger():
+    """Set up comprehensive logging for Excel consolidation processing."""
+    # Create logs directory if it doesn't exist
+    log_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'logs')
+    os.makedirs(log_dir, exist_ok=True)
     
-    @staticmethod
-    def read_excel_file(filepath, sheet_name=None, data_only=True):
-        """Read Excel file (.xlsx, .xls)"""
-        try:
-            if filepath.endswith('.xlsx'):
-                wb = openpyxl.load_workbook(filepath, data_only=data_only)
-                if sheet_name and sheet_name in wb.sheetnames:
-                    ws = wb[sheet_name]
-                else:
-                    ws = wb.active
-                return wb, ws, "xlsx"
-            
-            elif filepath.endswith('.xls'):
-                # Handle legacy Excel format
-                wb_xlrd = xlrd.open_workbook(filepath)
-                if sheet_name:
-                    try:
-                        sheet_idx = wb_xlrd.sheet_names().index(sheet_name)
-                        ws_xlrd = wb_xlrd.sheet_by_index(sheet_idx)
-                    except ValueError:
-                        ws_xlrd = wb_xlrd.sheet_by_index(0)
-                else:
-                    ws_xlrd = wb_xlrd.sheet_by_index(0)
-                return wb_xlrd, ws_xlrd, "xls"
-            
-        except Exception as e:
-            return None, None, f"error: {str(e)}"
-        
-        return None, None, "unsupported_format"
+    # Create logger
+    logger = logging.getLogger('excel_consolidator')
+    logger.setLevel(logging.DEBUG)
     
-    @staticmethod
-    def read_csv_file(filepath):
-        """Read CSV file"""
-        try:
-            df = pd.read_csv(filepath)
-            return df, "csv"
-        except Exception as e:
-            return None, f"error: {str(e)}"
+    # Clear any existing handlers
+    logger.handlers.clear()
+    
+    # Create formatter
+    formatter = logging.Formatter(
+        '%(asctime)s | %(levelname)-8s | %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S'
+    )
+    
+    # File handler with rotation (max 10MB, keep 5 files)
+    log_file = os.path.join(log_dir, 'consolidation_processing.log')
+    file_handler = RotatingFileHandler(
+        log_file, 
+        maxBytes=10*1024*1024,  # 10MB
+        backupCount=5,
+        encoding='utf-8'
+    )
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(formatter)
+    
+    # Console handler (for immediate feedback)
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setLevel(logging.INFO)
+    console_handler.setFormatter(formatter)
+    
+    # Add handlers
+    logger.addHandler(file_handler)
+    logger.addHandler(console_handler)
+    
+    # Prevent propagation to root logger
+    logger.propagate = False
+    
+    return logger
+
+# Global logger instance
+processing_logger = setup_processing_logger()
 
 # ---------------- Sticky Tooltip Manager ----------------
 class StickyToolTip(QWidget):
@@ -164,746 +171,7 @@ class GlobalToolTipFilter(QObject):
         return False
 
 # ---------------- Advanced Configuration Dialog ----------------
-class AdvancedConfigDialog(QDialog):
-    """Advanced configuration options for consolidation"""
-    
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setWindowTitle("Advanced Consolidation Settings")
-        self.setFixedSize(800, 700)
-        self.setup_tooltip_timing()
-        self.init_ui()
-    
-    def setup_tooltip_timing(self):
-        """Configure global tooltip timing for this dialog"""
-        # Set tooltip delay to 1000ms (1 second) and hide after 5000ms (5 seconds)
-        QApplication.instance().setAttribute(Qt.AA_DisableWindowContextHelpButton, True)
-    
-    def init_ui(self):
-        layout = QVBoxLayout(self)
-        
-        # Title
-        title_label = QLabel("Advanced Consolidation Settings")
-        title_label.setAlignment(Qt.AlignCenter)
-        title_label.setStyleSheet("font-size: 16px; font-weight: bold; color: #2F5597; padding: 10px;")
-        layout.addWidget(title_label)
-        
-        # Main content area
-        content_layout = QHBoxLayout()
-        
-        # Left panel - Section selection
-        left_panel = self.create_section_panel()
-        content_layout.addWidget(left_panel, 1)
-        
-        # Right panel - Preview
-        right_panel = self.create_preview_panel()
-        content_layout.addWidget(right_panel, 2)
-        
-        layout.addLayout(content_layout)
-        
-        # Buttons
-        button_layout = QHBoxLayout()
-        
-        self.preview_btn = QPushButton("Preview analysis")
-        self.preview_btn.clicked.connect(self.preview_analysis)
-        self.preview_btn.setEnabled(False)
-        
-        self.generate_btn = QPushButton("Generate analysis")
-        self.generate_btn.clicked.connect(self.generate_analysis)
-        self.generate_btn.setEnabled(False)
-        
-        cancel_btn = QPushButton("Cancel")
-        cancel_btn.clicked.connect(self.reject)
-        
-        button_layout.addWidget(self.preview_btn)
-        button_layout.addWidget(self.generate_btn)
-        button_layout.addStretch()
-        button_layout.addWidget(cancel_btn)
-        
-        layout.addLayout(button_layout)
-    
-    def create_section_panel(self):
-        """Create the section selection panel"""
-        panel = QWidget()
-        layout = QVBoxLayout(panel)
-        
-        # Panel title
-        title = QLabel("📋 Available Sections")
-        title.setStyleSheet("font-weight: bold; font-size: 14px; color: #2F5597;")
-        layout.addWidget(title)
-        
-        # Scroll area for sections
-        scroll = QScrollArea()
-        scroll.setWidgetResizable(True)
-        scroll.setFixedWidth(300)
-        
-        self.section_widget = QWidget()
-        self.section_layout = QVBoxLayout(self.section_widget)
-        scroll.setWidget(self.section_widget)
-        
-        layout.addWidget(scroll)
-        
-        return panel
-    
-    def create_preview_panel(self):
-        """Create the preview panel"""
-        panel = QWidget()
-        layout = QVBoxLayout(panel)
-        
-        # Panel title and file filter
-        header_layout = QHBoxLayout()
-        
-        title = QLabel("👁️ Analysis Preview")
-        title.setStyleSheet("font-weight: bold; font-size: 14px; color: #2F5597;")
-        header_layout.addWidget(title)
-        
-        header_layout.addStretch()
-        
-        # File filter dropdown
-        filter_label = QLabel("Filter by file:")
-        self.file_filter = QComboBox()
-        self.file_filter.addItem("All Files")
-        for filename in getattr(self, 'file_data', {}).keys():
-            self.file_filter.addItem(filename)
-        self.file_filter.currentTextChanged.connect(self.update_preview)
-        
-        header_layout.addWidget(filter_label)
-        header_layout.addWidget(self.file_filter)
-        
-        layout.addLayout(header_layout)
-        
-        # Preview area
-        self.preview_text = QTextEdit()
-        self.preview_text.setReadOnly(True)
-        self.preview_text.setStyleSheet("background-color: #f8f9fa; border: 1px solid #ddd;")
-        layout.addWidget(self.preview_text)
-        
-        return panel
-    
-    def scan_sections(self):
-        """Scan the consolidated file for available sections"""
-        try:
-            wb = openpyxl.load_workbook(self.consolidated_file_path, data_only=True)
-            ws = wb.active
-            
-            sections = self._identify_sections(ws)
-            
-            for section in sections:
-                checkbox = QCheckBox(section['name'])
-                checkbox.setStyleSheet("font-size: 12px; padding: 5px;")
-                checkbox.stateChanged.connect(self.on_section_changed)
-                checkbox.section_data = section
-                self.section_layout.addWidget(checkbox)
-            
-            self.section_layout.addStretch()
-            
-        except Exception as e:
-            error_label = QLabel(f"Error scanning sections: {e}")
-            error_label.setStyleSheet("color: red; font-style: italic;")
-            self.section_layout.addWidget(error_label)
-    
-    def _identify_sections(self, worksheet):
-        """Identify sections in the worksheet"""
-        sections = []
-        
-        # Scan for different types of sections
-        for row in range(1, min(worksheet.max_row + 1, 100)):
-            for col in range(1, min(worksheet.max_column + 1, 20)):
-                cell = worksheet.cell(row=row, column=col)
-                
-                if cell.value and isinstance(cell.value, str):
-                    value = str(cell.value).strip().upper()
-                    
-                    # Look for section headers
-                    if any(keyword in value for keyword in ['ACCESS', 'ENROLLMENT', 'ENROLMENT', 'DROPOUT', 'INFRASTRUCTURE', 'GRADE', 'TOTAL']):
-                        # Check if this is a significant section with data
-                        data_range = self._get_section_data_range(worksheet, row, col)
-                        if data_range['data_count'] > 0:
-                            sections.append({
-                                'name': value,
-                                'start_row': row,
-                                'start_col': col,
-                                'data_range': data_range,
-                                'type': self._classify_section_type(value)
-                            })
-        
-        # Remove duplicates and sort
-        unique_sections = {}
-        for section in sections:
-            key = section['name']
-            if key not in unique_sections or section['data_range']['data_count'] > unique_sections[key]['data_range']['data_count']:
-                unique_sections[key] = section
-        
-        return list(unique_sections.values())
-    
-    def _get_section_data_range(self, worksheet, start_row, start_col):
-        """Get the data range for a specific section with proper boundaries"""
-        data_count = 0
-        numeric_values = []
-        end_row = start_row
-        end_col = start_col
-        
-        # Find the actual section boundaries by looking for the next section header or empty space
-        section_end_row = self._find_section_end_row(worksheet, start_row)
-        section_end_col = self._find_section_end_col(worksheet, start_col, start_row)
-        
-        # Scan only within this specific section's boundaries
-        for row in range(start_row, min(section_end_row + 1, worksheet.max_row + 1)):
-            for col in range(start_col, min(section_end_col + 1, worksheet.max_column + 1)):
-                cell = worksheet.cell(row=row, column=col)
-                if cell.value is not None:
-                    # Skip TOTAL cells and similar summary cells
-                    if isinstance(cell.value, str) and any(total_word in str(cell.value).upper() for total_word in ['TOTAL', 'SUM', 'GRAND']):
-                        continue
-                    
-                    if isinstance(cell.value, (int, float)) and cell.value != 0:
-                        data_count += 1
-                        numeric_values.append(cell.value)
-                        end_row = max(end_row, row)
-                        end_col = max(end_col, col)
-        
-        return {
-            'start_row': start_row,
-            'start_col': start_col,
-            'end_row': min(end_row, section_end_row),
-            'end_col': min(end_col, section_end_col),
-            'data_count': data_count,
-            'numeric_values': numeric_values,
-            'section_boundaries': {
-                'end_row': section_end_row,
-                'end_col': section_end_col
-            }
-        }
-    
-    def _find_section_end_row(self, worksheet, start_row):
-        """Find where this section ends by looking for the next section header or significant gap"""
-        max_scan_rows = 50
-        empty_row_count = 0
-        
-        for row in range(start_row + 1, min(start_row + max_scan_rows, worksheet.max_row + 1)):
-            row_has_content = False
-            
-            # Check if this row has any content
-            for col in range(1, min(worksheet.max_column + 1, 30)):
-                cell = worksheet.cell(row=row, column=col)
-                if cell.value is not None:
-                    row_has_content = True
-                    
-                    # Check if this looks like a new section header
-                    if isinstance(cell.value, str):
-                        value = str(cell.value).strip().upper()
-                        if any(keyword in value for keyword in ['ACCESS', 'ENROLLMENT', 'ENROLMENT', 'DROPOUT', 'INFRASTRUCTURE', 'GRADE', 'OVERALL TOTAL']):
-                            # This looks like a new section, so previous row is our boundary
-                            return row - 1
-                    break
-            
-            if not row_has_content:
-                empty_row_count += 1
-                if empty_row_count >= 3:  # 3 consecutive empty rows = section end
-                    return row - empty_row_count
-            else:
-                empty_row_count = 0
-        
-        return start_row + max_scan_rows - 1
-    
-    def _find_section_end_col(self, worksheet, start_col, start_row):
-        """Find where this section ends horizontally"""
-        max_scan_cols = 25
-        
-        for col in range(start_col + 1, min(start_col + max_scan_cols, worksheet.max_column + 1)):
-            col_has_content = False
-            
-            # Check if this column has any content in the section area
-            for row in range(start_row, min(start_row + 20, worksheet.max_row + 1)):
-                cell = worksheet.cell(row=row, column=col)
-                if cell.value is not None:
-                    col_has_content = True
-                    break
-            
-            if not col_has_content:
-                return col - 1
-        
-        return start_col + max_scan_cols - 1
-    
-    def _classify_section_type(self, section_name):
-        """Classify the type of section"""
-        name_lower = section_name.lower()
-        
-        if 'grade' in name_lower:
-            return 'grade_analysis'
-        elif any(word in name_lower for word in ['access', 'enrollment', 'enrolment']):
-            return 'enrollment_analysis'
-        elif 'dropout' in name_lower:
-            return 'dropout_analysis'
-        elif 'infrastructure' in name_lower:
-            return 'infrastructure_analysis'
-        else:
-            return 'general_analysis'
-    
-    def _process_file_data(self, file_details):
-        """Process file data for filtering"""
-        processed = {}
-        for file_detail in file_details:
-            if 'filename' in file_detail:
-                filename = file_detail['filename']
-                processed[filename] = {
-                    'total_value': file_detail.get('total_value', 0),
-                    'values_found': file_detail.get('values_found', 0),
-                    'cells': file_detail.get('cell_details', [])
-                }
-        return processed
-    
-    def on_section_changed(self):
-        """Handle section checkbox changes"""
-        self.selected_sections = []
-        
-        for i in range(self.section_layout.count()):
-            widget = self.section_layout.itemAt(i).widget()
-            if isinstance(widget, QCheckBox) and widget.isChecked():
-                self.selected_sections.append(widget.section_data)
-        
-        # Enable/disable buttons based on selection
-        has_selection = len(self.selected_sections) > 0
-        self.preview_btn.setEnabled(has_selection)
-        self.generate_btn.setEnabled(False)  # Enable only after preview
-    
-    def preview_analysis(self):
-        """Preview the analysis that will be generated"""
-        if not getattr(self, 'selected_sections', []):
-            return
-        
-        # Ensure we have a consolidated file to read from
-        if not getattr(self, 'consolidated_file_path', None) or not os.path.exists(self.consolidated_file_path):
-            self.preview_text.setPlainText("No consolidated Excel file set. Please run consolidation first.")
-            return
-        
-        try:
-            # Generate preview data
-            self.preview_data = self._generate_preview_data()
-            self.update_preview()
-            self.generate_btn.setEnabled(True)
-            
-        except Exception as e:
-            self.preview_text.setPlainText(f"Error generating preview: {e}")
-    
-    def _generate_preview_data(self):
-        """Generate preview data for selected sections"""
-        if not getattr(self, 'consolidated_file_path', None) or not os.path.exists(self.consolidated_file_path):
-            return {}
-        wb = openpyxl.load_workbook(self.consolidated_file_path, data_only=True)
-        ws = wb.active
-        
-        preview_data = {}
-        
-        for section in self.selected_sections:
-            section_name = section['name']
-            data_range = section['data_range']
-            
-            # Extract section data
-            section_data = self._extract_section_data(ws, section)
-            
-            # Generate analysis preview
-            preview_data[section_name] = {
-                'type': section['type'],
-                'total_values': len(section_data['numeric_data']),
-                'sum_values': sum(section_data['numeric_data']),
-                'average': sum(section_data['numeric_data']) / len(section_data['numeric_data']) if section_data['numeric_data'] else 0,
-                'categories': section_data['categories'],
-                'detailed_categories': section_data.get('detailed_categories', {}),
-                'file_breakdown': self._get_file_breakdown_for_section(section)
-            }
-        
-        return preview_data
-    
-    def _extract_section_data(self, worksheet, section):
-        """Extract data from a specific section within its strict boundaries"""
-        data_range = section['data_range']
-        numeric_data = []
-        categories = {}
-        detailed_categories = {}
-        
-        # Use the section boundaries to limit our scan
-        section_boundaries = data_range.get('section_boundaries', {})
-        end_row = section_boundaries.get('end_row', data_range['end_row'])
-        end_col = section_boundaries.get('end_col', data_range['end_col'])
-        
-        for row in range(data_range['start_row'], min(end_row + 1, data_range['end_row'] + 1)):
-            for col in range(data_range['start_col'], min(end_col + 1, data_range['end_col'] + 1)):
-                cell = worksheet.cell(row=row, column=col)
-                
-                # Skip TOTAL cells and similar summary cells
-                if cell.value is not None and isinstance(cell.value, str):
-                    if any(total_word in str(cell.value).upper() for total_word in ['TOTAL', 'SUM', 'GRAND', 'OVERALL']):
-                        continue
-                
-                if isinstance(cell.value, (int, float)) and cell.value != 0:
-                    # Check if this cell is in a TOTAL row or column
-                    if self._is_total_cell(worksheet, row, col):
-                        continue
-                    
-                    numeric_data.append(cell.value)
-                    
-                    # Get context only within this section's boundaries
-                    row_context = self._get_section_row_context(worksheet, row, col, data_range['start_row'], end_row)
-                    col_context = self._get_section_col_context(worksheet, row, col, data_range['start_col'], end_col)
-                    
-                    # Create main category from row context
-                    if row_context['main']:
-                        main_category = row_context['main']
-                        categories[main_category] = categories.get(main_category, 0) + cell.value
-                        
-                        # Create detailed category with subcategory if available
-                        if col_context['main']:
-                            detailed_key = f"{main_category} - {col_context['main']}"
-                            detailed_categories[detailed_key] = detailed_categories.get(detailed_key, 0) + cell.value
-                    
-                    # Also check if column has grade/level information
-                    elif col_context['main']:
-                        main_category = col_context['main']
-                        categories[main_category] = categories.get(main_category, 0) + cell.value
-        
-        return {
-            'numeric_data': numeric_data,
-            'categories': categories,
-            'detailed_categories': detailed_categories
-        }
-    
-    def _get_comprehensive_row_context(self, worksheet, row, col):
-        """Get comprehensive row context including main category and subcategory"""
-        context = {'main': None, 'sub': None, 'full': None}
-        
-        # Scan left from the current column to find row headers
-        row_headers = []
-        for check_col in range(max(1, col - 10), col):
-            cell = worksheet.cell(row=row, column=check_col)
-            if cell.value and isinstance(cell.value, str) and not str(cell.value).replace('.', '').isdigit():
-                header = str(cell.value).strip()
-                if header and header not in ['TOTAL', 'Total']:
-                    row_headers.append(header)
-        
-        if row_headers:
-            # The rightmost (closest) header is usually the main category
-            context['main'] = row_headers[-1]
-            if len(row_headers) > 1:
-                context['sub'] = row_headers[-2] if len(row_headers) > 1 else None
-            context['full'] = ' - '.join(row_headers)
-        
-        return context
-    
-    def _get_comprehensive_col_context(self, worksheet, row, col):
-        """Get comprehensive column context including main category and subcategory"""
-        context = {'main': None, 'sub': None, 'full': None}
-        
-        # Scan up from the current row to find column headers
-        col_headers = []
-        for check_row in range(max(1, row - 10), row):
-            cell = worksheet.cell(row=check_row, column=col)
-            if cell.value and isinstance(cell.value, str) and not str(cell.value).replace('.', '').isdigit():
-                header = str(cell.value).strip()
-                if header and header not in ['TOTAL', 'Total']:
-                    col_headers.append(header)
-        
-        if col_headers:
-            # Look for grade patterns in column headers
-            grade_headers = []
-            level_headers = []
-            gender_headers = []
-            
-            for header in col_headers:
-                header_lower = header.lower()
-                if any(grade_word in header_lower for grade_word in ['grade', 'level', 'year', 'class']):
-                    grade_headers.append(header)
-                elif any(level_word in header_lower for level_word in ['elementary', 'secondary', 'senior', 'primary', 'high']):
-                    level_headers.append(header)
-                elif any(gender_word in header_lower for gender_word in ['male', 'female', 'boy', 'girl']):
-                    gender_headers.append(header)
-            
-            # Prioritize grade/level information over gender
-            if grade_headers:
-                context['main'] = grade_headers[-1]  # Most specific grade
-                if gender_headers:
-                    context['sub'] = gender_headers[-1]
-            elif level_headers:
-                context['main'] = level_headers[-1]
-                if gender_headers:
-                    context['sub'] = gender_headers[-1]
-            elif col_headers:
-                context['main'] = col_headers[-1]  # Closest header
-            
-            context['full'] = ' - '.join(col_headers)
-        
-        return context
-    
-    def _get_row_context(self, worksheet, row, col):
-        """Get row context for a cell (legacy method)"""
-        for check_col in range(max(1, col - 5), col):
-            cell = worksheet.cell(row=row, column=check_col)
-            if cell.value and isinstance(cell.value, str) and not str(cell.value).isdigit():
-                return str(cell.value).strip()
-        return None
-    
-    def _get_col_context(self, worksheet, row, col):
-        """Get column context for a cell (legacy method)"""
-        for check_row in range(max(1, row - 5), row):
-            cell = worksheet.cell(row=check_row, column=col)
-            if cell.value and isinstance(cell.value, str) and not str(cell.value).isdigit():
-                return str(cell.value).strip()
-        return None
-    
-    def _is_total_cell(self, worksheet, row, col):
-        """Check if this cell is in a TOTAL row or column"""
-        # Check the row for TOTAL indicators
-        for check_col in range(max(1, col - 10), col + 5):
-            try:
-                cell = worksheet.cell(row=row, column=check_col)
-                if cell.value and isinstance(cell.value, str):
-                    if any(total_word in str(cell.value).upper() for total_word in ['TOTAL', 'SUM', 'GRAND', 'OVERALL']):
-                        return True
-            except:
-                continue
-        
-        # Check the column for TOTAL indicators
-        for check_row in range(max(1, row - 10), row + 5):
-            try:
-                cell = worksheet.cell(row=check_row, column=col)
-                if cell.value and isinstance(cell.value, str):
-                    if any(total_word in str(cell.value).upper() for total_word in ['TOTAL', 'SUM', 'GRAND', 'OVERALL']):
-                        return True
-            except:
-                continue
-        
-        return False
-    
-    def _get_section_row_context(self, worksheet, row, col, section_start_row, section_end_row):
-        """Get row context only within this section's boundaries"""
-        context = {'main': None, 'sub': None, 'full': None}
-        
-        # Scan left from the current column to find row headers, but only within section
-        row_headers = []
-        for check_col in range(max(1, col - 10), col):
-            cell = worksheet.cell(row=row, column=check_col)
-            if cell.value and isinstance(cell.value, str) and not str(cell.value).replace('.', '').isdigit():
-                header = str(cell.value).strip()
-                if header and not any(total_word in header.upper() for total_word in ['TOTAL', 'SUM', 'GRAND', 'OVERALL']):
-                    row_headers.append(header)
-        
-        if row_headers:
-            # The rightmost (closest) header is usually the main category
-            context['main'] = row_headers[-1]
-            if len(row_headers) > 1:
-                context['sub'] = row_headers[-2]
-            context['full'] = ' - '.join(row_headers)
-        
-        return context
-    
-    def _get_section_col_context(self, worksheet, row, col, section_start_col, section_end_col):
-        """Get column context only within this section's boundaries"""
-        context = {'main': None, 'sub': None, 'full': None}
-        
-        # Scan up from the current row to find column headers, but only within reasonable bounds
-        col_headers = []
-        for check_row in range(max(1, row - 10), row):
-            cell = worksheet.cell(row=check_row, column=col)
-            if cell.value and isinstance(cell.value, str) and not str(cell.value).replace('.', '').isdigit():
-                header = str(cell.value).strip()
-                if header and not any(total_word in header.upper() for total_word in ['TOTAL', 'SUM', 'GRAND', 'OVERALL']):
-                    col_headers.append(header)
-        
-        if col_headers:
-            # Look for grade patterns in column headers
-            grade_headers = []
-            level_headers = []
-            gender_headers = []
-            
-            for header in col_headers:
-                header_lower = header.lower()
-                if any(grade_word in header_lower for grade_word in ['grade', 'level', 'year', 'class']) and not 'non' in header_lower:
-                    grade_headers.append(header)
-                elif any(level_word in header_lower for level_word in ['elementary', 'secondary', 'senior', 'primary', 'high']):
-                    level_headers.append(header)
-                elif any(gender_word in header_lower for gender_word in ['male', 'female', 'boy', 'girl']):
-                    gender_headers.append(header)
-            
-            # Prioritize grade/level information over gender
-            if grade_headers:
-                context['main'] = grade_headers[-1]  # Most specific grade
-                if gender_headers:
-                    context['sub'] = gender_headers[-1]
-            elif level_headers:
-                context['main'] = level_headers[-1]
-                if gender_headers:
-                    context['sub'] = gender_headers[-1]
-            elif col_headers:
-                context['main'] = col_headers[-1]  # Closest header
-            
-            context['full'] = ' - '.join(col_headers)
-        
-        return context
-    
-    def _get_file_breakdown_for_section(self, section):
-        """Get file breakdown for a specific section"""
-        file_breakdown = {}
-        
-        for filename, file_info in self.file_data.items():
-            # This would analyze which cells in this section came from which files
-            # For now, we'll use the total file data
-            file_breakdown[filename] = {
-                'value': file_info['total_value'],
-                'percentage': 0  # Will be calculated
-            }
-        
-        # Calculate percentages
-        total = sum(data['value'] for data in file_breakdown.values())
-        if total > 0:
-            for data in file_breakdown.values():
-                data['percentage'] = (data['value'] / total) * 100
-        
-        return file_breakdown
-    
-    def update_preview(self):
-        """Update the preview based on current selections and filters"""
-        if not getattr(self, 'preview_data', {}):
-            self.preview_text.setPlainText("Click 'Preview Analysis' to see what will be generated.")
-            return
-        
-        selected_file = self.file_filter.currentText()
-        
-        preview_text = "Analysis preview\n" + "="*50 + "\n\n"
-        
-        for section_name, data in self.preview_data.items():
-            preview_text += f"📋 {section_name}\n"
-            preview_text += "-" * 30 + "\n"
-            preview_text += f"• Total Values: {data['total_values']}\n"
-            preview_text += f"• Sum: {data['sum_values']:,.0f}\n"
-            preview_text += f"• Average: {data['average']:.2f}\n\n"
-            
-            # Categories (Main Categories)
-            if data['categories']:
-                preview_text += "Main categories:\n"
-                for category, value in data['categories'].items():
-                    preview_text += f"  - {category}: {value:,.0f}\n"
-                preview_text += "\n"
-            
-            # Detailed Categories (with subcategories)
-            if data.get('detailed_categories'):
-                preview_text += "📋 Detailed Breakdown:\n"
-                for detailed_category, value in data['detailed_categories'].items():
-                    preview_text += f"  - {detailed_category}: {value:,.0f}\n"
-                preview_text += "\n"
-            
-            # File breakdown
-            if selected_file != "All Files" and 'file_breakdown' in data and selected_file in data['file_breakdown']:
-                file_data = data['file_breakdown'][selected_file]
-                preview_text += f"📂 {selected_file} Contribution:\n"
-                preview_text += f"  - Value: {file_data['value']:,.0f}\n"
-                preview_text += f"  - Percentage: {file_data['percentage']:.1f}%\n"
-            else:
-                preview_text += "📂 File Breakdown:\n"
-                for filename, file_data in data.get('file_breakdown', {}).items():
-                    preview_text += f"  - {filename}: {file_data['value']:,.0f} ({file_data['percentage']:.1f}%)\n"
-            
-            preview_text += "\n" + "="*50 + "\n\n"
-        
-        self.preview_text.setPlainText(preview_text)
-    
-    def generate_analysis(self):
-        """Generate the actual analysis sheets (disabled: analysis module removed)"""
-        QMessageBox.information(self, "Analysis Disabled",
-                                "The AI analysis report module has been removed."
-                                "\nPreview is available, but sheet generation is disabled.")
-        return
-
-# ---------------- Advanced Configuration Dialog ----------------
-class AdvancedConfigDialog(QDialog):
-    """Advanced configuration options for consolidation"""
-    
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setWindowTitle("Advanced Consolidation Settings")
-        self.setModal(True)
-        self.setFixedSize(600, 700)
-        
-        # Configure tooltip timing globally
-        QApplication.instance().setAttribute(Qt.AA_DisableWindowContextHelpButton)
-        self.setup_tooltip_timing()
-        
-        self.init_ui()
-    
-    def setup_tooltip_timing(self):
-        """Configure tooltip display timing"""
-        # Set tooltip delay to 1000ms (1 second)
-        QApplication.instance().setAttribute(Qt.AA_UseHighDpiPixmaps)
-        # Note: PyQt5 doesn't have direct control over tooltip fade timing
-        # but we can set the show delay
-    
-    def init_ui(self):
-        layout = QVBoxLayout(self)
-        
-        # Create tab widget
-        tabs = QTabWidget()
-        
-        # Data Processing Tab
-        data_tab = self.create_data_processing_tab()
-        tabs.addTab(data_tab, "Data Processing")
-        
-        # File Handling Tab
-        file_tab = self.create_file_handling_tab()
-        tabs.addTab(file_tab, "File Handling")
-        
-        # Validation Tab
-        validation_tab = self.create_validation_tab()
-        tabs.addTab(validation_tab, "Validation")
-        
-        # Performance Tab
-        performance_tab = self.create_performance_tab()
-        tabs.addTab(performance_tab, "Performance")
-        
-        layout.addWidget(tabs)
-        
-        # Buttons
-        btn_layout = QHBoxLayout()
-        
-        # Reset to defaults button
-        reset_btn = QPushButton("🔄 Reset to Defaults")
-        reset_btn.clicked.connect(self.reset_to_defaults)
-        reset_btn.setToolTip("Reset all settings to their default values")
-        btn_layout.addWidget(reset_btn)
-        
-        # OK and Cancel buttons
-        ok_btn = QPushButton("OK")
-        ok_btn.clicked.connect(self.accept)
-        ok_btn.setDefault(True)
-        btn_layout.addWidget(ok_btn)
-        
-        cancel_btn = QPushButton("Cancel")
-        cancel_btn.clicked.connect(self.reject)
-        btn_layout.addWidget(cancel_btn)
-        
-        layout.addLayout(btn_layout)
-    
-    def create_data_processing_tab(self):
-        widget = QWidget()
-        layout = QVBoxLayout(widget)
-        
-        # Data Type Handling
-        group = QGroupBox("Data Type Handling")
-        group_layout = QVBoxLayout(group)
-        
-        self.auto_convert_text = QCheckBox("Auto-convert text numbers to numeric")
-        self.auto_convert_text.setChecked(True)
-        self.auto_convert_text.setToolTip(
-            "When ENABLED: Automatically converts text that looks like numbers into actual numbers.\n\n"
-            "Examples:\n"
-            "• '123' becomes 123\n"
-            "• '45.67' becomes 45.67\n"
-            "• '1,234' becomes 1234\n\n"
-            "When DISABLED: Only processes cells that are already numbers.\n\n"
-            "💡 TIP: Keep this enabled unless your data has text that looks like numbers but shouldn't be added."
-        )
-        group_layout.addWidget(self.auto_convert_text)
-        
-        self.handle_percentages = QCheckBox("Convert percentages (e.g., '50%' → 0.5)")
-        self.handle_percentages.setChecked(True)
+# Remove duplicate AdvancedConfigDialog definition below; keep only the more complete one above.
 
 # ---------------- Advanced Configuration Dialog ----------------
 class AdvancedConfigDialog(QDialog):
@@ -1771,205 +1039,564 @@ class ConsolidationWorker(QThread):
     def _get_user_friendly_error_message(self, error):
         """Convert technical errors into user-friendly messages with guidance."""
         error_str = str(error).lower()
-        
         # File access errors
-        if "permission denied" in error_str or "access denied" in error_str:
-            return ("File Access Denied\n\n"
+        if ("permission denied" in error_str or "access denied" in error_str or 
+            "sharing violation" in error_str):
+            return ("🔒 File Access Denied\n\n"
                    "The application cannot access one or more files. This usually happens when:\n"
-                   "• Files are open in Excel or another program\n"
-                   "• Files are in a read-only location\n"
-                   "• Insufficient permissions to the folder\n\n"
-                   "Solution: Close all Excel files and ensure you have write permissions to the folder.")
-        
+                   "• Files are currently open in Excel or another program\n"
+                   "• Files are in a read-only location or network drive\n"
+                   "• Insufficient permissions to the folder\n"
+                   "• Antivirus software is blocking file access\n\n"
+                   "💡 Solution: Close all Excel files, ensure you have write permissions to the folder, "
+                   "and temporarily disable real-time antivirus scanning if needed.")
         # File format errors
         elif "badzipfile" in error_str or "zipfile" in error_str:
-            return ("Corrupted Excel File\n\n"
+            return ("❌ Corrupted Excel File\n\n"
                    "One or more Excel files appear to be corrupted or not valid Excel files.\n\n"
-                   "Solution: Try opening the problematic files in Excel first to repair them, "
-                   "or exclude them from consolidation.")
-        
+                   "💡 Solution: Try opening the problematic files in Excel first to repair them, "
+                   "or exclude them from consolidation. You can also try 'File > Open and Repair' in Excel.")
         # Memory errors
         elif "memory" in error_str or "out of memory" in error_str:
-            return ("Insufficient Memory\n\n"
-                   "The files are too large or numerous to process with available memory.\n\n"
-                   "Solution: Try processing fewer files at once, or close other applications to free up memory.")
-        
+            return ("💾 Insufficient Memory\n\n"
+                   "The files are too large or numerous to process with available system memory.\n\n"
+                   "💡 Solution: Try processing fewer files at once, close other applications to free up memory, "
+                   "or restart the application to clear memory usage.")
         # Template errors
         elif "template" in error_str or "workbook" in error_str:
-            return ("Template File Issue\n\n"
+            return ("📋 Template File Issue\n\n"
                    "There's a problem with the template file. It may be:\n"
                    "• Corrupted or not a valid Excel file\n"
                    "• Protected with a password\n"
-                   "• In an unsupported format\n\n"
-                   "Solution: Use a different template file or create a new one.")
-        
-        # Merged cell errors (already handled, but just in case)
-        elif "mergedcell" in error_str or "read only" in error_str:
-            return ("Merged Cell Conflict\n\n"
-                   "The template contains merged cells that conflict with the consolidation process.\n\n"
-                   "Solution: Unmerge cells in the template file before consolidation.")
-        
+                   "• In an unsupported format (try saving as .xlsx)\n"
+                   "• Contains complex formulas or features\n\n"
+                   "💡 Solution: Use a different template file, create a new simple template, "
+                   "or remove password protection.")
+        # Merged cell errors (specific cases)
+        elif ("mergedcell" in error_str or "read only" in error_str or 
+              "read-only" in error_str or "attribute 'value' is read-only" in error_str):
+            return ("🔗 Merged Cell Conflict\n\n"
+                   "The template or source files contain merged cells that prevent data consolidation.\n\n"
+                   "💡 What happened: Excel merged cells can only be written to at their top-left position, "
+                   "but the consolidation process tried to write data to a merged cell area.\n\n"
+                   "🔧 Solutions:\n"
+                   "• Unmerge all cells in the template file before consolidation\n"
+                   "• In Excel: Select all cells (Ctrl+A) → Home tab → Merge & Center (to unmerge)\n"
+                   "• If source files have merged cells, unmerge them as well\n"
+                   "• Create a new template without any merged cells")
         # Network/path errors
         elif "no such file" in error_str or "file not found" in error_str:
-            return ("File Not Found\n\n"
+            return ("📄 File Not Found\n\n"
                    "One or more files specified in the consolidation could not be found.\n\n"
-                   "Solution: Check that all source files still exist and the folder path is correct.")
-        
+                   "💡 Solution: Check that all source files still exist and haven't been moved or deleted. "
+                   "Refresh the file list and verify the folder path is correct.")
+        # Encoding errors
+        elif "encoding" in error_str or "decode" in error_str:
+            return ("📝 File Encoding Issue\n\n"
+                   "One or more files have text encoding problems that prevent proper reading.\n\n"
+                   "💡 Solution: Try opening the files in Excel and saving them again, "
+                   "or ensure they are saved with UTF-8 encoding.")
+        # Disk space errors
+        elif "no space" in error_str or "disk full" in error_str:
+            return ("💽 Insufficient Disk Space\n\n"
+                   "There is not enough disk space to create the consolidated file.\n\n"
+                   "💡 Solution: Free up disk space by deleting temporary files, "
+                   "or choose a different output folder with more available space.")
         # Generic fallback with the original error for debugging
         else:
-            return (f"Consolidation Error\n\n"
-                   f"An unexpected error occurred during processing:\n\n"
+            return (f"⚠️ Consolidation Error\n\n"
+                   f"An unexpected error occurred during processing.\n\n"
                    f"Technical details: {str(error)}\n\n"
-                   f"Common solutions:\n"
-                   f"• Ensure all Excel files are closed\n"
-                   f"• Check that files are not corrupted\n"
+                   f"💡 Common solutions:\n"
+                   f"• Ensure all Excel files are closed before starting\n"
+                   f"• Check that files are not corrupted or password-protected\n"
                    f"• Verify you have write permissions to the output folder\n"
-                   f"• Try with a smaller set of files first")
+                   f"• Try with a smaller set of files first\n"
+                   f"• Restart the application and try again")
 
     def _get_file_error_message(self, file_path, error):
         """Get user-friendly error message for individual file processing errors."""
         error_str = str(error).lower()
         filename = os.path.basename(file_path)
-        
         # File access errors
-        if "permission denied" in error_str or "access denied" in error_str:
-            return f"File '{filename}' is open in Excel or locked by another program. Please close it and try again."
-        
+        if ("permission denied" in error_str or "access denied" in error_str or 
+            "sharing violation" in error_str):
+            return (f"📁 File Currently Open\n\n"
+                   f"The file '{filename}' is currently open in Excel or another program.\n\n"
+                   f"💡 Solution: Close the file in Excel and try again. Make sure to save any changes first.")
         # File format errors
         elif "badzipfile" in error_str or "zipfile" in error_str:
-            return f"File '{filename}' is corrupted or not a valid Excel file. Please repair or exclude it."
-        
+            return (f"❌ Corrupted File\n\n"
+                   f"The file '{filename}' is corrupted or not a valid Excel file.\n\n"
+                   f"💡 Solution: Try opening the file in Excel to repair it using 'File > Open and Repair', "
+                   f"or exclude this file from consolidation.")
         # Template structure errors
         elif "template" in error_str or "structure" in error_str:
-            return f"File '{filename}' has a different structure than the template. Please check the file format."
-        
+            return (f"📋 Structure Mismatch\n\n"
+                   f"The file '{filename}' has a different structure than the template.\n\n"
+                   f"💡 Solution: Ensure all files have the same column headers and data layout as the template.")
         # Memory errors
         elif "memory" in error_str:
-            return f"File '{filename}' is too large to process. Try closing other applications or exclude this file."
-        
+            return (f"💾 File Too Large\n\n"
+                   f"The file '{filename}' is too large to process with available memory.\n\n"
+                   f"💡 Solution: Close other applications to free up memory, or exclude this file and process it separately.")
+        # Password protected files
+        elif "password" in error_str or "encrypted" in error_str:
+            return (f"🔒 Password Protected\n\n"
+                   f"The file '{filename}' is password protected and cannot be opened.\n\n"
+                   f"💡 Solution: Remove the password protection from the file before consolidation.")
+        # Network/path errors
+        elif "no such file" in error_str or "file not found" in error_str:
+            return (f"📄 File Not Found\n\n"
+                   f"The file '{filename}' could not be found at the specified location.\n\n"
+                   f"💡 Solution: Check that the file still exists and hasn't been moved or deleted.")
+        # Merged cell specific errors
+        elif ("mergedcell" in error_str or "attribute 'value' is read-only" in error_str or 
+              "read-only" in error_str):
+            return (f"🔗 Merged Cells in File\n\n"
+                   f"The file '{filename}' contains merged cells that prevent data consolidation.\n\n"
+                   f"💡 Solution: Open '{filename}' in Excel, select all cells (Ctrl+A), "
+                   f"then click 'Merge & Center' in the Home tab to unmerge all cells. "
+                   f"Save the file and try consolidation again.")
         # Generic file error
         else:
-            return f"File '{filename}' could not be processed: {str(error)}"
+            return (f"⚠️ Processing Error\n\n"
+                   f"The file '{filename}' could not be processed.\n\n"
+                   f"Technical details: {str(error)}\n\n"
+                   f"💡 Common solutions:\n"
+                   f"• Ensure the file is not open in Excel\n"
+                   f"• Check that the file is not corrupted\n"
+                   f"• Verify the file format matches other files\n"
+                   f"• Try excluding this file if the issue persists")
 
     def _get_worksheet(self, workbook, file_type="source"):
-        """Get the appropriate worksheet based on settings.
-        
-        Args:
-            workbook: The openpyxl workbook object
-            file_type: Either "template" or "source" to determine which settings to use
-            
-        Returns:
-            The worksheet object to use
-        """
-        # For template, always use the selected sheet if enabled
-        if file_type == "template":
-            file_handling = self.settings.get('file_handling', {})
-            if file_handling.get('enable_sheet_selection', False):
-                sheet_name = file_handling.get('sheet_name', 'Sheet1')
-                if sheet_name in workbook.sheetnames:
-                    return workbook[sheet_name]
-                # Fallback to active sheet if specified sheet doesn't exist
-                return workbook.active
-            else:
-                return workbook.active
-        
-        # For source files, use the same logic as template
+        """Get the appropriate worksheet based on settings."""
         file_handling = self.settings.get('file_handling', {})
         if file_handling.get('enable_sheet_selection', False):
             sheet_name = file_handling.get('sheet_name', 'Sheet1')
             if sheet_name in workbook.sheetnames:
                 return workbook[sheet_name]
-            # Fallback to active sheet if specified sheet doesn't exist
             return workbook.active
+        return workbook.active
+    
+    def _process_cell_value_with_format_verification(self, value, format_info, coord, file_label, wb, stop_on_error):
+        """
+        Process cell value with comprehensive format verification.
+        Ensures data is converted according to template format requirements.
+        
+        Args:
+            value: The cell value to process
+            format_info: Dictionary containing format information from template
+            coord: Cell coordinate (e.g., 'A1')
+            file_label: Name of the source file
+            wb: Workbook object
+            stop_on_error: Whether to stop on format mismatches
+            
+        Returns:
+            Decimal value or None if processing failed
+        """
+        if value is None or value == "":
+            return None
+            
+        # Handle different format types based on template requirements
+        if format_info.get('is_percentage', False):
+            return self._process_percentage_value(value, coord, file_label, wb, stop_on_error)
+        elif format_info.get('is_currency', False):
+            return self._process_currency_value(value, coord, file_label, wb, stop_on_error)
+        elif format_info.get('is_number', False):
+            return self._process_number_value(value, coord, file_label, wb, stop_on_error)
         else:
-            return workbook.active
+            # Default processing for unformatted cells
+            return self._process_default_value(value, coord, file_label, wb, stop_on_error)
+    
+    def _process_percentage_value(self, value, coord, file_label, wb, stop_on_error):
+        """Process percentage values with strict format verification."""
+        try:
+            # Handle different percentage input formats
+            if isinstance(value, (int, float)):
+                # Since files are now pre-formatted, values should already be in decimal format
+                # (e.g., 0.5 for 50%, 0.75 for 75%)
+                val = Decimal(str(value))
+                return val
+            elif isinstance(value, str):
+                text = str(value).strip().replace(",", "")
+                if text.endswith('%'):
+                    # Remove % and convert to decimal
+                    val = Decimal(text[:-1]) / Decimal('100')
+                    return val
+                else:
+                    # Try to parse as number - should already be in decimal format
+                    val = Decimal(text)
+                    return val
+            else:
+                return None
+        except Exception as e:
+            if stop_on_error:
+                filename = os.path.basename(file_label) if hasattr(file_label, '__iter__') else str(file_label)
+                error_msg = (f"Percentage Format Error\n\n"
+                           f"Cell {coord} in file '{filename}' contains invalid percentage data:\n"
+                           f"'{value}'\n\n"
+                           f"Expected: Numeric values or percentages (e.g., 0.5, 0.75, 0.25)\n\n"
+                           f"💡 Solution: Ensure the cell contains valid percentage data or "
+                           f"convert the template cell to a different format.")
+                self.finished.emit("error", error_msg)
+            return None
+    
+    def _process_currency_value(self, value, coord, file_label, wb, stop_on_error):
+        """Process currency values with format verification."""
+        try:
+            if isinstance(value, (int, float)):
+                return Decimal(str(value))
+            elif isinstance(value, str):
+                # Remove currency symbols and parse
+                text = str(value).strip().replace("$", "").replace("€", "").replace("£", "").replace("¥", "").replace(",", "")
+                return Decimal(text)
+            else:
+                return None
+        except Exception as e:
+            if stop_on_error:
+                filename = os.path.basename(file_label) if hasattr(file_label, '__iter__') else str(file_label)
+                error_msg = (f"Currency Format Error\n\n"
+                           f"Cell {coord} in file '{filename}' contains invalid currency data:\n"
+                           f"'{value}'\n\n"
+                           f"Expected: Numeric values (e.g., 100, 100.50)\n\n"
+                           f"💡 Solution: Ensure the cell contains valid numeric data.")
+                self.finished.emit("error", error_msg)
+            return None
+    
+    def _process_number_value(self, value, coord, file_label, wb, stop_on_error):
+        """Process number values with format verification."""
+        try:
+            if isinstance(value, (int, float)):
+                return Decimal(str(value))
+            elif isinstance(value, str):
+                # Remove common formatting characters
+                text = str(value).strip().replace(",", "").replace(" ", "")
+                return Decimal(text)
+            else:
+                return None
+        except Exception as e:
+            if stop_on_error:
+                filename = os.path.basename(file_label) if hasattr(file_label, '__iter__') else str(file_label)
+                error_msg = (f"Number Format Error\n\n"
+                           f"Cell {coord} in file '{filename}' contains invalid numeric data:\n"
+                           f"'{value}'\n\n"
+                           f"Expected: Numeric values (e.g., 100, 100.50)\n\n"
+                           f"💡 Solution: Ensure the cell contains valid numeric data.")
+                self.finished.emit("error", error_msg)
+            return None
+    
+    def _process_default_value(self, value, coord, file_label, wb, stop_on_error):
+        """Process values with default (unformatted) handling."""
+        try:
+            if isinstance(value, (int, float)):
+                return Decimal(str(value))
+            elif isinstance(value, str):
+                # Try to parse as number
+                text = str(value).strip().replace(",", "")
+                return Decimal(text)
+            else:
+                return None
+        except Exception:
+            return None
+    
+    def _update_submitted_files_format(self, files, coord_format_info):
+        """
+        Update all submitted files to match template cell formats before consolidation.
+        This ensures uniform formatting and correct processing (sum vs average).
+        
+        Enhanced to properly handle percentage conversion and format standardization.
+        """
+        processing_logger.info(f"🔧 Starting format update for {len(files)} files...")
+        processing_logger.info(f"📊 Template format info: {len(coord_format_info)} coordinates")
+        
+        try:
+            for file_idx, file in enumerate(files, 1):
+                try:
+                    ext = os.path.splitext(file)[1].lower()
+                    if ext not in ('.xlsx', '.xls'):
+                        processing_logger.info(f"⏭️ Skipping {file} (not Excel file)")
+                        continue
+                    
+                    processing_logger.info(f"📁 Processing file {file_idx}/{len(files)}: {os.path.basename(file)}")
+                    
+                    # Load file for format update
+                    wb = openpyxl.load_workbook(file, data_only=False)  # data_only=False to preserve formatting
+                    ws = self._get_worksheet(wb, "source")
+                    
+                    updated_cells = 0
+                    # OPTIMIZATION: Only process cells that actually need format updates
+                    # Skip cells that don't exist in the worksheet or don't have values
+                    for coord, format_info in coord_format_info.items():
+                        if coord in ws:
+                            cell = ws[coord]
+                            # Skip empty cells to reduce processing
+                            if cell.value is None and not format_info.get('is_percentage', False):
+                                continue
+                            
+                            # CRITICAL: Check and preserve formulas - never modify cells with formulas
+                            if self._preserve_formulas_during_format_update(cell, format_info, coord):
+                                processing_logger.info(f"  🔒 Skipping {coord} - contains formula")
+                                continue
+                            
+                            # Apply template format to submitted file
+                            template_format = format_info.get('number_format')
+                            if template_format:
+                                cell.number_format = template_format
+                                
+                            # Enhanced percentage handling with better conversion logic
+                            if format_info.get('is_percentage', False):
+                                current_value = cell.value
+                                if current_value is not None and isinstance(current_value, (int, float)):
+                                    original_value = current_value
+                                    
+                                    # Enhanced percentage conversion logic
+                                    # For percentage cells, we need to be more careful about conversion
+                                    # Excel percentage cells can have values in different formats:
+                                    # - Decimal format: 0.5 (displays as 50%)
+                                    # - Whole number format: 50 (displays as 5000% if not converted)
+                                    
+                                    # Check if the value is already in decimal format (0-1 range)
+                                    if 0 <= current_value <= 1:
+                                        # Value is already in decimal format (0.5 for 50%)
+                                        cell.value = current_value
+                                        processing_logger.info(f"  ✅ {coord}: {original_value} -> {cell.value} (already decimal percentage)")
+                                    elif current_value > 1:
+                                        # Value is in whole number format (50 for 50%)
+                                        # Convert to decimal format
+                                        cell.value = current_value / 100
+                                        processing_logger.info(f"  ✅ {coord}: {original_value}% -> {cell.value} (converted to decimal)")
+                                    else:
+                                        # Zero or negative values - keep as-is
+                                        cell.value = current_value
+                                        processing_logger.info(f"  ✅ {coord}: {original_value} -> {cell.value} (zero/negative)")
+                                    
+                                    updated_cells += 1
+                            
+                            # Enhanced currency handling
+                            elif format_info.get('is_currency', False):
+                                current_value = cell.value
+                                if current_value is not None and isinstance(current_value, (int, float)):
+                                    # Keep value as is, just apply currency format
+                                    cell.value = current_value
+                                    processing_logger.info(f"  ✅ {coord}: Currency value {current_value} formatted")
+                                    updated_cells += 1
+                            
+                            # Enhanced number handling
+                            elif format_info.get('is_number', False):
+                                current_value = cell.value
+                                if current_value is not None and isinstance(current_value, (int, float)):
+                                    # Keep value as is, just apply number format
+                                    cell.value = current_value
+                                    processing_logger.info(f"  ✅ {coord}: Number value {current_value} formatted")
+                                    updated_cells += 1
+                    
+                    processing_logger.info(f"  📝 Updated {updated_cells} cells in {os.path.basename(file)}")
+                    
+                    # Save the updated file
+                    wb.save(file)
+                    wb.close()
+                    
+                except Exception as e:
+                    # Log error but continue with other files
+                    processing_logger.warning(f"⚠️ Warning: Could not update format for file {file}: {e}")
+                    continue
+                    
+        except Exception as e:
+            processing_logger.error(f"❌ Error updating file formats: {e}")
+            # Continue with consolidation even if format update fails
+        
+        processing_logger.info(f"✅ Format update completed!")
+
+    def _validate_cell_format_consistency(self, cell, format_info, coord):
+        """
+        Validate that cell value is consistent with detected format.
+        This helps ensure proper format detection and processing.
+        """
+        try:
+            value = cell.value
+            if value is None:
+                return
+            
+            # Validate percentage format consistency
+            if format_info.get('is_percentage', False):
+                if isinstance(value, (int, float)):
+                    # Check if value is in reasonable percentage range
+                    if value > 1 and value <= 100:
+                        # Likely percentage value (50, 75, etc.)
+                        print(f"  📊 {coord}: Percentage value {value}% detected")
+                    elif 0 <= value <= 1:
+                        # Likely decimal percentage (0.5, 0.75, etc.)
+                        print(f"  📊 {coord}: Decimal percentage {value} detected")
+                    else:
+                        print(f"  ⚠️ {coord}: Unusual percentage value {value}")
+            
+            # Validate currency format consistency
+            elif format_info.get('is_currency', False):
+                if isinstance(value, (int, float)):
+                    print(f"  💰 {coord}: Currency value {value} detected")
+            
+            # Validate number format consistency
+            elif format_info.get('is_number', False):
+                if isinstance(value, (int, float)):
+                    print(f"  🔢 {coord}: Number value {value} detected")
+                    
+        except Exception as e:
+            print(f"  ⚠️ Format validation error for {coord}: {e}")
+
+    def _preserve_formulas_during_format_update(self, cell, format_info, coord):
+        """
+        Ensure formulas are completely preserved during format updates.
+        This is critical to prevent damage to existing formulas.
+        """
+        try:
+            # Check if cell contains a formula
+            has_formula = False
+            formula_text = None
+            
+            # Multiple ways to detect formulas
+            if hasattr(cell, 'data_type') and cell.data_type == 'f':
+                has_formula = True
+                formula_text = getattr(cell, 'formula', None)
+            elif isinstance(cell.value, str) and str(cell.value).startswith('='):
+                has_formula = True
+                formula_text = str(cell.value)
+            
+            if has_formula:
+                print(f"  🔒 Preserving formula in {coord}: {formula_text}")
+                # Mark this cell as having a formula in format info
+                format_info['has_formula'] = True
+                format_info['formula_text'] = formula_text
+                return True  # Indicates formula was found and preserved
+            
+            return False  # No formula found
+            
+        except Exception as e:
+            print(f"  ⚠️ Formula preservation error for {coord}: {e}")
+            return False
 
     def _get_template_load_error_message(self, error):
         """Get user-friendly error message for template loading errors."""
         error_str = str(error).lower()
         filename = os.path.basename(self.template_path)
-        
         # Password protected files
         if "password" in error_str or "encrypted" in error_str:
-            return (f"Password Protected Template\n\n"
-                   f"The template file '{filename}' is password protected.\n\n"
-                   f"Solution: Remove the password from the template file before using it.")
-        
+            return (f"🔒 Password Protected Template\n\n"
+                   f"The template file '{filename}' is password protected and cannot be opened.\n\n"
+                   f"💡 Solution: Remove the password protection from the template file before using it. "
+                   f"In Excel, go to File > Info > Protect Workbook > Encrypt with Password and remove the password.")
         # Corrupted template
         elif "badzipfile" in error_str or "zipfile" in error_str:
-            return (f"Corrupted Template File\n\n"
-                   f"The template file '{filename}' appears to be corrupted.\n\n"
-                   f"Solution: Try opening the file in Excel to repair it, or use a different template.")
-        
+            return (f"❌ Corrupted Template File\n\n"
+                   f"The template file '{filename}' appears to be corrupted or damaged.\n\n"
+                   f"💡 Solution: Try opening the file in Excel to repair it using 'File > Open and Repair', "
+                   f"or use a different template file. You may also try creating a new template.")
         # File format issues
         elif "invalid" in error_str or "format" in error_str:
-            return (f"Invalid Template Format\n\n"
-                   f"The template file '{filename}' is not a valid Excel file.\n\n"
-                   f"Solution: Ensure the file is a .xlsx or .xlsm file created by Excel.")
-        
+            return (f"📄 Invalid Template Format\n\n"
+                   f"The template file '{filename}' is not a valid Excel file or is in an unsupported format.\n\n"
+                   f"💡 Solution: Ensure the file is a .xlsx or .xlsm file created by Excel. "
+                   f"Avoid using .xls (older format) or files from other spreadsheet applications.")
         # Permission issues
-        elif "permission" in error_str or "access" in error_str:
-            return (f"Template Access Denied\n\n"
-                   f"Cannot access the template file '{filename}'.\n\n"
-                   f"Solution: Ensure the file is not open in Excel and you have read permissions.")
-        
+        elif ("permission" in error_str or "access" in error_str or 
+              "sharing violation" in error_str):
+            return (f"🔐 Template Access Denied\n\n"
+                   f"Cannot access the template file '{filename}'. It may be open in another program.\n\n"
+                   f"💡 Solution: Ensure the template file is not open in Excel or another program, "
+                   f"and verify you have read permissions to the file location.")
+        # File not found
+        elif "no such file" in error_str or "file not found" in error_str:
+            return (f"📄 Template File Not Found\n\n"
+                   f"The template file '{filename}' could not be found at the specified location.\n\n"
+                   f"💡 Solution: Check that the template file still exists and hasn't been moved or deleted. "
+                   f"You may need to select a new template file.")
         # Generic template error
         else:
-            return (f"Template Loading Error\n\n"
+            return (f"📋 Template Loading Error\n\n"
                    f"Could not load the template file '{filename}'.\n\n"
                    f"Technical details: {str(error)}\n\n"
-                   f"Solution: Try opening the file in Excel first to ensure it's valid.")
+                   f"💡 Solutions to try:\n"
+                   f"• Open the file in Excel first to ensure it's valid\n"
+                   f"• Create a new simple template with just headers\n"
+                   f"• Check that the file is not corrupted or password-protected\n"
+                   f"• Try using a different template file")
 
     def _get_save_error_message(self, error, output_path):
         """Get user-friendly error message for file saving errors."""
         error_str = str(error).lower()
         filename = os.path.basename(output_path)
         folder = os.path.dirname(output_path)
-        
         # Permission denied
-        if "permission denied" in error_str or "access denied" in error_str:
-            return (f"Cannot Save File\n\n"
-                   f"Permission denied when trying to save '{filename}' to:\n"
-                   f"'{folder}'\n\n"
-                   f"Solution: Ensure you have write permissions to the output folder.")
-        
+        if ("permission denied" in error_str or "access denied" in error_str or 
+            "sharing violation" in error_str):
+            return (f"🔐 Cannot Save File\n\n"
+                   f"The consolidated file '{filename}' is currently open in Excel or another program.\n\n"
+                   f"💡 Solution: Close the file in Excel and try again. Make sure to save any changes first. "
+                   f"If the file appears closed, wait a moment and try again as Excel may still be releasing the file.")
         # File in use
-        elif "being used" in error_str or "in use" in error_str:
-            return (f"File Currently Open\n\n"
-                   f"The file '{filename}' is currently open in Excel or another program.\n\n"
-                   f"Solution: Close the file in Excel and try again.")
-        
+        elif ("being used" in error_str or "in use" in error_str or 
+              "process cannot access" in error_str):
+            return (f"📁 File Currently Open\n\n"
+                   f"The consolidated file '{filename}' is currently open in Excel or another program.\n\n"
+                   f"💡 Solution: Close the file in Excel and try again. Make sure to save any changes first. "
+                   f"If the file appears closed, wait a moment and try again as Excel may still be releasing the file.")
         # Disk space
         elif "no space" in error_str or "disk full" in error_str:
-            return (f"Insufficient Disk Space\n\n"
-                   f"Not enough disk space to save the consolidated file.\n\n"
-                   f"Solution: Free up disk space or choose a different output folder.")
-        
+            return (f"💽 Insufficient Disk Space\n\n"
+                   f"Not enough disk space to save the consolidated file '{filename}'.\n\n"
+                   f"💡 Solution: Free up disk space by deleting temporary files and downloads, "
+                   f"or choose a different output folder on a drive with more available space.")
         # Path too long
         elif "path too long" in error_str or "filename too long" in error_str:
-            return (f"Path Too Long\n\n"
+            return (f"📏 Path Too Long\n\n"
                    f"The file path is too long for the system to handle.\n\n"
-                   f"Solution: Choose a shorter folder path or filename.")
-        
+                   f"💡 Solution: Choose a shorter folder path or filename. "
+                   f"Try saving to a folder closer to the root of your drive (e.g., C:\\Consolidated\\).")
+        # Read-only file system
+        elif "read-only" in error_str or "readonly" in error_str:
+            return (f"🔒 Read-Only Location\n\n"
+                   f"Cannot save to '{folder}' because it is read-only.\n\n"
+                   f"💡 Solution: Choose a different output folder where you have write permissions, "
+                   f"such as your Documents folder or Desktop.")
+        # Network errors
+        elif "network" in error_str or "unc" in error_str:
+            return (f"🌐 Network Save Error\n\n"
+                   f"Cannot save '{filename}' to the network location.\n\n"
+                   f"💡 Solution: Check your network connection, ensure the network path is accessible, "
+                   f"or try saving to a local folder first.")
         # Generic save error
         else:
-            return (f"Save Error\n\n"
+            return (f"💾 Save Error\n\n"
                    f"Could not save the consolidated file '{filename}'.\n\n"
                    f"Technical details: {str(error)}\n\n"
-                   f"Solution: Check that the output folder exists and you have write permissions.")
+                   f"💡 Solutions to try:\n"
+                   f"• Check that the output folder exists and you have write permissions\n"
+                   f"• Ensure the file is not already open in Excel\n"
+                   f"• Try saving to a different location\n"
+                   f"• Close other applications to free up resources\n"
+                   f"• Restart the application and try again")
 
     def run(self):
         try:
+            processing_logger.info("🚀 Starting Excel consolidation process...")
+            processing_logger.info(f"📋 Template: {self.template_path}")
+            processing_logger.info(f"📁 Source folder: {self.excel_folder}")
+            processing_logger.info(f"💾 Output folder: {self.save_folder}")
             self.progress.emit(5)
             if not os.path.exists(self.template_path):
-                error_msg = (f"Template File Not Found\n\n"
+                error_msg = (f"📋 Template File Not Found\n\n"
                            f"The template file could not be found at:\n"
                            f"'{self.template_path}'\n\n"
-                           f"Please check:\n"
-                           f"• The file path is correct\n"
-                           f"• The file still exists\n"
-                           f"• You have permission to access the file\n"
-                           f"• The file is not currently open in Excel")
+                           f"💡 Please check:\n"
+                           f"• The file path is correct and hasn't changed\n"
+                           f"• The file still exists and hasn't been moved or deleted\n"
+                           f"• You have read permissions to access the file\n"
+                           f"• The file is not currently open in Excel\n"
+                           f"• The network connection is stable (if on a network drive)\n\n"
+                           f"🔧 Solutions:\n"
+                           f"• Browse and select the template file again\n"
+                           f"• Create a new template file with the required structure\n"
+                           f"• Copy the template to a local folder for better access")
                 self.finished.emit("error", error_msg)
                 return
 
@@ -1979,7 +1606,6 @@ class ConsolidationWorker(QThread):
                 output_wb = openpyxl.load_workbook(self.template_path, keep_vba=keep_vba)
                 output_ws = self._get_worksheet(output_wb, "template")
             except Exception as e:
-                # Report error to Google Sheets if error reporter is available
                 if self.error_reporter:
                     try:
                         self.error_reporter.report_error(
@@ -1988,23 +1614,29 @@ class ConsolidationWorker(QThread):
                             user_file=self.template_path
                         )
                     except Exception:
-                        pass  # Don't let error reporting failure stop the process
-                
+                        pass
                 error_msg = self._get_template_load_error_message(e)
                 self.finished.emit("error", error_msg)
                 return
 
-            # Collect source files per advanced settings
             try:
-                from advanced_settings import list_source_files, load_cells, normalize_value, validate_value, ensure_backup
+                from src.modules.advanced_settings import list_source_files, load_cells, normalize_value, validate_value, ensure_backup
             except Exception as e:
-                # Advanced settings module not available - use basic functionality
                 list_source_files = None
                 load_cells = None
                 normalize_value = None
                 validate_value = None
                 ensure_backup = None
-                print(f"Advanced settings module not available: {e}")
+                # Advanced settings module not available - use basic functionality
+                if self.error_reporter:
+                    try:
+                        self.error_reporter.report_error(
+                            type(e), e, e.__traceback__,
+                            triggered_by="Advanced Settings Import",
+                            user_file=None
+                        )
+                    except Exception:
+                        pass
 
             if list_source_files is not None:
                 files = list_source_files(self.excel_folder, self.settings)
@@ -2012,42 +1644,199 @@ class ConsolidationWorker(QThread):
                 pattern = os.path.join(self.excel_folder, "*.xlsx")
                 files = [f for f in glob.glob(pattern) if not os.path.basename(f).startswith("~$")]
             if not files:
-                error_msg = ("No Excel Files Found\n\n"
-                           f"No valid Excel files (.xlsx) were found in the folder:\n"
+                error_msg = ("📁 No Excel Files Found\n\n"
+                           f"No valid Excel files were found in the folder:\n"
                            f"'{self.excel_folder}'\n\n"
-                           f"Please check:\n"
-                           f"• The folder path is correct\n"
-                           f"• The folder contains .xlsx files\n"
-                           f"• Files are not hidden or in subfolders\n"
-                           f"• Files are not currently open in Excel")
+                           f"💡 Please check:\n"
+                           f"• The folder path is correct and accessible\n"
+                           f"• The folder contains .xlsx or .xlsm files\n"
+                           f"• Files are not hidden or located in subfolders\n"
+                           f"• Files are not currently open in Excel (temporary files start with ~$)\n"
+                           f"• You have read permissions to the folder\n\n"
+                           f"📝 Supported file types: .xlsx, .xlsm\n"
+                           f"❌ Not supported: .xls (older Excel format), .csv")
                 self.finished.emit("error", error_msg)
                 return
 
             totals = {}
-            # coord -> { filename_no_ext: contribution_value }
             contributions = {}
-            validate_structure = bool(self.settings.get('validation', {}).get('validate_structure'))
-            validate_data_types = bool(self.settings.get('validation', {}).get('validate_data_types'))
-            stop_on_error = bool(self.settings.get('validation', {}).get('stop_on_error'))
+            percent_counts = {}
+            coord_is_percent = {}
+            validation_settings = self.settings.get('validation', {})
+            validate_structure = bool(validation_settings.get('validate_structure'))
+            validate_data_types = bool(validation_settings.get('validate_data_types'))
+            stop_on_error = bool(validation_settings.get('stop_on_error'))
 
-            # Template reference for structure validation
             template_ws = None
-            if validate_structure:
+            coord_format_info = {}  # Enhanced format information storage
+            template_coords = None
+            
+            # Enhanced template format analysis with comprehensive cell format verification
+            try:
+                processing_logger.info("🔍 Starting template format analysis...")
+                template_wb = openpyxl.load_workbook(self.template_path, data_only=False, read_only=False)
+                template_ws = self._get_worksheet(template_wb, "template")
+                processing_logger.info(f"📋 Template worksheet loaded: {template_ws.title}")
+                
+                # Build comprehensive format cache with detailed cell format information
+                coord_format_info = {}
+                template_coords = set()
+                
+                processing_logger.info("🔍 Analyzing template cells for format detection...")
+                
+                # OPTIMIZATION: Only process cells that have values or specific formats
+                # This dramatically reduces processing time for large templates
+                cell_count = 0
+                for row in template_ws.iter_rows():
+                    for tcell in row:
+                        coord = tcell.coordinate
+                        template_coords.add(coord)
+                        cell_count += 1
+                        
+                        # OPTIMIZATION: Only process cells that have values or specific formats
+                        if (tcell.value is not None and tcell.value != '') or getattr(tcell, 'number_format', None):
+                            # Debug: Check if this is cell G867
+                            if coord == 'G867':
+                                processing_logger.info(f"🎯 Found G867 in template! Value: {tcell.value}, Format: {getattr(tcell, 'number_format', None)}")
+                            
+                            # Enhanced format detection with comprehensive format analysis
+                            format_info = {
+                                'is_percentage': False,
+                                'is_currency': False,
+                                'is_number': False,
+                                'is_date': False,
+                                'number_format': None,
+                                'has_formula': False,
+                                'format_confidence': 0.0  # Confidence level for format detection
+                            }
+                            
+                            try:
+                                fmt = getattr(tcell, 'number_format', None)
+                                format_info['number_format'] = str(fmt) if fmt else None
+                                
+                                # Debug: Log format detection for G867
+                                if coord == 'G867':
+                                    processing_logger.info(f"🔍 G867 format detection: fmt={fmt}, str(fmt)={str(fmt) if fmt else None}")
+                                
+                                # Enhanced percentage format detection
+                                if fmt and ('%' in str(fmt)):
+                                    format_info['is_percentage'] = True
+                                    format_info['format_confidence'] = 1.0
+                                    # Only log for G867 to reduce overhead
+                                    if coord == 'G867':
+                                        processing_logger.info(f"📊 Detected percentage format in {coord}: {fmt}")
+                                        processing_logger.info(f"📊 Cell value: {tcell.value}, Type: {type(tcell.value)}")
+                            
+                                # Enhanced currency format detection
+                                elif fmt and any(currency in str(fmt) for currency in ['$', '€', '£', '¥', 'currency']):
+                                    format_info['is_currency'] = True
+                                    format_info['format_confidence'] = 1.0
+                                    # Only log for G867 to reduce overhead
+                                    if coord == 'G867':
+                                        processing_logger.info(f"💰 Detected currency format in {coord}: {fmt}")
+                                
+                                # Enhanced number format detection
+                                elif fmt and any(num in str(fmt) for num in ['0', '#', '.', ',']):
+                                    format_info['is_number'] = True
+                                    format_info['format_confidence'] = 0.8
+                                    # Only log for G867 to reduce overhead
+                                    if coord == 'G867':
+                                        processing_logger.info(f"🔢 Detected number format in {coord}: {fmt}")
+                                
+                                # Enhanced date format detection
+                                elif fmt and any(date in str(fmt).lower() for date in ['d', 'm', 'y', 'date', 'time']):
+                                    format_info['is_date'] = True
+                                    format_info['format_confidence'] = 1.0
+                                    # Only log for G867 to reduce overhead
+                                    if coord == 'G867':
+                                        processing_logger.info(f"📅 Detected date format in {coord}: {fmt}")
+                                
+                                # Enhanced formula detection
+                                if hasattr(tcell, 'data_type') and tcell.data_type == 'f':
+                                    format_info['has_formula'] = True
+                                    # Only log for G867 to reduce overhead
+                                    if coord == 'G867':
+                                        processing_logger.info(f"🔒 Detected formula in {coord}")
+                                elif isinstance(tcell.value, str) and str(tcell.value).startswith('='):
+                                    format_info['has_formula'] = True
+                                    # Only log for G867 to reduce overhead
+                                    if coord == 'G867':
+                                        processing_logger.info(f"🔒 Detected formula in {coord}")
+                                
+                                # Additional format validation based on cell value
+                                if not format_info['has_formula'] and tcell.value is not None:
+                                    self._validate_cell_format_consistency(tcell, format_info, coord)
+                                    
+                            except Exception as e:
+                                processing_logger.warning(f"⚠️ Format detection error for {coord}: {e}")
+                                pass
+                            
+                            coord_format_info[coord] = format_info
+                            
+                            # Debug: Log final format info for G867
+                            if coord == 'G867':
+                                processing_logger.info(f"🎯 G867 final format info: {format_info}")
+                
+                processing_logger.info(f"📊 Format detection completed. Found {len(coord_format_info)} cells with format info")
+
+                # Propagate number format across merged ranges with enhanced format inheritance
                 try:
-                    template_wb = openpyxl.load_workbook(self.template_path, data_only=True, read_only=True)
-                    template_ws = self._get_worksheet(template_wb, "template")
+                    for mrange in getattr(template_ws, 'merged_cells', []).ranges:
+                        try:
+                            min_row = mrange.min_row
+                            max_row = mrange.max_row
+                            min_col = mrange.min_col
+                            max_col = mrange.max_col
+                            master_cell = template_ws.cell(row=min_row, column=min_col)
+                            master_coord = master_cell.coordinate
+                            
+                            # Get master cell format info
+                            master_format = coord_format_info.get(master_coord, {})
+                            
+                            # Propagate format to all cells in merged range
+                            for r in range(min_row, max_row + 1):
+                                for c in range(min_col, max_col + 1):
+                                    coord = template_ws.cell(row=r, column=c).coordinate
+                                    template_coords.add(coord)
+                                    # Inherit master cell format
+                                    coord_format_info[coord] = master_format.copy()
+                        except Exception:
+                            continue
                 except Exception:
-                    template_ws = None
+                    pass
+                    
+            except Exception:
+                template_ws = None
+                coord_format_info = {}
+                template_coords = None
+            # CRITICAL: First, update all submitted files to match template format
+            if template_ws is not None and coord_format_info:
+                processing_logger.info(f"🔧 Format info available: {len(coord_format_info)} coordinates")
+                if 'G867' in coord_format_info:
+                    processing_logger.info(f"🎯 G867 format info before update: {coord_format_info['G867']}")
+                else:
+                    processing_logger.warning("⚠️ G867 not found in coord_format_info!")
+                
+                self.progress.emit(2)
+                self._update_submitted_files_format(files, coord_format_info)
+                self.progress.emit(4)
+            
+            # OPTIMIZATION: Process files in batches for better performance
+            total_files = len(files)
+            processing_logger.info(f"📁 Processing {total_files} files...")
+            
             for idx, file in enumerate(files, 1):
                 try:
-                    # Dispatch by extension; handle xlsx/xls/csv
+                    # Progress indicator for large batches
+                    if total_files > 10 and idx % max(1, total_files // 10) == 0:
+                        processing_logger.info(f"📊 Progress: {idx}/{total_files} files processed ({idx/total_files*100:.1f}%)")
+                    
                     ext = os.path.splitext(file)[1].lower()
                     file_label = os.path.splitext(os.path.basename(file))[0]
 
                     if ext in ('.xlsx', '.xls'):
                         wb = openpyxl.load_workbook(file, data_only=True, read_only=bool(self.settings.get('performance', {}).get('memory_optimization')))
                         ws = self._get_worksheet(wb, "source")
-                        # Validate structure against template if enabled
                         if validate_structure and template_ws is not None:
                             try:
                                 if (ws.max_row != template_ws.max_row) or (ws.max_column != template_ws.max_column):
@@ -2067,7 +1856,6 @@ class ConsolidationWorker(QThread):
                                     continue
                             except Exception:
                                 pass
-                        # Iterate cells with optional range and ignore_formulas
                         if load_cells is not None:
                             cells_iter = load_cells(ws, self.settings)
                         else:
@@ -2075,31 +1863,33 @@ class ConsolidationWorker(QThread):
 
                         for cell in cells_iter:
                             value = cell.value
-                            if normalize_value is not None:
-                                val = normalize_value(value, self.settings)
-                            else:
-                                val = float(value) if isinstance(value, (int, float)) else None
-                            if val is None:
-                                # If data-type validation is on and raw is not empty, treat as error/skip
-                                if validate_data_types and (cell.value not in (None, "")):
-                                    if stop_on_error:
-                                        wb.close()
-                                        filename = os.path.basename(file)
-                                        error_msg = (f"Non-Numeric Data Found\n\n"
-                                                   f"Cell {cell.coordinate} in file '{filename}' contains non-numeric data:\n"
-                                                   f"'{cell.value}'\n\n"
-                                                   f"This conflicts with data type validation settings.\n\n"
-                                                   f"Solution: Either:\n"
-                                                   f"• Convert the data to numbers in the source file\n"
-                                                   f"• Disable data type validation in settings\n"
-                                                   f"• Use a different template that allows text data")
-                                        self.finished.emit("error", error_msg)
-                                        return
-                                    # continue_on_error -> skip cell
-                                    continue
+                            coord = cell.coordinate
+                            
+                            # If template is present, skip cells not defined in template
+                            if template_coords is not None and coord not in template_coords:
                                 continue
+                            
+                            # Get template format information for this coordinate
+                            format_info = coord_format_info.get(coord, {})
+                            
+                            # CRITICAL: Verify cell format matches template before processing
+                            # This ensures we process data correctly according to template format
+                            if format_info.get('has_formula', False):
+                                # Skip cells with formulas - preserve them as-is
+                                continue
+                            
+                            # Process value with format-aware conversion
+                            # Since files are now pre-formatted, we can process more directly
+                            val = self._process_cell_value_with_format_verification(
+                                value, format_info, coord, file_label, wb, stop_on_error
+                            )
+                            
+                            if val is None:
+                                continue
+                                
+                            # Validate value against settings
                             if validate_value is not None and not validate_value(val, self.settings):
-                                if self.settings.get('validation', {}).get('stop_on_error'):
+                                if stop_on_error:
                                     wb.close()
                                     filename = os.path.basename(file)
                                     error_msg = (f"Data Validation Error\n\n"
@@ -2109,25 +1899,59 @@ class ConsolidationWorker(QThread):
                                     self.finished.emit("error", error_msg)
                                     return
                                 continue
-                            coord = cell.coordinate
-                            totals[coord] = totals.get(coord, 0) + val
+                            
+                            # OPTIMIZATION: Batch processing based on format type
+                            current_total = totals.get(coord)
+                            totals[coord] = (current_total + val) if current_total is not None else val
+                            
+                            # Enhanced processing based on template format requirements
+                            if format_info.get('is_percentage', False):
+                                # For percentage cells: accumulate for average calculation
+                                # This ensures percentages are averaged, not summed
+                                percent_counts[coord] = percent_counts.get(coord, 0) + 1
+                                
+                                # Enhanced debug logging for percentage cells (only for G867 to reduce overhead)
+                                if coord == 'G867':
+                                    processing_logger.info(f"📊 Percentage cell {coord}: {val} (from {file_label}) - Total: {totals[coord]}, Count: {percent_counts[coord]}")
+                                    processing_logger.info(f"📊 Format info: {format_info}")
+                                
+                            elif format_info.get('is_currency', False):
+                                # For currency cells: sum values (not average)
+                                # Only log for G867 to reduce overhead
+                                if coord == 'G867':
+                                    processing_logger.info(f"💰 Currency cell {coord}: {val} (from {file_label}) - Total: {totals[coord]}")
+                                
+                            elif format_info.get('is_number', False):
+                                # For number cells: sum values (not average)
+                                # Only log for G867 to reduce overhead
+                                if coord == 'G867':
+                                    processing_logger.info(f"🔢 Number cell {coord}: {val} (from {file_label}) - Total: {totals[coord]}")
+                                
+                            else:
+                                # For unformatted cells: sum values (default behavior)
+                                # Only log for G867 to reduce overhead
+                                if coord == 'G867':
+                                    processing_logger.info(f"📝 Unformatted cell {coord}: {val} (from {file_label}) - Total: {totals[coord]}")
+                            
+                            # Track contributions for detailed reporting
                             if coord not in contributions:
                                 contributions[coord] = {}
-                            contributions[coord][file_label] = contributions[coord].get(file_label, 0.0) + val
+                            prev = contributions[coord].get(file_label)
+                            contributions[coord][file_label] = (prev + val) if prev is not None else val
                         wb.close()
                     elif ext == '.csv':
-                        # CSV support removed; skip file but report as processed
+                        # Skip CSV files for now (not supported in this version)
+                        processing_logger.info(f"⏭️ Skipping CSV file: {os.path.basename(file)}")
                         self.file_processed.emit(os.path.basename(file))
                         continue
+                    
+                    # Emit progress for each file
                     self.file_processed.emit(os.path.basename(file))
                 except Exception as e:
-                    # Skip problematic files but continue
                     error_msg = self._get_file_error_message(file, e)
-                    print(f"Error processing {file}: {error_msg}")
-                    
-                    # Report error to Google Sheets if error reporter is available
+                    # Log the detailed error for debugging
+                    print(f"File processing failed: {error_msg}")
                     try:
-                        # Try to get the error reporter from the main application
                         from google_sheets_reporter import GoogleSheetsErrorReporter
                         error_reporter = GoogleSheetsErrorReporter("1.0.1")
                         error_reporter.report_error(
@@ -2136,12 +1960,10 @@ class ConsolidationWorker(QThread):
                             user_file=file
                         )
                     except Exception:
-                        # If error reporting fails, just continue
                         pass
 
                 self.progress.emit(5 + int(idx / max(len(files), 1) * 80))
 
-            # Write totals to output
             from openpyxl.comments import Comment
             from openpyxl.styles import Border, Side
             thin_orange = Border(
@@ -2153,42 +1975,117 @@ class ConsolidationWorker(QThread):
 
             for coord, value in totals.items():
                 cell = output_ws[coord]
-                # Check if cell is a MergedCell (read-only) before modifying
                 if isinstance(cell, MergedCell):
-                    # Skip merged cells as they have read-only attributes
                     continue
+                # Do not overwrite formulas in template/output
+                try:
+                    if getattr(cell, 'data_type', None) == 'f' or (isinstance(cell.value, str) and str(cell.value).startswith('=')):
+                        continue
+                except Exception:
+                    pass
+
+                # Enhanced consolidation logic with format-aware processing
+                format_info = coord_format_info.get(coord, {})
+                is_percent = format_info.get('is_percentage', False)
                 
-                cell.value = value
-                # Add hover comment listing contributing filenames
+                # Enhanced debugging for format detection (only for G867 to reduce overhead)
+                if coord == 'G867':
+                    processing_logger.info(f"🔍 Consolidating {coord}: Format info = {format_info}")
+                    processing_logger.info(f"🔍 Is percentage: {is_percent}, Value: {value}")
+                    processing_logger.info(f"🎯 G867 consolidation debug: coord_format_info keys = {list(coord_format_info.keys())[:10]}...")
+                    processing_logger.info(f"🎯 G867 format info from coord_format_info: {coord_format_info.get('G867', 'NOT FOUND')}")
+                
+                try:
+                    if is_percent:
+                        # For percentage cells: calculate average (total ÷ count) and format as percentage
+                        count = max(1, percent_counts.get(coord, 1))
+                        avg_value = float(value / Decimal(count))
+                        
+                        # Enhanced debug logging for final consolidation (only for G867)
+                        if coord == 'G867':
+                            processing_logger.info(f"🎯 Final percentage consolidation for {coord}: Total={value}, Count={count}, Average={avg_value} ({avg_value*100:.2f}%)")
+                        
+                        # Set the calculated average value directly
+                        cell.value = avg_value
+                        
+                        # Ensure the cell maintains percentage format from template
+                        template_format = format_info.get('number_format', '0.00%')
+                        cell.number_format = template_format
+                        
+                        if coord == 'G867':
+                            processing_logger.info(f"✅ {coord}: Set to {avg_value} ({avg_value*100:.2f}%) with format {template_format}")
+                        
+                    elif format_info.get('is_currency', False):
+                        # For currency cells: sum values and maintain currency format
+                        cell.value = float(value)
+                        template_format = format_info.get('number_format', '$#,##0.00')
+                        cell.number_format = template_format
+                        if coord == 'G867':
+                            processing_logger.info(f"✅ {coord}: Currency sum = {float(value)} with format {template_format}")
+                        
+                    elif format_info.get('is_number', False):
+                        # For number cells: sum values and maintain number format
+                        cell.value = float(value)
+                        template_format = format_info.get('number_format', '#,##0.00')
+                        cell.number_format = template_format
+                        if coord == 'G867':
+                            processing_logger.info(f"✅ {coord}: Number sum = {float(value)} with format {template_format}")
+                        
+                    else:
+                        # Default: sum values without special formatting
+                        cell.value = float(value)
+                        if coord == 'G867':
+                            processing_logger.info(f"✅ {coord}: Default sum = {float(value)}")
+                        
+                except Exception:
+                    # Fallback to basic value assignment
+                    cell.value = float(value) if value is not None else 0
                 file_map = contributions.get(coord, {})
                 if file_map:
-                    # Build professional, aligned text block
                     items = sorted(file_map.items(), key=lambda x: x[0].lower())
                     max_name = max((len(n) for n, _ in items), default=4)
                     header = "Consolidation Summary\n"
                     header += f"Cell: {coord}\n"
-                    header += f"Total: {value:,.2f}\n\n"
+                    
+                    # Enhanced summary based on cell format
+                    format_info = coord_format_info.get(coord, {})
+                    is_percent = format_info.get('is_percentage', False)
+                    
+                    if is_percent:
+                        count = max(1, int(percent_counts.get(coord, 1)))
+                        avg_val = (value / Decimal(count))
+                        header += f"Average: {float(avg_val)*100:,.2f}% (from {count} files)\n\n"
+                    elif format_info.get('is_currency', False):
+                        header += f"Total: ${float(value):,.2f}\n\n"
+                    elif format_info.get('is_number', False):
+                        header += f"Total: {float(value):,.2f}\n\n"
+                    else:
+                        header += f"Total: {float(value):,.2f}\n\n"
                     header += "Contributors (file  |  value)\n"
                     header += "-" * (max(26, max_name + 10)) + "\n"
                     lines = []
                     for name, v in items:
                         pad = " " * (max_name - len(name))
-                        lines.append(f"{name}{pad}  |  {v:,.2f}")
+                        try:
+                            format_info = coord_format_info.get(coord, {})
+                            if format_info.get('is_percentage', False):
+                                lines.append(f"{name}{pad}  |  {float(v)*100:,.2f}%")
+                            elif format_info.get('is_currency', False):
+                                lines.append(f"{name}{pad}  |  ${float(v):,.2f}")
+                            else:
+                                lines.append(f"{name}{pad}  |  {float(v):,.2f}")
+                        except Exception:
+                            lines.append(f"{name}{pad}  |  {v}")
                     body = "\n".join(lines)
                     comment_text = header + body
-                    # Excel comments are limited (~32,767 chars). Truncate safely if needed.
                     max_len = 32000
                     if len(comment_text) > max_len:
                         comment_text = comment_text[: max_len - 21] + "\n... (truncated)"
                     comment = Comment(comment_text, "Excel Consolidator")
-                    # Size hint
-                    # Cap size to encourage Excel to add scrollbars for long content
                     comment.width = min(520, 200 + max_name * 7)
                     comment.height = min(600, 140 + len(items) * 14)
                     cell.comment = comment
-                    # Visual indicator border
                     cell.border = thin_orange
-
 
             self.progress.emit(90)
             os.makedirs(self.save_folder, exist_ok=True)
@@ -2196,7 +2093,6 @@ class ConsolidationWorker(QThread):
             output_name = f"Consolidated - {date_str}.xlsm" if keep_vba else f"Consolidated - {date_str}.xlsx"
             output_path = os.path.join(self.save_folder, output_name)
             
-            # Optional: add Contributions sheet with simple search/filter
             try:
                 contrib_ws = output_wb.create_sheet("Contributions")
                 contrib_ws["A1"] = "CONTRIBUTIONS INDEX"
@@ -2206,46 +2102,64 @@ class ConsolidationWorker(QThread):
                 contrib_ws["A5"] = "Cell"
                 contrib_ws["B5"] = "File Name"
                 contrib_ws["C5"] = "Contribution"
-                # Fill rows with per-file contributions
                 r = 6
                 coord_to_first_row = {}
                 for coord, file_map in contributions.items():
                     for fname, v in file_map.items():
                         contrib_ws[f"A{r}"] = coord
                         contrib_ws[f"B{r}"] = fname
-                        contrib_ws[f"C{r}"] = v
+                        try:
+                            format_info = coord_format_info.get(coord, {})
+                            v_out = v
+                            
+                            if format_info.get('is_percentage', False):
+                                # Handle percentage values - values are already converted to decimals
+                                contrib_ws[f"C{r}"] = float(v_out)
+                                # Apply percentage format
+                                template_format = format_info.get('number_format', '0.00%')
+                                contrib_ws[f"C{r}"].number_format = template_format
+                                
+                            elif format_info.get('is_currency', False):
+                                # Handle currency values
+                                contrib_ws[f"C{r}"] = float(v_out)
+                                template_format = format_info.get('number_format', '$#,##0.00')
+                                contrib_ws[f"C{r}"].number_format = template_format
+                                
+                            elif format_info.get('is_number', False):
+                                # Handle number values
+                                contrib_ws[f"C{r}"] = float(v_out)
+                                template_format = format_info.get('number_format', '#,##0.00')
+                                contrib_ws[f"C{r}"].number_format = template_format
+                                
+                            else:
+                                # Default handling
+                                contrib_ws[f"C{r}"] = float(v_out)
+                                
+                        except Exception:
+                            contrib_ws[f"C{r}"] = v
                         if coord not in coord_to_first_row:
                             coord_to_first_row[coord] = r
                         r += 1
-                # Add autofilter over the table
                 if r > 6:
                     contrib_ws.auto_filter.ref = f"A5:C{r-1}"
-                # Set widths
                 contrib_ws.column_dimensions['A'].width = 12
                 contrib_ws.column_dimensions['B'].width = 40
                 contrib_ws.column_dimensions['C'].width = 16
-                # Add hyperlinks from consolidated cells to their first row in Contributions
                 try:
                     for coord in totals.keys():
                         first_row = coord_to_first_row.get(coord)
                         if first_row:
                             cell = output_ws[coord]
-                            # Check if cell is a MergedCell (read-only) before modifying
                             if isinstance(cell, MergedCell):
-                                # Skip merged cells as they have read-only attributes
                                 continue
-                            
                             link = f"#'Contributions'!A{first_row}"
                             cell.hyperlink = link
-                            # Optional tooltip
                             cell.hyperlink.tooltip = "Click to view full contributions"
                 except Exception:
                     pass
-            except Exception as _e:
-                # Non-fatal if we cannot add the sheet
+            except Exception:
                 pass
 
-            # Optionally create/rotate backups before overwriting
             backup_target = None
             if ensure_backup is not None:
                 backup_target = ensure_backup(self.save_folder, self.settings, os.path.basename(output_path))
@@ -2257,13 +2171,11 @@ class ConsolidationWorker(QThread):
                 return
             if backup_target:
                 try:
-                    # Copy the freshly saved consolidated file to backup target
                     import shutil
                     shutil.copy2(output_path, backup_target)
                 except Exception:
                     pass
             self.progress.emit(100)
-            # Send both consolidated path and optional audit placeholder (None)
             self.finished.emit("success", output_path)
         except Exception as e:
             error_message = self._get_user_friendly_error_message(e)
@@ -2283,8 +2195,6 @@ class ExcelProcessorApp(QWidget):
         super().__init__()
         self.setWindowTitle(f"{APP_NAME} v{APP_VERSION}")
         self.setGeometry(400, 200, 900, 650)
-        
-        # Update icon loading to use resource_path
         icon_path = self.resource_path("assets/icons/app.ico")
         self.setWindowIcon(QIcon(icon_path))
 
@@ -2292,13 +2202,11 @@ class ExcelProcessorApp(QWidget):
         self.excel_folder = None
         self.save_folder = None
         self.advanced_settings = None
-        
-        # Initialize error reporting and auto-update systems
+
         self.error_reporter = None
-        self.auto_updater = None
+        # Auto-update dialog guard removed
         self.setup_error_reporting_and_updates()
 
-        # Apply modern style
         self.apply_modern_style()
         self.initUI()
 
@@ -2310,345 +2218,28 @@ class ExcelProcessorApp(QWidget):
         return os.path.join(base_path, relative_path)
     
     def setup_error_reporting_and_updates(self):
-        """
-        Setup error reporting and auto-update systems.
-        """
         try:
-            # Setup error reporting
             if ERROR_REPORTING_ENABLED:
                 self.error_reporter, _ = setup_google_sheets_error_reporting(APP_VERSION)
                 if self.error_reporter:
                     print("Google Sheets error reporting system initialized successfully")
                 else:
                     print("Warning: Google Sheets error reporting system failed to initialize")
-            
-            # Setup optimized auto-updater
-            if AUTO_UPDATE_ENABLED:
-                try:
-                    # Try to use optimized auto-updater first
-                    self.auto_updater = setup_optimized_auto_updater(APP_VERSION, GITHUB_OWNER, GITHUB_REPO)
-                    if self.auto_updater:
-                        print("🚀 Optimized auto-update system initialized successfully")
-                        print(f"📱 Current version: {APP_VERSION}")
-                        print("⚡ Ultra-fast downloads enabled with parallel processing")
-                except Exception as e:
-                    print(f"⚠️  Optimized auto-updater failed, falling back to standard: {e}")
-                    # Fallback to standard auto-updater
-                    self.auto_updater = setup_auto_updater(APP_VERSION, GITHUB_OWNER, GITHUB_REPO)
-                    if self.auto_updater:
-                        print("Auto-update system initialized successfully (standard mode)")
-                        print(f"📱 Current version: {APP_VERSION}")
-                
-                if self.auto_updater:
-                    # Start background update checker
-                    self.auto_updater.start_background_checker()
-                    # Check for updates on startup (but don't show notification immediately)
-                    self.check_for_updates_on_startup()
-                else:
-                    print("Warning: Auto-update system failed to initialize")
-                    
+            # Auto-update feature has been removed
         except Exception as e:
-            print(f"Warning: Failed to setup error reporting and auto-update systems: {e}")
-    
-    def check_for_updates_on_startup(self):
-        """
-        Check for updates when the application starts and show dialog if available.
-        """
-        try:
-            if self.auto_updater:
-                # Check for updates
-                update_available = self.auto_updater.check_for_updates()
-                
-                if update_available:
-                    print(f"Update available: {self.auto_updater.latest_version}")
-                    
-                    # Show notification about available update
-                    self.show_update_notification()
-                    
-                    # Ask user if they want to update now
-                    from PyQt5.QtWidgets import QMessageBox
-                    reply = QMessageBox.question(
-                        self, 
-                        "Update Available", 
-                        f"Version {self.auto_updater.latest_version} is available!\n\nWould you like to update now?",
-                        QMessageBox.Yes | QMessageBox.No,
-                        QMessageBox.Yes
-                    )
-                    
-                    if reply == QMessageBox.Yes:
-                        # Show the update dialog and start the update process
-                        self.show_update_dialog()
-                    else:
-                        print("User chose to update later")
-                else:
-                    print("Application is up to date")
-        except Exception as e:
-            print(f"Error checking for updates on startup: {e}")
-    
-    def perform_update_with_progress(self):
-        """
-        Perform update with progress indicator.
-        """
-        try:
-            if not self.auto_updater or not self.auto_updater.update_available:
-                return False
-            
-            # Show update indicator
-            self.show_update_indicator("Checking for updates...")
-            self.update_progress_bar(10, "Checking for updates...")
-            
-            # Check for updates
-            if not self.auto_updater.check_for_updates():
-                self.hide_update_indicator()
-                return False
-            
-            self.update_progress_bar(20, "Update available! Downloading...")
-            
-            # Download update
-            update_path = self.auto_updater.download_update()
-            if not update_path:
-                self.hide_update_indicator()
-                return False
-            
-            self.update_progress_bar(60, "Download complete! Installing...")
-            
-            # Install update
-            success = self.auto_updater.install_update(update_path)
-            
-            if success:
-                self.update_progress_bar(100, "Update complete! Restarting...")
-                # Wait a moment to show completion
-                import time
-                time.sleep(2)
-                self.hide_update_indicator()
-                
-                # Show success message
-                from PyQt5.QtWidgets import QMessageBox
-                QMessageBox.information(
-                    self, 
-                    "Update Complete", 
-                    "Update completed successfully!\n\nThe application will restart automatically."
-                )
-                return True
-            else:
-                self.update_progress_bar(100, "Update failed!")
-                time.sleep(2)
-                self.hide_update_indicator()
-                
-                # Show error message
-                from PyQt5.QtWidgets import QMessageBox
-                QMessageBox.warning(
-                    self, 
-                    "Update Failed", 
-                    "Update failed. Please try downloading the update manually from GitHub."
-                )
-                return False
-                
-        except Exception as e:
-            print(f"Error performing update with progress: {e}")
-            self.hide_update_indicator()
-            return False
-    
-    def show_update_dialog(self):
-        """
-        Show the new update dialog for non-blocking updates.
-        """
-        try:
-            if not self.auto_updater or not self.auto_updater.update_available:
-                from PyQt5.QtWidgets import QMessageBox
-                QMessageBox.information(
-                    self, 
-                    "No Updates", 
-                    "No updates are currently available."
-                )
-                return
-            
-            # Create update callback function that uses the real auto-updater
-            def update_callback(progress_callback, download_progress_callback):
-                """Callback function for the update dialog using real auto-updater."""
-                try:
-                    # Perform the real update with progress callbacks
-                    success = self.auto_updater.perform_update(progress_callback, download_progress_callback)
-                    return success
-                    
-                except Exception as e:
-                    progress_callback(100, f"Update error: {str(e)}")
-                    return False
-            
-            # Create and show the update dialog
-            self.update_dialog = create_update_dialog(self, update_callback)
-            self.update_dialog.show()
-            self.update_dialog.start_update()
-            
-        except Exception as e:
-            print(f"Error showing update dialog: {e}")
-            # Fallback to old method
-            self.perform_update_with_progress()
-    
-    def show_update_notification(self):
-        """
-        Show a user-friendly notification about available updates.
-        """
-        try:
-            if self.auto_updater and self.auto_updater.update_available:
-                update_info = self.auto_updater.get_update_info()
-                message = (f"An update is available!\n\n"
-                          f"Current version: {update_info['current_version']}\n"
-                          f"Latest version: {update_info['latest_version']}\n\n"
-                          f"The update will be downloaded and installed automatically.")
-                
-                QMessageBox.information(
-                    self, 
-                    "Update Available", 
-                    message
-                )
-        except Exception as e:
-            print(f"Error showing update notification: {e}")
-    
-    def test_update_indicator(self):
-        """
-        Test method to demonstrate the update indicator (for testing purposes).
-        """
-        import threading
-        import time
-        
-        def simulate_update():
-            self.show_update_indicator("Testing update indicator...")
-            
-            # Simulate update progress
-            steps = [
-                (10, "Checking for updates..."),
-                (25, "Update available! Downloading..."),
-                (50, "Downloading update..."),
-                (75, "Download complete! Installing..."),
-                (90, "Installing update..."),
-                (100, "Update complete! Restarting...")
-            ]
-            
-            for progress, message in steps:
-                self.update_progress_bar(progress, message)
-                time.sleep(0.5)  # Simulate work
-            
-            time.sleep(1)  # Show completion
-            self.hide_update_indicator()
-        
-        # Run in background thread
-        thread = threading.Thread(target=simulate_update, daemon=True)
-        thread.start()
+            print(f"Warning: Failed to setup error reporting system: {e}")
     
     
-    def check_for_updates_with_indicator(self):
-        """
-        Check for updates and show progress indicator.
-        """
-        import threading
-        
-        def check_updates():
-            try:
-                if not self.auto_updater:
-                    return
-                
-                # Show update indicator
-                self.show_update_indicator("Checking for updates...")
-                self.update_progress_bar(20, "Connecting to update server...")
-                
-                # Check for updates
-                update_available = self.auto_updater.check_for_updates()
-                
-                if update_available:
-                    self.update_progress_bar(50, f"Update available: {self.auto_updater.latest_version}")
-                    
-                    # Show notification about available update
-                    self.show_update_notification()
-                    
-                    # Ask user if they want to update now
-                    from PyQt5.QtWidgets import QMessageBox
-                    reply = QMessageBox.question(
-                        self, 
-                        "Update Available", 
-                        f"Version {self.auto_updater.latest_version} is available!\n\nWould you like to update now?",
-                        QMessageBox.Yes | QMessageBox.No,
-                        QMessageBox.Yes
-                    )
-                    
-                    if reply == QMessageBox.Yes:
-                        self.hide_update_indicator()  # Hide old indicator
-                        # Use the new update dialog
-                        self.show_update_dialog()
-                    else:
-                        self.hide_update_indicator()
-                else:
-                    self.update_progress_bar(100, "Application is up to date!")
-                    time.sleep(1)
-                    self.hide_update_indicator()
-                    
-            except Exception as e:
-                print(f"Error checking for updates: {e}")
-                self.hide_update_indicator()
-        
-        # Run in background thread
-        thread = threading.Thread(target=check_updates, daemon=True)
-        thread.start()
     
-    def show_update_indicator(self, message="Updating..."):
-        """Show the update indicator with progress bar"""
-        try:
-            self.update_status_label.setText(message)
-            self.update_progress.setValue(0)
-            self.update_indicator.show()
-            # Position it correctly
-            self.update_indicator.move(10, self.height() - 80)
-            self.update_indicator.setFixedWidth(self.width() - 20)
-        except Exception as e:
-            print(f"Error showing update indicator: {e}")
-    
-    def hide_update_indicator(self):
-        """Hide the update indicator"""
-        try:
-            self.update_indicator.hide()
-        except Exception as e:
-            print(f"Error hiding update indicator: {e}")
-    
-    def update_progress_bar(self, value, message=None):
-        """Update the progress bar value and optionally the message"""
-        try:
-            self.update_progress.setValue(value)
-            if message:
-                self.update_status_label.setText(message)
-        except Exception as e:
-            print(f"Error updating progress bar: {e}")
 
     def closeEvent(self, event):
-        """
-        Handle application close event.
-        """
-        try:
-            # Stop background update checker
-            if self.auto_updater:
-                self.auto_updater.stop_background_checker()
-                print("Auto-updater background checker stopped")
-        except Exception as e:
-            print(f"Error stopping auto-updater: {e}")
-        
-        # Accept the close event
+        # Auto-update cleanup removed
         event.accept()
     
     def report_error_with_context(self, exc_type, exc_value, exc_traceback, triggered_by="Unknown", user_file=None):
-        """
-        Report an error with additional context.
-        
-        Args:
-            exc_type: Exception type
-            exc_value: Exception value
-            exc_traceback: Exception traceback
-            triggered_by: What triggered the error
-            user_file: Path to user file if available
-        """
         try:
             if self.error_reporter:
                 self.error_reporter.report_error(exc_type, exc_value, exc_traceback, triggered_by, user_file)
-                
-                # Show user-friendly message
                 QMessageBox.information(
                     self,
                     "Error Reported",
@@ -2859,61 +2450,8 @@ class ExcelProcessorApp(QWidget):
         main_layout.setSpacing(15)
         main_layout.setContentsMargins(20, 20, 20, 20)
 
-        # Add update indicator (initially hidden)
-        self.update_indicator = QFrame(self)
-        self.update_indicator.setObjectName("UpdateIndicator")
-        self.update_indicator.setFixedHeight(60)
-        self.update_indicator.setStyleSheet("""
-            QFrame#UpdateIndicator {
-                background-color: rgba(59, 130, 246, 0.1);
-                border: 1px solid rgba(59, 130, 246, 0.3);
-                border-radius: 8px;
-                margin: 10px;
-            }
-        """)
-        self.update_indicator.hide()  # Initially hidden
+        # Update indicator removed
         
-        # Update indicator layout
-        update_layout = QVBoxLayout(self.update_indicator)
-        update_layout.setContentsMargins(15, 10, 15, 10)
-        update_layout.setSpacing(8)
-        
-        # Update status label
-        self.update_status_label = QLabel("Updating...", self.update_indicator)
-        self.update_status_label.setStyleSheet("""
-            QLabel {
-                color: #1e40af;
-                font-size: 14px;
-                font-weight: bold;
-            }
-        """)
-        update_layout.addWidget(self.update_status_label)
-        
-        # Progress bar
-        self.update_progress = QProgressBar(self.update_indicator)
-        self.update_progress.setStyleSheet("""
-            QProgressBar {
-                border: 1px solid rgba(59, 130, 246, 0.3);
-                border-radius: 4px;
-                text-align: center;
-                background-color: rgba(255, 255, 255, 0.8);
-                height: 20px;
-            }
-            QProgressBar::chunk {
-                background-color: #3b82f6;
-                border-radius: 3px;
-            }
-        """)
-        self.update_progress.setRange(0, 100)
-        self.update_progress.setValue(0)
-        update_layout.addWidget(self.update_progress)
-        
-        # Position update indicator above watermark
-        def updateIndicatorPos():
-            self.update_indicator.move(10, self.height() - 80)  # Above watermark
-            self.update_indicator.setFixedWidth(self.width() - 20)
-        
-        # Add watermark
         watermark = QLabel("© 2025 Izak. All rights reserved.", self)
         watermark.setStyleSheet("""
             QLabel {
@@ -2923,46 +2461,30 @@ class ExcelProcessorApp(QWidget):
             }
         """)
         watermark.setAlignment(Qt.AlignRight | Qt.AlignBottom)
-        watermark.setGeometry(0, 0, 200, 30)  # Initial geometry
+        watermark.setGeometry(0, 0, 200, 30)
         
-        # Make sure watermark and update indicator stay positioned when window is resized
         def updateWatermarkPos():
             watermark.move(self.width() - watermark.width() - 20, 
                          self.height() - watermark.height() - 5)
-            updateIndicatorPos()
         
         self.resizeEvent = lambda e: updateWatermarkPos()
 
-        # Header with logo and title
         header_frame = QFrame()
         header_frame.setObjectName("AppHeader")
         header_layout = QHBoxLayout(header_frame)
         header_layout.setContentsMargins(20, 14, 20, 12)
         header_layout.setSpacing(16)
                 
-        # Update resource paths to work both in development and when bundled
-        def resource_path(relative_path):
-            try:
-                # PyInstaller creates a temp folder and stores path in _MEIPASS
-                base_path = sys._MEIPASS
-            except Exception:
-                base_path = os.path.abspath(".")
-            return os.path.join(base_path, relative_path)
-
-        # Logo with actual image
         logo_label = QLabel()
         logo_path = self.resource_path("assets/icons/logo.png")
         logo_pixmap = QPixmap(logo_path)
-        # Ensure high-quality scaling and HiDPI usage
         QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
         scaled_pixmap = logo_pixmap.scaled(100, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         logo_label.setPixmap(scaled_pixmap)
-
         logo_label.setFixedSize(100, 100)
         logo_label.setAlignment(Qt.AlignCenter)
         header_layout.addWidget(logo_label)
         
-        # Title and subtitle
         title_container = QVBoxLayout()
         title_container.setContentsMargins(0, 0, 0, 0)
         title_container.setSpacing(2)
@@ -2981,22 +2503,18 @@ class ExcelProcessorApp(QWidget):
         
         header_layout.addStretch()
         main_layout.addWidget(header_frame)
-        # subtle separator under header
         header_sep = QFrame()
         header_sep.setObjectName("Separator")
         header_sep.setFixedHeight(1)
         main_layout.addWidget(header_sep)
 
-        # Main content area
         content_splitter = QSplitter(Qt.Horizontal)
         
-        # Left panel - Steps
         left_widget = QWidget()
         left_layout = QVBoxLayout(left_widget)
         left_layout.setContentsMargins(8, 4, 8, 8)
         left_layout.setSpacing(12)
         
-        # Step 1: Select Template
         template_group = QGroupBox("Step 1: Select Template File")
         template_group.setStyleSheet("QGroupBox::title{background:transparent;color:#0f766e;}")
         template_layout = QVBoxLayout()
@@ -3013,7 +2531,6 @@ class ExcelProcessorApp(QWidget):
         template_group.setLayout(template_layout)
         left_layout.addWidget(template_group)
 
-        # Step 2: Select Excel Folder
         folder_group = QGroupBox("Step 2: Select Excel Folder")
         folder_group.setStyleSheet("QGroupBox::title{background:transparent;color:#0f766e;}")
         folder_layout = QVBoxLayout()
@@ -3030,7 +2547,6 @@ class ExcelProcessorApp(QWidget):
         folder_group.setLayout(folder_layout)
         left_layout.addWidget(folder_group)
 
-        # Step 3: Select Save Folder
         save_group = QGroupBox("Step 3: Select Save Location")
         save_group.setStyleSheet("QGroupBox::title{background:transparent;color:#0f766e;}")
         save_layout = QVBoxLayout()
@@ -3047,33 +2563,24 @@ class ExcelProcessorApp(QWidget):
         save_group.setLayout(save_layout)
         left_layout.addWidget(save_group)
 
-        # Step 4: Advanced Settings and Run
         settings_run_layout = QVBoxLayout()
-        
-        # Advanced Settings Button
         self.advanced_btn = QPushButton("⚙️ Advanced Settings")
         self.advanced_btn.setObjectName("TertiaryButton")
         self.advanced_btn.clicked.connect(self.open_advanced_settings)
         settings_run_layout.addWidget(self.advanced_btn)
-        
-        # Run Button
         self.run_btn = QPushButton("🚀 Run Consolidation")
         self.run_btn.setObjectName("SuccessButton")
         self.run_btn.clicked.connect(self.run_processing)
         settings_run_layout.addWidget(self.run_btn)
-        
         left_layout.addLayout(settings_run_layout)
-        
         left_layout.addStretch()
         content_splitter.addWidget(left_widget)
         
-        # Right panel - Info and Preview
         right_widget = QWidget()
         right_layout = QVBoxLayout(right_widget)
         right_layout.setContentsMargins(8, 4, 8, 8)
         right_layout.setSpacing(12)
         
-        # Info box
         info_group = QGroupBox("Information")
         info_group.setStyleSheet("QGroupBox::title{background:transparent;color:#0f766e;}")
         info_layout = QVBoxLayout()
@@ -3130,7 +2637,6 @@ class ExcelProcessorApp(QWidget):
         info_group.setLayout(info_layout)
         right_layout.addWidget(info_group)
         
-        # Stats box
         stats_group = QGroupBox("Statistics")
         stats_group.setStyleSheet("QGroupBox::title{background:transparent;color:#0f766e;}")
         stats_layout = QVBoxLayout()
@@ -3148,7 +2654,6 @@ class ExcelProcessorApp(QWidget):
         right_layout.addStretch()
         content_splitter.addWidget(right_widget)
         
-        # Set initial sizes for the splitter
         content_splitter.setSizes([420, 520])
         content_splitter.setStyleSheet("""
             QSplitter { border: none; }
@@ -3159,13 +2664,11 @@ class ExcelProcessorApp(QWidget):
 
         self.setLayout(main_layout)
         
-        # Add keyboard shortcuts
         from PyQt5.QtWidgets import QShortcut
         from PyQt5.QtGui import QKeySequence
+        # Auto-update shortcut removed
         
-        # Ctrl+Shift+U: Check for updates with progress indicator
-        check_updates_shortcut = QShortcut(QKeySequence("Ctrl+Shift+U"), self)
-        check_updates_shortcut.activated.connect(self.check_for_updates_with_indicator)
+        # Auto-update shortcuts removed
 
     def _style_button(self, button, color, is_primary=False):
         if is_primary:
@@ -3213,7 +2716,6 @@ class ExcelProcessorApp(QWidget):
         rgb = tuple(int(color[i:i+2], 16) for i in (0, 2, 4))
         rgb = tuple(max(0, min(255, c + amount)) for c in rgb)
         return '#{:02x}{:02x}{:02x}'.format(*rgb)
-
     # ---------------- Actions ----------------
     def open_template_file(self):
         try:
