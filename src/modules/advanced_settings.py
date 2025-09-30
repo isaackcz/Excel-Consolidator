@@ -85,17 +85,21 @@ def _matches_pattern(filename: str, pattern: str) -> bool:
 
 
 def load_cells(ws, settings: Dict) -> Iterable:
-    """Yield cells from a worksheet honoring custom range and ignore_formulas."""
+    """Yield cells from a worksheet honoring custom range and formula handling."""
     data_settings = settings.get('data_processing', {}) if settings else {}
     use_range = data_settings.get('use_custom_range')
     custom_range = (data_settings.get('custom_range') or '').strip()
     ignore_formulas = bool(data_settings.get('ignore_formulas'))
+    include_totals = bool(data_settings.get('include_totals', True))  # New setting for flexibility
 
     if use_range and custom_range:
         try:
             for row in ws[custom_range]:
                 for cell in row:
                     if ignore_formulas and cell.data_type == 'f':
+                        continue
+                    # Skip total rows/columns if not included
+                    if not include_totals and _is_total_cell(cell):
                         continue
                     yield cell
         except Exception:
@@ -104,13 +108,35 @@ def load_cells(ws, settings: Dict) -> Iterable:
                 for cell in row:
                     if ignore_formulas and cell.data_type == 'f':
                         continue
+                    if not include_totals and _is_total_cell(cell):
+                        continue
                     yield cell
     else:
         for row in ws.iter_rows():
             for cell in row:
                 if ignore_formulas and cell.data_type == 'f':
                     continue
+                if not include_totals and _is_total_cell(cell):
+                    continue
                 yield cell
+
+
+def _is_total_cell(cell) -> bool:
+    """Detect if a cell is likely a total row/column based on common patterns."""
+    if cell.value is None:
+        return False
+    
+    # Check for common total indicators in cell value
+    value_str = str(cell.value).lower().strip()
+    total_indicators = ['total', 'sum', 'subtotal', 'grand total', 'totaal', 'gesamt']
+    
+    # Check if cell value contains total indicators
+    if any(indicator in value_str for indicator in total_indicators):
+        return True
+    
+    # Check if cell is in a row/column that might be totals based on position
+    # This is a heuristic - could be enhanced based on specific needs
+    return False
 
 
 def normalize_value(value, settings: Dict) -> Optional[Decimal]:

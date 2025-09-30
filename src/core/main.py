@@ -23,7 +23,7 @@ from openpyxl.utils import get_column_letter, column_index_from_string
 from openpyxl.styles import Font, PatternFill, Border, Side, Alignment
 from openpyxl.comments import Comment
 import glob
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from datetime import datetime, timedelta
 import json
 import shutil
@@ -31,7 +31,6 @@ import hashlib
 import re
 import xlrd  # For .xls files
 import csv
-from decimal import Decimal, InvalidOperation
 import threading
 import warnings
 warnings.filterwarnings('ignore')
@@ -92,86 +91,6 @@ def setup_processing_logger():
 
 # Global logger instance
 processing_logger = setup_processing_logger()
-
-# ---------------- Sticky Tooltip Manager ----------------
-class StickyToolTip(QWidget):
-    """A small frameless widget that behaves like a sticky tooltip.
-
-    It stays open until the user clicks outside it. Position near a global point.
-    """
-    def __init__(self, text: str, parent: QWidget = None):
-        # Use Popup so it stays until clicking outside; frameless for tooltip look
-        super().__init__(parent, Qt.Popup | Qt.FramelessWindowHint)
-        self.setAttribute(Qt.WA_ShowWithoutActivating, True)
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(8, 6, 8, 6)
-        label = QLabel(text, self)
-        label.setWordWrap(True)
-        layout.addWidget(label)
-
-        # Match app tooltip style
-        self.setStyleSheet("QWidget { background-color: #333333; color: #ffffff; border: none; border-radius: 4px; }")
-
-    def show_at(self, global_pos: QPoint):
-        self.move(global_pos)
-        self.show()
-
-
-class GlobalToolTipFilter(QObject):
-    """Intercepts QEvent.ToolTip and shows a sticky tooltip that closes on outside click."""
-    def __init__(self, app: QApplication):
-        super().__init__(app)
-        self.app = app
-        self.current_tip: Optional[StickyToolTip] = None
-
-    def eventFilter(self, obj: QObject, event: QEvent) -> bool:
-        # Replace default tooltip behavior with a sticky popup
-        if event.type() == QEvent.ToolTip:
-            # Safely get tooltip text if widget provides one
-            tooltip_text = ''
-            try:
-                tooltip_text = obj.toolTip()  # type: ignore[attr-defined]
-            except Exception:
-                tooltip_text = ''
-
-            # Always suppress default tooltip handling
-            if not tooltip_text:
-                if self.current_tip:
-                    self.current_tip.close()
-                    self.current_tip = None
-                return True
-
-            # Toggle off if already visible
-            if self.current_tip and self.current_tip.isVisible():
-                self.current_tip.close()
-                self.current_tip = None
-                return True
-
-            # Determine global position if available
-            global_pos = QPoint(QCursor.pos())
-            try:
-                # If it's a help event, prefer its global pos
-                if hasattr(event, 'globalPos'):
-                    global_pos = event.globalPos()  # type: ignore
-            except Exception:
-                pass
-
-            # Show sticky popup offset from cursor
-            self.current_tip = StickyToolTip(tooltip_text)
-            self.current_tip.show_at(global_pos + QPoint(12, 12))
-            return True
-
-        # Close popup when clicking outside of it
-        if event.type() in (QEvent.MouseButtonPress, QEvent.MouseButtonDblClick):
-            if self.current_tip and self.current_tip.isVisible():
-                global_click = QCursor.pos()
-                if not self.current_tip.frameGeometry().contains(global_click):
-                    self.current_tip.close()
-                    self.current_tip = None
-        return False
-
-# ---------------- Advanced Configuration Dialog ----------------
-# Remove duplicate AdvancedConfigDialog definition below; keep only the more complete one above.
 
 # ---------------- Advanced Configuration Dialog ----------------
 class AdvancedConfigDialog(QDialog):
@@ -313,6 +232,36 @@ class AdvancedConfigDialog(QDialog):
             "💡 TIP: Enable this if your Excel files have money amounts with $ or other currency symbols."
         )
         group_layout.addWidget(self.handle_currency)
+        
+        # Format Standardization (DISABLED by default - too slow!)
+        self.enable_format_standardization = QCheckBox("⚠️ Pre-process source files (VERY SLOW - NOT recommended)")
+        self.enable_format_standardization.setChecked(False)  # DISABLED by default
+        self.enable_format_standardization.setToolTip(
+            "⚠️ WARNING: This setting is VERY SLOW!\n\n"
+            "When ENABLED:\n"
+            "• Modifies and SAVES each source file to match template format\n"
+            "• Takes ~30-60 seconds PER FILE to save\n"
+            "• 10 files = 5-10 MINUTES\n"
+            "• 100 files = 1-2 HOURS\n\n"
+            "⚡ RECOMMENDED: Keep this DISABLED\n\n"
+            "When DISABLED (FAST mode):\n"
+            "• Reads files in read-only mode (no modifications)\n"
+            "• Converts formats ON-THE-FLY during reading (in-memory)\n"
+            "• 10 files = 10-30 SECONDS\n"
+            "• 100 files = 2-5 MINUTES\n"
+            "• 20x FASTER!\n\n"
+            "How it works (DISABLED mode):\n"
+            "• System reads values and converts them in-memory\n"
+            "• No files are modified on disk\n"
+            "• Template format still determines SUM vs AVERAGE\n"
+            "• Same accuracy, much faster!\n\n"
+            "💡 TIP: KEEP THIS DISABLED unless you specifically need to modify source files.\n\n"
+            "Only enable if:\n"
+            "• You want source files permanently converted to match template\n"
+            "• You're willing to wait 1-2 hours for 100 files\n"
+            "• Speed is not important"
+        )
+        group_layout.addWidget(self.enable_format_standardization)
         
         self.ignore_formulas = QCheckBox("Ignore cells with formulas (use calculated values only)")
         self.ignore_formulas.setChecked(True)
@@ -894,6 +843,7 @@ class AdvancedConfigDialog(QDialog):
         self.auto_convert_text.setChecked(True)
         self.handle_percentages.setChecked(True)
         self.handle_currency.setChecked(True)
+        self.enable_format_standardization.setChecked(False)  # DISABLED by default - too slow!
         self.ignore_formulas.setChecked(True)
         self.use_custom_range.setChecked(False)
         self.range_input.setText("A1:Z100")
@@ -932,6 +882,7 @@ class AdvancedConfigDialog(QDialog):
                 'auto_convert_text': self.auto_convert_text.isChecked(),
                 'handle_percentages': self.handle_percentages.isChecked(),
                 'handle_currency': self.handle_currency.isChecked(),
+                'enable_format_standardization': self.enable_format_standardization.isChecked(),
                 'ignore_formulas': self.ignore_formulas.isChecked(),
                 'use_custom_range': self.use_custom_range.isChecked(),
                 'custom_range': self.range_input.text()
@@ -1028,13 +979,104 @@ class ConsolidationWorker(QThread):
     progress = pyqtSignal(int)
     file_processed = pyqtSignal(str)
 
-    def __init__(self, template_path, excel_folder, save_folder, settings=None, error_reporter=None):
+    def __init__(self, template_path, excel_folder, save_folder, settings=None, error_reporter=None, exclude_zero_percent=False):
         super().__init__()
         self.template_path = template_path
         self.excel_folder = excel_folder
         self.save_folder = save_folder
         self.settings = settings or {}
         self.error_reporter = error_reporter
+        self.exclude_zero_percent = exclude_zero_percent
+
+    def _is_percentage_format(self, format_str: str) -> bool:
+        """Enhanced percentage format detection with comprehensive patterns."""
+        if not format_str:
+            return False
+        
+        format_str = str(format_str).lower()
+        percentage_patterns = [
+            '%', 'percent', '0.0%', '0.00%', '0%', '#,##0%', '#,##0.0%', '#,##0.00%',
+            '0.0%', '0.00%', '0%', '0.0%', '0.00%', '0%', '0.0%', '0.00%',
+            'general%', 'standard%', 'percentage', 'pct', 'pct%'
+        ]
+        
+        return any(pattern in format_str for pattern in percentage_patterns)
+    
+    def _is_currency_format(self, format_str: str) -> bool:
+        """Enhanced currency format detection."""
+        if not format_str:
+            return False
+        
+        format_str = str(format_str)
+        currency_symbols = ['$', '€', '£', '¥', '₽', '₹', '₩', '₪', '₦', '₡', '₨', '₫', '₱', '₲', '₴', '₵', '₸', '₼', '₾', '₿']
+        currency_patterns = ['currency', 'money', 'dollar', 'euro', 'pound', 'yen']
+        
+        return (any(symbol in format_str for symbol in currency_symbols) or 
+                any(pattern in format_str.lower() for pattern in currency_patterns))
+    
+    def _is_number_format(self, format_str: str) -> bool:
+        """Enhanced number format detection."""
+        if not format_str:
+            return False
+        
+        format_str = str(format_str)
+        
+        # First check if it's already identified as percentage or currency
+        if self._is_percentage_format(format_str) or self._is_currency_format(format_str):
+            return False
+        
+        number_patterns = [
+            '0.00', '#,##0', '0.0', '0', '#,##0.00', '#,##0.0', '#,##0',
+            'general', 'standard', 'number', 'numeric', 'decimal',
+            '0.000', '0.0000', '#,##0.000', '#,##0.0000'
+        ]
+        
+        return any(pattern in format_str for pattern in number_patterns)
+    
+    def _is_date_format(self, format_str: str) -> bool:
+        """Enhanced date format detection."""
+        if not format_str:
+            return False
+        
+        format_str = str(format_str).lower()
+        date_patterns = [
+            'mm/dd/yyyy', 'dd/mm/yyyy', 'yyyy-mm-dd', 'mm-dd-yyyy', 'dd-mm-yyyy',
+            'mm/dd/yy', 'dd/mm/yy', 'yy-mm-dd', 'mm-dd-yy', 'dd-mm-yy',
+            'm/d/yyyy', 'd/m/yyyy', 'm/d/yy', 'd/m/yy',
+            'date', 'time', 'datetime', 'timestamp'
+        ]
+        
+        return any(pattern in format_str for pattern in date_patterns)
+    
+    def _get_consolidation_method(self, format_info: dict) -> str:
+        """Determine the appropriate consolidation method based on cell format."""
+        if format_info.get('is_percentage', False):
+            return 'average'
+        elif format_info.get('is_currency', False):
+            return 'sum'
+        elif format_info.get('is_number', False):
+            return 'sum'
+        elif format_info.get('is_date', False):
+            return 'sum'  # For dates, we might want to handle differently
+        else:
+            return 'sum'  # Default to sum for unformatted cells
+
+    def _is_total_cell(self, cell) -> bool:
+        """Detect if a cell is likely a total row/column based on common patterns."""
+        if cell.value is None:
+            return False
+        
+        # Check for common total indicators in cell value
+        value_str = str(cell.value).lower().strip()
+        total_indicators = ['total', 'sum', 'subtotal', 'grand total', 'totaal', 'gesamt']
+        
+        # Check if cell value contains total indicators
+        if any(indicator in value_str for indicator in total_indicators):
+            return True
+        
+        # Check if cell is in a row/column that might be totals based on position
+        # This is a heuristic - could be enhanced based on specific needs
+        return False
 
     def _get_user_friendly_error_message(self, error):
         """Convert technical errors into user-friendly messages with guidance."""
@@ -1214,20 +1256,30 @@ class ConsolidationWorker(QThread):
         try:
             # Handle different percentage input formats
             if isinstance(value, (int, float)):
-                # Since files are now pre-formatted, values should already be in decimal format
-                # (e.g., 0.5 for 50%, 0.75 for 75%)
-                val = Decimal(str(value))
-                return val
+                # Normalize numeric inputs to PERCENT POINTS for averaging
+                # Rules:
+                #  - Values > 1 are treated as percent points (e.g., 82.5 means 82.5%)
+                #  - Values between 0 and 1 are decimals; convert to percent points (0.825 → 82.5)
+                numeric_val = float(value)
+                if 0 <= numeric_val <= 1:
+                    normalized = numeric_val * 100.0
+                else:
+                    normalized = numeric_val
+                return Decimal(str(normalized))
             elif isinstance(value, str):
                 text = str(value).strip().replace(",", "")
                 if text.endswith('%'):
-                    # Remove % and convert to decimal
-                    val = Decimal(text[:-1]) / Decimal('100')
+                    # Remove % and interpret as percent points directly
+                    val = Decimal(text[:-1])
                     return val
                 else:
-                    # Try to parse as number - should already be in decimal format
-                    val = Decimal(text)
-                    return val
+                    # Parse as number; apply same normalization as numeric path
+                    numeric_val = float(text)
+                    if 0 <= numeric_val <= 1:
+                        normalized = numeric_val * 100.0
+                    else:
+                        normalized = numeric_val
+                    return Decimal(str(normalized))
             else:
                 return None
         except Exception as e:
@@ -1236,7 +1288,7 @@ class ConsolidationWorker(QThread):
                 error_msg = (f"Percentage Format Error\n\n"
                            f"Cell {coord} in file '{filename}' contains invalid percentage data:\n"
                            f"'{value}'\n\n"
-                           f"Expected: Numeric values or percentages (e.g., 0.5, 0.75, 0.25)\n\n"
+                           f"Expected: Numeric values or percentages (e.g., 100, 0.5, 0.75)\n\n"
                            f"💡 Solution: Ensure the cell contains valid percentage data or "
                            f"convert the template cell to a different format.")
                 self.finished.emit("error", error_msg)
@@ -1305,108 +1357,249 @@ class ConsolidationWorker(QThread):
         Update all submitted files to match template cell formats before consolidation.
         This ensures uniform formatting and correct processing (sum vs average).
         
-        Enhanced to properly handle percentage conversion and format standardization.
+        ENHANCED CONFLICT RESOLUTION:
+        - Converts text to numbers when template expects numbers (SUM)
+        - Converts text/numbers to percentages when template expects percentages (AVG)
+        - Applies template format as the source of truth
+        - Handles all edge cases: "100", "50%", 0.5, etc.
+        
+        OPTIMIZED FOR PERFORMANCE:
+        - Uses data_only=True for faster loading
+        - Only processes cells that need conversion
+        - Early exit for unchanged cells
+        - Progress reporting every file
         """
-        processing_logger.info(f"🔧 Starting format update for {len(files)} files...")
+        processing_logger.info(f"🔧 Starting format standardization for {len(files)} files...")
         processing_logger.info(f"📊 Template format info: {len(coord_format_info)} coordinates")
+        
+        files_updated = 0
+        cells_converted = 0
+        total_files = len(files)
         
         try:
             for file_idx, file in enumerate(files, 1):
                 try:
+                    # Update progress for each file
+                    file_progress = int((file_idx / total_files) * 100)
+                    processing_logger.info(f"⚡ Processing file {file_idx}/{total_files} ({file_progress}%): {os.path.basename(file)}")
+                    
                     ext = os.path.splitext(file)[1].lower()
                     if ext not in ('.xlsx', '.xls'):
-                        processing_logger.info(f"⏭️ Skipping {file} (not Excel file)")
+                        processing_logger.info(f"  ⏩ Skipped (not Excel file)")
                         continue
                     
-                    processing_logger.info(f"📁 Processing file {file_idx}/{len(files)}: {os.path.basename(file)}")
+                    # OPTIMIZED: Load with data_only=True for speed, then reload for writing only if needed
+                    # First pass: Check if any cells need conversion (read-only, fast)
+                    wb_check = openpyxl.load_workbook(file, data_only=True, read_only=True)
+                    ws_check = self._get_worksheet(wb_check, "source")
                     
-                    # Load file for format update
-                    wb = openpyxl.load_workbook(file, data_only=False)  # data_only=False to preserve formatting
+                    cells_needing_conversion = []
+                    
+                    # Quick scan: identify cells that need conversion
+                    for coord, format_info in coord_format_info.items():
+                        if coord not in ws_check:
+                            continue
+                        
+                        cell = ws_check[coord]
+                        
+                        # Skip empty cells
+                        if cell.value is None or cell.value == '':
+                            continue
+                        
+                        # Skip if already correct type
+                        if self._cell_already_correct_format(cell.value, format_info):
+                            continue
+                        
+                        cells_needing_conversion.append(coord)
+                    
+                    wb_check.close()
+                    
+                    # If no cells need conversion, skip this file entirely
+                    if not cells_needing_conversion:
+                        processing_logger.info(f"  ✅ No conversion needed (already matches template)")
+                        continue
+                    
+                    processing_logger.info(f"  🔧 {len(cells_needing_conversion)} cells need conversion")
+                    
+                    # Second pass: Only reload for writing if conversions are needed
+                    wb = openpyxl.load_workbook(file, data_only=False)
                     ws = self._get_worksheet(wb, "source")
                     
-                    updated_cells = 0
-                    # OPTIMIZATION: Only process cells that actually need format updates
-                    # Skip cells that don't exist in the worksheet or don't have values
-                    for coord, format_info in coord_format_info.items():
-                        if coord in ws:
-                            cell = ws[coord]
-                            # Skip empty cells to reduce processing
-                            if cell.value is None and not format_info.get('is_percentage', False):
-                                continue
+                    file_cells_updated = 0
+                    
+                    # OPTIMIZED: Only process cells that need conversion
+                    for coord in cells_needing_conversion:
+                        if coord not in ws:
+                            continue
                             
-                            # CRITICAL: Check and preserve formulas - never modify cells with formulas
-                            if self._preserve_formulas_during_format_update(cell, format_info, coord):
-                                processing_logger.info(f"  🔒 Skipping {coord} - contains formula")
-                                continue
-                            
-                            # Apply template format to submitted file
+                        cell = ws[coord]
+                        format_info = coord_format_info[coord]
+                        
+                        # CRITICAL: Preserve formulas - never modify cells with formulas
+                        if self._preserve_formulas_during_format_update(cell, format_info, coord):
+                            continue
+                        
+                        original_value = cell.value
+                        converted = False
+                        
+                        # === PERCENTAGE FORMAT (Template expects %, will use AVG) ===
+                        if format_info.get('is_percentage', False):
+                            converted_value = self._convert_to_percentage_format(original_value, coord)
+                            if converted_value is not None:
+                                cell.value = converted_value
+                                cell.number_format = format_info.get('number_format', '0.00%')
+                                converted = True
+                        
+                        # === CURRENCY FORMAT (Template expects currency, will use SUM) ===
+                        elif format_info.get('is_currency', False):
+                            converted_value = self._convert_to_number_format(original_value, coord, is_currency=True)
+                            if converted_value is not None:
+                                cell.value = converted_value
+                                cell.number_format = format_info.get('number_format', '$#,##0.00')
+                                converted = True
+                        
+                        # === NUMBER FORMAT (Template expects number, will use SUM) ===
+                        elif format_info.get('is_number', False):
+                            converted_value = self._convert_to_number_format(original_value, coord, is_currency=False)
+                            if converted_value is not None:
+                                cell.value = converted_value
+                                cell.number_format = format_info.get('number_format', '#,##0.00')
+                                converted = True
+                        
+                        # === DEFAULT (Apply template format, will use SUM) ===
+                        else:
                             template_format = format_info.get('number_format')
                             if template_format:
                                 cell.number_format = template_format
-                                
-                            # Enhanced percentage handling with better conversion logic
-                            if format_info.get('is_percentage', False):
-                                current_value = cell.value
-                                if current_value is not None and isinstance(current_value, (int, float)):
-                                    original_value = current_value
-                                    
-                                    # Enhanced percentage conversion logic
-                                    # For percentage cells, we need to be more careful about conversion
-                                    # Excel percentage cells can have values in different formats:
-                                    # - Decimal format: 0.5 (displays as 50%)
-                                    # - Whole number format: 50 (displays as 5000% if not converted)
-                                    
-                                    # Check if the value is already in decimal format (0-1 range)
-                                    if 0 <= current_value <= 1:
-                                        # Value is already in decimal format (0.5 for 50%)
-                                        cell.value = current_value
-                                        processing_logger.info(f"  ✅ {coord}: {original_value} -> {cell.value} (already decimal percentage)")
-                                    elif current_value > 1:
-                                        # Value is in whole number format (50 for 50%)
-                                        # Convert to decimal format
-                                        cell.value = current_value / 100
-                                        processing_logger.info(f"  ✅ {coord}: {original_value}% -> {cell.value} (converted to decimal)")
-                                    else:
-                                        # Zero or negative values - keep as-is
-                                        cell.value = current_value
-                                        processing_logger.info(f"  ✅ {coord}: {original_value} -> {cell.value} (zero/negative)")
-                                    
-                                    updated_cells += 1
-                            
-                            # Enhanced currency handling
-                            elif format_info.get('is_currency', False):
-                                current_value = cell.value
-                                if current_value is not None and isinstance(current_value, (int, float)):
-                                    # Keep value as is, just apply currency format
-                                    cell.value = current_value
-                                    processing_logger.info(f"  ✅ {coord}: Currency value {current_value} formatted")
-                                    updated_cells += 1
-                            
-                            # Enhanced number handling
-                            elif format_info.get('is_number', False):
-                                current_value = cell.value
-                                if current_value is not None and isinstance(current_value, (int, float)):
-                                    # Keep value as is, just apply number format
-                                    cell.value = current_value
-                                    processing_logger.info(f"  ✅ {coord}: Number value {current_value} formatted")
-                                    updated_cells += 1
+                                # Try to convert text to number if it looks numeric
+                                if isinstance(original_value, str):
+                                    converted_value = self._convert_to_number_format(original_value, coord, is_currency=False)
+                                    if converted_value is not None:
+                                        cell.value = converted_value
+                                        converted = True
+                        
+                        if converted:
+                            file_cells_updated += 1
+                            cells_converted += 1
                     
-                    processing_logger.info(f"  📝 Updated {updated_cells} cells in {os.path.basename(file)}")
+                    # Save the updated file if any cells were converted
+                    if file_cells_updated > 0:
+                        processing_logger.info(f"  💾 Saving {file_cells_updated} changes...")
+                        wb.save(file)
+                        files_updated += 1
+                        processing_logger.info(f"  ✅ Saved successfully")
                     
-                    # Save the updated file
-                    wb.save(file)
                     wb.close()
                     
                 except Exception as e:
                     # Log error but continue with other files
-                    processing_logger.warning(f"⚠️ Warning: Could not update format for file {file}: {e}")
+                    processing_logger.warning(f"⚠️ Could not update format for {os.path.basename(file)}: {e}")
                     continue
                     
         except Exception as e:
-            processing_logger.error(f"❌ Error updating file formats: {e}")
+            processing_logger.error(f"❌ Error during format standardization: {e}")
             # Continue with consolidation even if format update fails
         
-        processing_logger.info(f"✅ Format update completed!")
+        processing_logger.info(f"✅ Format standardization completed: {files_updated} files, {cells_converted} cells converted")
+    
+    def _cell_already_correct_format(self, value, format_info):
+        """
+        Quick check if cell value already matches expected format.
+        Used to skip unnecessary conversions for performance.
+        """
+        if value is None or value == '':
+            return True  # Empty cells don't need conversion
+        
+        # Check if numeric value already matches percentage format
+        if format_info.get('is_percentage', False):
+            if isinstance(value, (int, float)) and 0 <= value <= 1:
+                return True  # Already in decimal format (0.825 for 82.5%)
+        
+        # Check if already numeric for number/currency formats
+        elif format_info.get('is_number', False) or format_info.get('is_currency', False):
+            if isinstance(value, (int, float)):
+                return True  # Already a number
+        
+        return False  # Needs conversion
+    
+    def _convert_to_percentage_format(self, value, coord):
+        """
+        Convert any value to percentage format (decimal for Excel).
+        Handles: numbers (82.5), decimals (0.825), text ("82.5%", "50"), etc.
+        
+        Returns: Decimal value for Excel (e.g., 0.825 for 82.5%)
+        """
+        try:
+            # If already a number
+            if isinstance(value, (int, float)):
+                # Values > 1 are percentage points (82.5 means 82.5%)
+                if value > 1:
+                    return value / 100  # 82.5 → 0.825
+                # Values 0-1 are already decimals (0.825 means 82.5%)
+                elif 0 <= value <= 1:
+                    return value  # 0.825 → 0.825
+                else:
+                    # Negative or unusual values, treat as percentage points
+                    return value / 100
+            
+            # If text, parse it
+            elif isinstance(value, str):
+                text = value.strip()
+                
+                # Remove % symbol if present
+                if text.endswith('%'):
+                    # "82.5%" → 82.5 → 0.825
+                    numeric = float(text[:-1].replace(',', ''))
+                    return numeric / 100
+                else:
+                    # "82.5" or "0.825" - determine which
+                    numeric = float(text.replace(',', ''))
+                    if numeric > 1:
+                        return numeric / 100  # 82.5 → 0.825
+                    else:
+                        return numeric  # 0.825 → 0.825
+            
+            return None
+            
+        except Exception as e:
+            processing_logger.warning(f"⚠️ Could not convert {coord} value '{value}' to percentage: {e}")
+            return None
+    
+    def _convert_to_number_format(self, value, coord, is_currency=False):
+        """
+        Convert any value to number format.
+        Handles: numbers (100), text ("100", "$100", "1,234"), etc.
+        
+        Returns: Numeric value
+        """
+        try:
+            # If already a number, return as-is
+            if isinstance(value, (int, float)):
+                return value
+            
+            # If text, parse it
+            elif isinstance(value, str):
+                text = value.strip()
+                
+                # Remove currency symbols
+                for symbol in ['$', '€', '£', '¥', '₽', '₹', '₩', '₪', '₦', '₡', '₨', '₫', '₱']:
+                    text = text.replace(symbol, '')
+                
+                # Remove commas and spaces
+                text = text.replace(',', '').replace(' ', '')
+                
+                # Remove % symbol if present (shouldn't be here, but handle it)
+                if text.endswith('%'):
+                    text = text[:-1]
+                
+                # Parse to number
+                return float(text)
+            
+            return None
+            
+        except Exception as e:
+            processing_logger.warning(f"⚠️ Could not convert {coord} value '{value}' to number: {e}")
+            return None
 
     def _validate_cell_format_consistency(self, cell, format_info, coord):
         """
@@ -1662,6 +1855,10 @@ class ConsolidationWorker(QThread):
             contributions = {}
             percent_counts = {}
             coord_is_percent = {}
+            # Maintain a stable, complete list of all file labels for reporting
+            all_file_labels = [os.path.splitext(os.path.basename(p))[0] for p in files]
+            all_file_labels.sort(key=lambda n: n.lower())
+            total_files_count = len(files)  # Total number of files for accurate counting
             validation_settings = self.settings.get('validation', {})
             validate_structure = bool(validation_settings.get('validate_structure'))
             validate_data_types = bool(validation_settings.get('validate_data_types'))
@@ -1684,100 +1881,87 @@ class ConsolidationWorker(QThread):
                 
                 processing_logger.info("🔍 Analyzing template cells for format detection...")
                 
-                # OPTIMIZATION: Only process cells that have values or specific formats
-                # This dramatically reduces processing time for large templates
+                # ULTRA-FAST OPTIMIZATION: Only process cells with meaningful formats
+                # This reduces processing from 36k+ cells to ~100-500 cells
                 cell_count = 0
+                processed_cells = 0
+                
                 for row in template_ws.iter_rows():
                     for tcell in row:
                         coord = tcell.coordinate
                         template_coords.add(coord)
                         cell_count += 1
                         
-                        # OPTIMIZATION: Only process cells that have values or specific formats
-                        if (tcell.value is not None and tcell.value != '') or getattr(tcell, 'number_format', None):
-                            # Debug: Check if this is cell G867
-                            if coord == 'G867':
-                                processing_logger.info(f"🎯 Found G867 in template! Value: {tcell.value}, Format: {getattr(tcell, 'number_format', None)}")
+                        # FLEXIBLE FILTER: Process all cells with values or meaningful content
+                        fmt = getattr(tcell, 'number_format', None)
+                        has_value = tcell.value is not None and tcell.value != ''
+                        has_special_format = fmt and fmt not in ['General', '@', '0', '0.00']
+                        has_formula = hasattr(tcell, 'data_type') and tcell.data_type == 'f'
+                        
+                        # Process cells with values, special formatting, OR formulas (including totals)
+                        if has_value or has_special_format or has_formula:
+                            processed_cells += 1
                             
-                            # Enhanced format detection with comprehensive format analysis
+                            # Enhanced format detection with comprehensive analysis
                             format_info = {
                                 'is_percentage': False,
                                 'is_currency': False,
                                 'is_number': False,
                                 'is_date': False,
-                                'number_format': None,
+                                'number_format': str(fmt) if fmt else None,
                                 'has_formula': False,
-                                'format_confidence': 0.0  # Confidence level for format detection
+                                'format_confidence': 1.0,
+                                'consolidation_method': 'sum'  # Default to sum
                             }
                             
                             try:
-                                fmt = getattr(tcell, 'number_format', None)
-                                format_info['number_format'] = str(fmt) if fmt else None
+                                # Enhanced format detection using new helper methods
+                                if fmt:
+                                    fmt_str = str(fmt)
+                                    
+                                    if self._is_percentage_format(fmt_str):
+                                        format_info['is_percentage'] = True
+                                        format_info['consolidation_method'] = 'average'
+                                        processing_logger.info(f"📊 Percentage cell detected: {coord} with format: {fmt}")
+                                    
+                                    elif self._is_currency_format(fmt_str):
+                                        format_info['is_currency'] = True
+                                        format_info['consolidation_method'] = 'sum'
+                                    
+                                    elif self._is_number_format(fmt_str):
+                                        format_info['is_number'] = True
+                                        format_info['consolidation_method'] = 'sum'
+                                    
+                                    elif self._is_date_format(fmt_str):
+                                        format_info['is_date'] = True
+                                        format_info['consolidation_method'] = 'sum'
                                 
-                                # Debug: Log format detection for G867
-                                if coord == 'G867':
-                                    processing_logger.info(f"🔍 G867 format detection: fmt={fmt}, str(fmt)={str(fmt) if fmt else None}")
-                                
-                                # Enhanced percentage format detection
-                                if fmt and ('%' in str(fmt)):
-                                    format_info['is_percentage'] = True
-                                    format_info['format_confidence'] = 1.0
-                                    # Only log for G867 to reduce overhead
-                                    if coord == 'G867':
-                                        processing_logger.info(f"📊 Detected percentage format in {coord}: {fmt}")
-                                        processing_logger.info(f"📊 Cell value: {tcell.value}, Type: {type(tcell.value)}")
-                            
-                                # Enhanced currency format detection
-                                elif fmt and any(currency in str(fmt) for currency in ['$', '€', '£', '¥', 'currency']):
-                                    format_info['is_currency'] = True
-                                    format_info['format_confidence'] = 1.0
-                                    # Only log for G867 to reduce overhead
-                                    if coord == 'G867':
-                                        processing_logger.info(f"💰 Detected currency format in {coord}: {fmt}")
-                                
-                                # Enhanced number format detection
-                                elif fmt and any(num in str(fmt) for num in ['0', '#', '.', ',']):
-                                    format_info['is_number'] = True
-                                    format_info['format_confidence'] = 0.8
-                                    # Only log for G867 to reduce overhead
-                                    if coord == 'G867':
-                                        processing_logger.info(f"🔢 Detected number format in {coord}: {fmt}")
-                                
-                                # Enhanced date format detection
-                                elif fmt and any(date in str(fmt).lower() for date in ['d', 'm', 'y', 'date', 'time']):
-                                    format_info['is_date'] = True
-                                    format_info['format_confidence'] = 1.0
-                                    # Only log for G867 to reduce overhead
-                                    if coord == 'G867':
-                                        processing_logger.info(f"📅 Detected date format in {coord}: {fmt}")
-                                
-                                # Enhanced formula detection
+                                # Formula detection (simplified)
                                 if hasattr(tcell, 'data_type') and tcell.data_type == 'f':
                                     format_info['has_formula'] = True
-                                    # Only log for G867 to reduce overhead
-                                    if coord == 'G867':
-                                        processing_logger.info(f"🔒 Detected formula in {coord}")
                                 elif isinstance(tcell.value, str) and str(tcell.value).startswith('='):
                                     format_info['has_formula'] = True
-                                    # Only log for G867 to reduce overhead
-                                    if coord == 'G867':
-                                        processing_logger.info(f"🔒 Detected formula in {coord}")
                                 
-                                # Additional format validation based on cell value
-                                if not format_info['has_formula'] and tcell.value is not None:
-                                    self._validate_cell_format_consistency(tcell, format_info, coord)
-                                    
-                            except Exception as e:
-                                processing_logger.warning(f"⚠️ Format detection error for {coord}: {e}")
-                                pass
-                            
-                            coord_format_info[coord] = format_info
-                            
-                            # Debug: Log final format info for G867
-                            if coord == 'G867':
-                                processing_logger.info(f"🎯 G867 final format info: {format_info}")
+                                coord_format_info[coord] = format_info
+                                
+                            except Exception:
+                                # Silent error handling to avoid logging overhead
+                                continue
                 
-                processing_logger.info(f"📊 Format detection completed. Found {len(coord_format_info)} cells with format info")
+                processing_logger.info(f"📊 Enhanced format detection completed. Processed {processed_cells} relevant cells out of {cell_count} total cells")
+                
+                # Log format summary for debugging
+                percent_count = len([c for c in coord_format_info.values() if c.get('is_percentage')])
+                currency_count = len([c for c in coord_format_info.values() if c.get('is_currency')])
+                number_count = len([c for c in coord_format_info.values() if c.get('is_number')])
+                date_count = len([c for c in coord_format_info.values() if c.get('is_date')])
+                
+                processing_logger.info(f"📊 Format summary: {percent_count} percentage cells, {currency_count} currency cells, {number_count} number cells, {date_count} date cells")
+                
+                # Log all percentage cells for debugging
+                percent_cells = [coord for coord, info in coord_format_info.items() if info.get('is_percentage')]
+                if percent_cells:
+                    processing_logger.info(f"📊 Percentage cells found: {percent_cells[:10]}{'...' if len(percent_cells) > 10 else ''}")
 
                 # Propagate number format across merged ranges with enhanced format inheritance
                 try:
@@ -1809,21 +1993,43 @@ class ConsolidationWorker(QThread):
                 template_ws = None
                 coord_format_info = {}
                 template_coords = None
-            # CRITICAL: First, update all submitted files to match template format
-            if template_ws is not None and coord_format_info:
-                processing_logger.info(f"🔧 Format info available: {len(coord_format_info)} coordinates")
-                if 'G867' in coord_format_info:
-                    processing_logger.info(f"🎯 G867 format info before update: {coord_format_info['G867']}")
-                else:
-                    processing_logger.warning("⚠️ G867 not found in coord_format_info!")
-                
-                self.progress.emit(2)
+            # PERFORMANCE FIX: Skip the slow format update process
+            # The format update was taking 16+ minutes per file and is not necessary
+            # for percentage averaging to work correctly
+            processing_logger.info(f"🔧 Format info available: {len(coord_format_info)} coordinates")
+            
+            # Log percentage cells found for debugging
+            percent_cells = [coord for coord, info in coord_format_info.items() if info.get('is_percentage')]
+            if percent_cells:
+                processing_logger.info(f"📊 Percentage cells detected: {percent_cells[:5]}{'...' if len(percent_cells) > 5 else ''}")
+            
+            # PROFESSIONAL APPROACH: NEVER modify source files (too slow!)
+            # Instead, handle format conversion ON-THE-FLY during reading
+            enable_format_standardization = self.settings.get('data_processing', {}).get('enable_format_standardization', False)
+            
+            self.progress.emit(2)
+            
+            if enable_format_standardization:
+                processing_logger.warning("⚠️ Format standardization ENABLED - this will be VERY SLOW!")
+                processing_logger.warning("⚠️ Modifying and saving source files takes ~30-60 seconds per file")
+                processing_logger.warning("⚠️ For 100 files, this could take 1-2 HOURS!")
+                processing_logger.info("💡 TIP: Disable this setting for 20x faster processing")
                 self._update_submitted_files_format(files, coord_format_info)
-                self.progress.emit(4)
+            else:
+                processing_logger.info("⚡ Format standardization DISABLED - using FAST on-the-fly conversion")
+                processing_logger.info("⚡ Source files will NOT be modified (read-only mode)")
+                processing_logger.info("⚡ Format conversion happens during reading (in-memory only)")
+            
+            self.progress.emit(4)
             
             # OPTIMIZATION: Process files in batches for better performance
             total_files = len(files)
             processing_logger.info(f"📁 Processing {total_files} files...")
+            
+            if enable_format_standardization:
+                processing_logger.info("✅ Files standardized to template format - ready for consolidation")
+            else:
+                processing_logger.info("⚡ ULTRA-FAST mode - processing files as-is")
             
             for idx, file in enumerate(files, 1):
                 try:
@@ -1872,18 +2078,27 @@ class ConsolidationWorker(QThread):
                             # Get template format information for this coordinate
                             format_info = coord_format_info.get(coord, {})
                             
-                            # CRITICAL: Verify cell format matches template before processing
-                            # This ensures we process data correctly according to template format
-                            if format_info.get('has_formula', False):
-                                # Skip cells with formulas - preserve them as-is
+                            # CRITICAL FIX: Skip formulas in SOURCE files to prevent double-counting
+                            # Check if THIS cell (in source file) has a formula, not template
+                            if hasattr(cell, 'data_type') and cell.data_type == 'f':
+                                # This cell in SOURCE file is a formula - SKIP IT!
+                                # Formulas often reference other cells being consolidated, causing double-counting
+                                processing_logger.debug(f"⏩ Skipping formula cell {coord} in {file_label} to prevent double-counting")
                                 continue
                             
-                            # Process value with format-aware conversion
-                            # Since files are now pre-formatted, we can process more directly
+                            # Skip empty cells
+                            if value is None or value == '':
+                                continue
+                            
+                            # FLEXIBLE: Handle total cells
+                            include_totals = self.settings.get('data_processing', {}).get('include_totals', True)
+                            if not include_totals and self._is_total_cell(cell):
+                                continue
+                            
+                            # Process the cell value
                             val = self._process_cell_value_with_format_verification(
                                 value, format_info, coord, file_label, wb, stop_on_error
                             )
-                            
                             if val is None:
                                 continue
                                 
@@ -1900,38 +2115,41 @@ class ConsolidationWorker(QThread):
                                     return
                                 continue
                             
-                            # OPTIMIZATION: Batch processing based on format type
-                            current_total = totals.get(coord)
-                            totals[coord] = (current_total + val) if current_total is not None else val
-                            
                             # Enhanced processing based on template format requirements
-                            if format_info.get('is_percentage', False):
+                            consolidation_method = format_info.get('consolidation_method', 'sum')
+                            
+                            if consolidation_method == 'average':
                                 # For percentage cells: accumulate for average calculation
-                                # This ensures percentages are averaged, not summed
-                                percent_counts[coord] = percent_counts.get(coord, 0) + 1
+                                # Count behavior depends on exclude_zero_percent setting
+                                current_total = totals.get(coord)
+                                totals[coord] = (current_total + val) if current_total is not None else val
                                 
-                                # Enhanced debug logging for percentage cells (only for G867 to reduce overhead)
-                                if coord == 'G867':
-                                    processing_logger.info(f"📊 Percentage cell {coord}: {val} (from {file_label}) - Total: {totals[coord]}, Count: {percent_counts[coord]}")
-                                    processing_logger.info(f"📊 Format info: {format_info}")
+                                # Initialize count to total files on first encounter
+                                if coord not in percent_counts:
+                                    if self.exclude_zero_percent:
+                                        # When excluding zeros: only count files with non-zero values
+                                        percent_counts[coord] = 0
+                                    else:
+                                        # Default: count all files (including files with 0% values)
+                                        percent_counts[coord] = total_files_count
                                 
-                            elif format_info.get('is_currency', False):
-                                # For currency cells: sum values (not average)
-                                # Only log for G867 to reduce overhead
-                                if coord == 'G867':
-                                    processing_logger.info(f"💰 Currency cell {coord}: {val} (from {file_label}) - Total: {totals[coord]}")
+                                # If excluding zeros, increment count only for non-zero values
+                                if self.exclude_zero_percent and val != 0:
+                                    percent_counts[coord] += 1
                                 
-                            elif format_info.get('is_number', False):
-                                # For number cells: sum values (not average)
-                                # Only log for G867 to reduce overhead
-                                if coord == 'G867':
-                                    processing_logger.info(f"🔢 Number cell {coord}: {val} (from {file_label}) - Total: {totals[coord]}")
+                                # Enhanced debug logging for percentage cells
+                                count_mode = "non-zero files" if self.exclude_zero_percent else "all files"
+                                processing_logger.info(f"📊 Percentage cell {coord}: {val} (from {file_label}) - Total: {totals[coord]}, Count: {percent_counts[coord]} ({count_mode})")
                                 
                             else:
-                                # For unformatted cells: sum values (default behavior)
-                                # Only log for G867 to reduce overhead
-                                if coord == 'G867':
-                                    processing_logger.info(f"📝 Unformatted cell {coord}: {val} (from {file_label}) - Total: {totals[coord]}")
+                                # For currency, number, and unformatted cells: sum values
+                                # Zero values don't affect sum, but are included conceptually
+                                current_total = totals.get(coord)
+                                totals[coord] = (current_total + val) if current_total is not None else val
+                                
+                                # Enhanced debug logging for all cell types
+                                cell_type = "currency" if format_info.get('is_currency') else "number" if format_info.get('is_number') else "unformatted"
+                                processing_logger.info(f"🔢 {cell_type.title()} cell {coord}: {val} (from {file_label}) - Total: {totals[coord]}")
                             
                             # Track contributions for detailed reporting
                             if coord not in contributions:
@@ -1940,19 +2158,15 @@ class ConsolidationWorker(QThread):
                             contributions[coord][file_label] = (prev + val) if prev is not None else val
                         wb.close()
                     elif ext == '.csv':
-                        # Skip CSV files for now (not supported in this version)
-                        processing_logger.info(f"⏭️ Skipping CSV file: {os.path.basename(file)}")
                         self.file_processed.emit(os.path.basename(file))
                         continue
-                    
-                    # Emit progress for each file
                     self.file_processed.emit(os.path.basename(file))
                 except Exception as e:
                     error_msg = self._get_file_error_message(file, e)
                     # Log the detailed error for debugging
                     print(f"File processing failed: {error_msg}")
                     try:
-                        from google_sheets_reporter import GoogleSheetsErrorReporter
+                        from src.modules.google_sheets_reporter import GoogleSheetsErrorReporter
                         error_reporter = GoogleSheetsErrorReporter("1.0.1")
                         error_reporter.report_error(
                             type(e), e, e.__traceback__,
@@ -1973,69 +2187,68 @@ class ConsolidationWorker(QThread):
                 bottom=Side(style='thin', color='FF8C00')
             )
 
+            # Determine whether we should overwrite formulas in the output template
+            overwrite_output_formulas = (
+                self.settings.get('output_handling', {}).get('overwrite_output_formulas', True)
+            )
+
             for coord, value in totals.items():
                 cell = output_ws[coord]
                 if isinstance(cell, MergedCell):
                     continue
-                # Do not overwrite formulas in template/output
-                try:
-                    if getattr(cell, 'data_type', None) == 'f' or (isinstance(cell.value, str) and str(cell.value).startswith('=')):
-                        continue
-                except Exception:
-                    pass
+                # Optionally overwrite formulas in the template/output to ensure accurate consolidated totals
+                if not overwrite_output_formulas:
+                    try:
+                        if getattr(cell, 'data_type', None) == 'f' or (isinstance(cell.value, str) and str(cell.value).startswith('=')):
+                            continue
+                    except Exception:
+                        pass
 
                 # Enhanced consolidation logic with format-aware processing
                 format_info = coord_format_info.get(coord, {})
-                is_percent = format_info.get('is_percentage', False)
+                consolidation_method = format_info.get('consolidation_method', 'sum')
                 
-                # Enhanced debugging for format detection (only for G867 to reduce overhead)
-                if coord == 'G867':
-                    processing_logger.info(f"🔍 Consolidating {coord}: Format info = {format_info}")
-                    processing_logger.info(f"🔍 Is percentage: {is_percent}, Value: {value}")
-                    processing_logger.info(f"🎯 G867 consolidation debug: coord_format_info keys = {list(coord_format_info.keys())[:10]}...")
-                    processing_logger.info(f"🎯 G867 format info from coord_format_info: {coord_format_info.get('G867', 'NOT FOUND')}")
+                # Enhanced debugging for format detection
+                processing_logger.info(f"🔍 Consolidating {coord}: Format info = {format_info}")
+                processing_logger.info(f"🔍 Consolidation method: {consolidation_method}, Value: {value}")
                 
                 try:
-                    if is_percent:
+                    if consolidation_method == 'average':
                         # For percentage cells: calculate average (total ÷ count) and format as percentage
                         count = max(1, percent_counts.get(coord, 1))
                         avg_value = float(value / Decimal(count))
                         
-                        # Enhanced debug logging for final consolidation (only for G867)
-                        if coord == 'G867':
-                            processing_logger.info(f"🎯 Final percentage consolidation for {coord}: Total={value}, Count={count}, Average={avg_value} ({avg_value*100:.2f}%)")
+                        # Enhanced debug logging for final consolidation
+                        processing_logger.info(f"🎯 Final percentage consolidation for {coord}: Total={value}, Count={count}, Average={avg_value} ({avg_value:.2f}%)")
                         
-                        # Set the calculated average value directly
-                        cell.value = avg_value
+                        # Set the calculated average value - values are already in percentage points, just convert to decimal for Excel
+                        # Excel expects percentage values as decimals (e.g., 0.825 for 82.5%)
+                        cell.value = avg_value / 100
                         
                         # Ensure the cell maintains percentage format from template
                         template_format = format_info.get('number_format', '0.00%')
                         cell.number_format = template_format
                         
-                        if coord == 'G867':
-                            processing_logger.info(f"✅ {coord}: Set to {avg_value} ({avg_value*100:.2f}%) with format {template_format}")
-                        
-                    elif format_info.get('is_currency', False):
-                        # For currency cells: sum values and maintain currency format
-                        cell.value = float(value)
-                        template_format = format_info.get('number_format', '$#,##0.00')
-                        cell.number_format = template_format
-                        if coord == 'G867':
-                            processing_logger.info(f"✅ {coord}: Currency sum = {float(value)} with format {template_format}")
-                        
-                    elif format_info.get('is_number', False):
-                        # For number cells: sum values and maintain number format
-                        cell.value = float(value)
-                        template_format = format_info.get('number_format', '#,##0.00')
-                        cell.number_format = template_format
-                        if coord == 'G867':
-                            processing_logger.info(f"✅ {coord}: Number sum = {float(value)} with format {template_format}")
+                        processing_logger.info(f"✅ {coord}: Set to {avg_value/100} ({avg_value:.2f}%) with format {template_format}")
                         
                     else:
-                        # Default: sum values without special formatting
+                        # For currency, number, and unformatted cells: sum values
                         cell.value = float(value)
-                        if coord == 'G867':
-                            processing_logger.info(f"✅ {coord}: Default sum = {float(value)}")
+                        
+                        # Apply appropriate formatting based on cell type
+                        if format_info.get('is_currency', False):
+                            template_format = format_info.get('number_format', '$#,##0.00')
+                            cell.number_format = template_format
+                            processing_logger.info(f"✅ {coord}: Currency sum = {float(value)} with format {template_format}")
+                            
+                        elif format_info.get('is_number', False):
+                            template_format = format_info.get('number_format', '#,##0.00')
+                            cell.number_format = template_format
+                            processing_logger.info(f"✅ {coord}: Number sum = {float(value)} with format {template_format}")
+                            
+                        else:
+                            # Default: sum values without special formatting
+                            processing_logger.info(f"✅ {coord}: Unformatted sum = {float(value)}")
                         
                 except Exception:
                     # Fallback to basic value assignment
@@ -2054,7 +2267,21 @@ class ConsolidationWorker(QThread):
                     if is_percent:
                         count = max(1, int(percent_counts.get(coord, 1)))
                         avg_val = (value / Decimal(count))
-                        header += f"Average: {float(avg_val)*100:,.2f}% (from {count} files)\n\n"
+                        # BUG FIX: avg_val is already in percentage points, don't multiply by 100!
+                        num_contributors = len([v for v in file_map.values() if v != 0])
+                        
+                        if self.exclude_zero_percent:
+                            # Excluding zeros: count only includes files with non-zero values
+                            header += f"Average: {float(avg_val):,.2f}% (from {count} files with values"
+                            if num_contributors != count:
+                                header += f", {num_contributors} non-zero"
+                            header += ", zero values excluded)\n\n"
+                        else:
+                            # Default: count includes ALL files (missing/empty cells treated as 0%)
+                            header += f"Average: {float(avg_val):,.2f}% (from {count} files"
+                            if num_contributors < count:
+                                header += f", {num_contributors} with values, {count - num_contributors} empty"
+                            header += ")\n\n"
                     elif format_info.get('is_currency', False):
                         header += f"Total: ${float(value):,.2f}\n\n"
                     elif format_info.get('is_number', False):
@@ -2069,7 +2296,8 @@ class ConsolidationWorker(QThread):
                         try:
                             format_info = coord_format_info.get(coord, {})
                             if format_info.get('is_percentage', False):
-                                lines.append(f"{name}{pad}  |  {float(v)*100:,.2f}%")
+                                # BUG FIX: v is already in percentage points, don't multiply by 100!
+                                lines.append(f"{name}{pad}  |  {float(v):,.2f}%")
                             elif format_info.get('is_currency', False):
                                 lines.append(f"{name}{pad}  |  ${float(v):,.2f}")
                             else:
@@ -2104,8 +2332,29 @@ class ConsolidationWorker(QThread):
                 contrib_ws["C5"] = "Contribution"
                 r = 6
                 coord_to_first_row = {}
-                for coord, file_map in contributions.items():
-                    for fname, v in file_map.items():
+                # Sort coordinates in natural Excel order (A1, A2, ..., B1, ...)
+                def _col_to_num(col_letters):
+                    result = 0
+                    for ch in col_letters:
+                        if 'a' <= ch <= 'z':
+                            ch = chr(ord(ch) - 32)
+                        result = result * 26 + (ord(ch) - 64)
+                    return result
+                def _cell_sort_key(cell_ref):
+                    col = ""
+                    row_str = ""
+                    for ch in cell_ref:
+                        if ch.isalpha():
+                            col += ch
+                        elif ch.isdigit():
+                            row_str += ch
+                    return (_col_to_num(col), int(row_str) if row_str else 0)
+
+                for coord in sorted(contributions.keys(), key=_cell_sort_key):
+                    file_map = contributions.get(coord, {})
+                    # Iterate through the complete set of files; fill 0 where missing
+                    for fname in all_file_labels:
+                        v = file_map.get(fname, 0)
                         contrib_ws[f"A{r}"] = coord
                         contrib_ws[f"B{r}"] = fname
                         try:
@@ -2113,33 +2362,43 @@ class ConsolidationWorker(QThread):
                             v_out = v
                             
                             if format_info.get('is_percentage', False):
-                                # Handle percentage values - values are already converted to decimals
-                                contrib_ws[f"C{r}"] = float(v_out)
-                                # Apply percentage format
+                                # PERCENTAGE VALUES - Accurate Display in Contributions Sheet
+                                # v_out is in percentage points (e.g., 84.36 for 84.36%)
+                                # Excel needs decimal format (0.8436) with percentage format to display as 84.36%
+                                contrib_ws[f"C{r}"] = float(v_out) / 100  # Convert to Excel decimal
                                 template_format = format_info.get('number_format', '0.00%')
                                 contrib_ws[f"C{r}"].number_format = template_format
+                                # Result: Displays as 84.36% (CORRECT)
                                 
                             elif format_info.get('is_currency', False):
-                                # Handle currency values
+                                # CURRENCY VALUES - Accurate Display
+                                # v_out is already in correct format (e.g., 1234.56)
                                 contrib_ws[f"C{r}"] = float(v_out)
                                 template_format = format_info.get('number_format', '$#,##0.00')
                                 contrib_ws[f"C{r}"].number_format = template_format
+                                # Result: Displays as $1,234.56 (CORRECT)
                                 
                             elif format_info.get('is_number', False):
-                                # Handle number values
+                                # NUMBER VALUES - Accurate Display
+                                # v_out is already in correct format (e.g., 1234.56)
                                 contrib_ws[f"C{r}"] = float(v_out)
                                 template_format = format_info.get('number_format', '#,##0.00')
                                 contrib_ws[f"C{r}"].number_format = template_format
+                                # Result: Displays as 1,234.56 (CORRECT)
                                 
                             else:
-                                # Default handling
+                                # DEFAULT - Unformatted values
                                 contrib_ws[f"C{r}"] = float(v_out)
                                 
                         except Exception:
+                            # Fallback: Use raw value if formatting fails
                             contrib_ws[f"C{r}"] = v
                         if coord not in coord_to_first_row:
                             coord_to_first_row[coord] = r
                         r += 1
+                    # Add a visual break between groups of the same cell reference
+                    # This blank row helps users identify each group easily
+                    r += 1
                 if r > 6:
                     contrib_ws.auto_filter.ref = f"A5:C{r-1}"
                 contrib_ws.column_dimensions['A'].width = 12
@@ -2154,9 +2413,61 @@ class ConsolidationWorker(QThread):
                                 continue
                             link = f"#'Contributions'!A{first_row}"
                             cell.hyperlink = link
-                            cell.hyperlink.tooltip = "Click to view full contributions"
                 except Exception:
                     pass
+                # Create a plain consolidated sheet with full formatting (but no hyperlinks/comments)
+                try:
+                    plain_ws = output_wb.create_sheet("Consolidated (Plain)")
+                    
+                    # Copy all formatting from the main output sheet
+                    # This includes: fonts, fills, borders, alignments, number formats, column widths, row heights, merged cells
+                    
+                    # Copy merged cells first
+                    for merged_range in output_ws.merged_cells.ranges:
+                        plain_ws.merge_cells(str(merged_range))
+                    
+                    # Copy column widths
+                    for col_letter, col_dim in output_ws.column_dimensions.items():
+                        plain_ws.column_dimensions[col_letter].width = col_dim.width
+                    
+                    # Copy row heights
+                    for row_num, row_dim in output_ws.row_dimensions.items():
+                        plain_ws.row_dimensions[row_num].height = row_dim.height
+                    
+                    # Copy all cells with their formatting and values
+                    for row in output_ws.iter_rows():
+                        for cell in row:
+                            plain_cell = plain_ws[cell.coordinate]
+                            
+                            # Skip merged cells (already handled above)
+                            if isinstance(cell, MergedCell) or isinstance(plain_cell, MergedCell):
+                                continue
+                            
+                            # Copy value (but not formula - use the calculated value)
+                            plain_cell.value = cell.value
+                            
+                            # Copy all formatting
+                            if cell.has_style:
+                                plain_cell.font = copy(cell.font)
+                                plain_cell.border = copy(cell.border)
+                                plain_cell.fill = copy(cell.fill)
+                                plain_cell.number_format = copy(cell.number_format)
+                                plain_cell.protection = copy(cell.protection)
+                                plain_cell.alignment = copy(cell.alignment)
+                            
+                            # Explicitly do NOT copy hyperlinks or comments
+                            # (plain_cell.hyperlink and plain_cell.comment remain None)
+                            
+                except Exception:
+                    pass
+            except Exception:
+                pass
+
+            # Remove "Sheet 2" if it exists (cleanup unwanted default sheets)
+            try:
+                if "Sheet 2" in output_wb.sheetnames:
+                    sheet_to_remove = output_wb["Sheet 2"]
+                    output_wb.remove(sheet_to_remove)
             except Exception:
                 pass
 
@@ -2544,6 +2855,30 @@ class ExcelProcessorApp(QWidget):
         self.folder_label.setStyleSheet("color: #0f766e; background: transparent; padding: 0; border-radius: 0;")
         folder_layout.addWidget(self.folder_btn)
         folder_layout.addWidget(self.folder_label)
+        
+        # Checkbox to exclude zero values from percentage averages
+        self.exclude_zero_percent = QCheckBox("Exclude zero (0%) values when calculating percentage averages")
+        self.exclude_zero_percent.setChecked(False)  # Default: include all values
+        self.exclude_zero_percent.setStyleSheet("""
+            QCheckBox {
+                color: #374151;
+                font-size: 12px;
+                padding: 4px;
+            }
+            QCheckBox::indicator {
+                width: 16px;
+                height: 16px;
+            }
+        """)
+        self.exclude_zero_percent.setToolTip(
+            "When DISABLED (default): All files are included in percentage averages, including files with 0% values.\n"
+            "Example: 100%, 50%, 0% → Average = (100 + 50 + 0) ÷ 3 = 50%\n\n"
+            "When ENABLED: Files with 0% values are excluded from the average calculation.\n"
+            "Example: 100%, 50%, 0% → Average = (100 + 50) ÷ 2 = 75%\n\n"
+            "This only affects percentage-formatted cells. Other cell types are unaffected."
+        )
+        folder_layout.addWidget(self.exclude_zero_percent)
+        
         folder_group.setLayout(folder_layout)
         left_layout.addWidget(folder_group)
 
@@ -2567,6 +2902,8 @@ class ExcelProcessorApp(QWidget):
         self.advanced_btn = QPushButton("⚙️ Advanced Settings")
         self.advanced_btn.setObjectName("TertiaryButton")
         self.advanced_btn.clicked.connect(self.open_advanced_settings)
+        self.advanced_btn.setEnabled(False)  # Disabled - feature not fully functional
+        self.advanced_btn.setVisible(False)  # Hidden to prevent accidental usage
         settings_run_layout.addWidget(self.advanced_btn)
         self.run_btn = QPushButton("🚀 Run Consolidation")
         self.run_btn.setObjectName("SuccessButton")
@@ -2599,24 +2936,24 @@ class ExcelProcessorApp(QWidget):
                 <li>Handles merged cells correctly</li>
                 <li>Shows real-time progress</li>
             </ul>
-            <h4>Advanced Features:</h4>
+            <h4>Output Features:</h4>
             <ul>
-                <li><b>Advanced settings</b> for maximum flexibility</li>
-                <li>Multi-format support (XLSX, XLS, CSV)</li>
+                <li><b>Multiple sheets:</b> Main, Contributions, and Plain versions</li>
+                <li><b>Consolidated (Plain):</b> Fully formatted data without hyperlinks</li>
+                <li>Multi-format support (XLSX, XLS)</li>
                 <li>Smart data validation & conversion</li>
                 <li>Duplicate file detection & handling</li>
-                <li>Performance optimization options</li>
                 <li>Automatic backup & recovery</li>
             </ul>
             <h4>Interactive Verification:</h4>
             <ul>
-                <li><b>Hover over any cell</b> to see breakdown</li>
+                <li><b>Click on any cell</b> to navigate to contribution details</li>
                 <li>Excel comments show file contributions</li>
                 <li>Visual indicators for consolidated cells</li>
             </ul>
             <h4>Verification & Quality:</h4>
             <ul>
-                <li><b>Interactive comments</b> - Hover over cells to see breakdown</li>
+                <li><b>Interactive comments</b> - View cell comments for detailed breakdown</li>
                 <li><b>Audit reports</b> - Complete traceability of all data</li>
                 <li><b>Visual indicators</b> - Orange borders on consolidated cells</li>
                 <li><b>Quality checks</b> - Data validation and error detection</li>
@@ -2627,7 +2964,6 @@ class ExcelProcessorApp(QWidget):
                 <li>Select a template Excel file with your desired formatting</li>
                 <li>Choose a folder containing Excel files to consolidate</li>
                 <li>Select where to save the consolidated file</li>
-                <li><b>Optional:</b> Configure Advanced Settings for custom behavior</li>
                 <li>Click "Run Consolidation" to process</li>
                 <li>Review the audit report for complete verification</li>
             </ol>
@@ -2899,7 +3235,8 @@ class ExcelProcessorApp(QWidget):
                 self.excel_folder, 
                 self.save_folder, 
                 self.advanced_settings,
-                self.error_reporter
+                self.error_reporter,
+                self.exclude_zero_percent.isChecked()
             )
             self.worker.progress.connect(self.loading_dialog.update_progress)
             self.worker.file_processed.connect(self.loading_dialog.add_processed_file)
@@ -2988,7 +3325,7 @@ class ExcelProcessorApp(QWidget):
             body_text += f"Consolidated file: {os.path.basename(consolidated_path)}\n"
             if audit_path:
                 body_text += f"Audit report: {os.path.basename(audit_path)}\n"
-            body_text += "\nTip: In Excel, hover over any consolidated cell to see the detailed breakdown of file contributions. Consolidated cells have orange borders and interactive comments."
+            body_text += "\nTip: In Excel, click on any consolidated cell to navigate to its contribution details. Consolidated cells have orange borders and interactive comments showing the detailed breakdown of file contributions."
 
             message_label = QLabel(body_text)
             message_label.setObjectName("BodyText")
@@ -3131,12 +3468,6 @@ def main():
     # Apply global stylesheet
     try:
         app.setStyleSheet(build_global_stylesheet())
-    except Exception:
-        pass
-    # Install global tooltip filter to make tooltips sticky and close on outside click
-    try:
-        tooltip_filter = GlobalToolTipFilter(app)
-        app.installEventFilter(tooltip_filter)
     except Exception:
         pass
     

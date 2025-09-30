@@ -729,3 +729,65 @@
 2025-09-17 12:13:30,044 - google_sheets_error_reporting - INFO - Error report sent successfully
 2025-09-17 12:13:32,629 - google_sheets_error_reporting - INFO - Error data sent to spreadsheet via Apps Script
 2025-09-17 12:13:32,663 - google_sheets_error_reporting - INFO - Error report sent successfully
+2025-09-30 14:32:58,073 - google_sheets_error_reporting - ERROR - Apps Script method failed: Access denied to Google Apps Script. The error reporting service configuration may need updating.
+2025-09-30 14:32:58,082 - google_sheets_error_reporting - INFO - Error report failed to send
+2025-09-30 14:32:59,147 - google_sheets_error_reporting - ERROR - Apps Script method failed: Access denied to Google Apps Script. The error reporting service configuration may need updating.
+2025-09-30 14:32:59,366 - google_sheets_error_reporting - INFO - Error report failed to send
+2025-09-30 14:32:59,961 - google_sheets_error_reporting - ERROR - Apps Script method failed: Access denied to Google Apps Script. The error reporting service configuration may need updating.
+2025-09-30 14:32:59,962 - google_sheets_error_reporting - ERROR - Apps Script method failed: Access denied to Google Apps Script. The error reporting service configuration may need updating.
+2025-09-30 14:32:59,966 - google_sheets_error_reporting - INFO - Error report failed to send
+2025-09-30 14:32:59,971 - google_sheets_error_reporting - INFO - Error report failed to send
+2025-09-30 14:33:00,100 - google_sheets_error_reporting - ERROR - Apps Script method failed: Access denied to Google Apps Script. The error reporting service configuration may need updating.
+2025-09-30 14:33:00,108 - google_sheets_error_reporting - INFO - Error report failed to send
+2025-09-30 14:33:00,125 - google_sheets_error_reporting - ERROR - Apps Script method failed: Access denied to Google Apps Script. The error reporting service configuration may need updating.
+2025-09-30 14:33:00,131 - google_sheets_error_reporting - INFO - Error report failed to send
+2025-09-30 14:33:00,847 - google_sheets_error_reporting - ERROR - Apps Script method failed: Access denied to Google Apps Script. The error reporting service configuration may need updating.
+2025-09-30 14:33:00,850 - google_sheets_error_reporting - INFO - Error report failed to send
+2025-09-30 14:33:01,747 - google_sheets_error_reporting - ERROR - Apps Script method failed: Access denied to Google Apps Script. The error reporting service configuration may need updating.
+2025-09-30 14:33:01,762 - google_sheets_error_reporting - INFO - Error report failed to send
+2025-09-30 14:33:02,508 - google_sheets_error_reporting - ERROR - Apps Script method failed: Access denied to Google Apps Script. The error reporting service configuration may need updating.
+2025-09-30 14:33:02,528 - google_sheets_error_reporting - INFO - Error report failed to send
+2025-09-30 14:33:03,056 - google_sheets_error_reporting - ERROR - Apps Script method failed: Access denied to Google Apps Script. The error reporting service configuration may need updating.
+2025-09-30 14:33:03,062 - google_sheets_error_reporting - INFO - Error report failed to send
+2025-09-30 14:33:36,555 - google_sheets_error_reporting - ERROR - Apps Script method failed: Access denied to Google Apps Script. The error reporting service configuration may need updating.
+2025-09-30 14:33:36,559 - google_sheets_error_reporting - INFO - Error report failed to send
+2025-09-30 14:33:36,572 - google_sheets_error_reporting - ERROR - Apps Script method failed: Access denied to Google Apps Script. The error reporting service configuration may need updating.
+2025-09-30 14:33:36,575 - google_sheets_error_reporting - INFO - Error report failed to send
+2025-09-30 14:33:36,901 - google_sheets_error_reporting - ERROR - Apps Script method failed: Access denied to Google Apps Script. The error reporting service configuration may need updating.
+2025-09-30 14:33:36,917 - google_sheets_error_reporting - INFO - Error report failed to send
+2025-09-30 14:33:37,044 - google_sheets_error_reporting - ERROR - Apps Script method failed: Access denied to Google Apps Script. The error reporting service configuration may need updating.
+2025-09-30 14:33:37,068 - google_sheets_error_reporting - INFO - Error report failed to send
+2025-09-30 14:33:37,534 - google_sheets_error_reporting - ERROR - Apps Script method failed: Access denied to Google Apps Script. The error reporting service configuration may need updating.
+2025-09-30 14:33:37,563 - google_sheets_error_reporting - INFO - Error report failed to send
+2025-09-30 14:33:37,575 - google_sheets_error_reporting - ERROR - Apps Script method failed: Access denied to Google Apps Script. The error reporting service configuration may need updating.
+2025-09-30 14:33:37,604 - google_sheets_error_reporting - INFO - Error report failed to send
+2025-09-30 14:33:37,868 - google_sheets_error_reporting - ERROR - Apps Script method failed: Access denied to Google Apps Script. The error reporting service configuration may need updating.
+2025-09-30 14:33:37,893 - google_sheets_error_reporting - INFO - Error report failed to send
+2025-09-30 14:33:37,961 - google_sheets_error_reporting - ERROR - Apps Script method failed: Access denied to Google Apps Script. The error reporting service configuration may need updating.
+2025-09-30 14:33:37,963 - google_sheets_error_reporting - INFO - Error report failed to send
+2025-09-30 14:33:38,113 - google_sheets_error_reporting - ERROR - Apps Script method failed: Access denied to Google Apps Script. The error reporting service configuration may need updating.
+2025-09-30 14:33:38,116 - google_sheets_error_reporting - INFO - Error report failed to send
+2025-09-30 14:33:38,319 - google_sheets_error_reporting - ERROR - Apps Script method failed: Access denied to Google Apps Script. The error reporting service configuration may need updating.
+2025-09-30 14:33:38,322 - google_sheets_error_reporting - INFO - Error report failed to send
+2025-09-30 14:40:39,023 - google_sheets_error_reporting - ERROR - Apps Script method failed: Access denied to Google Apps Script. The error reporting service configuration may need updating.
+2025-09-30 14:40:39,026 - google_sheets_error_reporting - INFO - Error report failed to send
+2025-09-30 14:40:39,343 - google_sheets_error_reporting - ERROR - Apps Script method failed: Access denied to Google Apps Script. The error reporting service configuration may need updating.
+2025-09-30 14:40:39,346 - google_sheets_error_reporting - INFO - Error report failed to send
+2025-09-30 14:40:39,551 - google_sheets_error_reporting - ERROR - Apps Script method failed: Access denied to Google Apps Script. The error reporting service configuration may need updating.
+2025-09-30 14:40:39,553 - google_sheets_error_reporting - INFO - Error report failed to send
+2025-09-30 14:40:39,726 - google_sheets_error_reporting - ERROR - Apps Script method failed: Access denied to Google Apps Script. The error reporting service configuration may need updating.
+2025-09-30 14:40:39,728 - google_sheets_error_reporting - INFO - Error report failed to send
+2025-09-30 14:40:39,850 - google_sheets_error_reporting - ERROR - Apps Script method failed: Access denied to Google Apps Script. The error reporting service configuration may need updating.
+2025-09-30 14:40:39,852 - google_sheets_error_reporting - INFO - Error report failed to send
+2025-09-30 14:40:40,551 - google_sheets_error_reporting - ERROR - Apps Script method failed: Access denied to Google Apps Script. The error reporting service configuration may need updating.
+2025-09-30 14:40:40,553 - google_sheets_error_reporting - INFO - Error report failed to send
+2025-09-30 14:40:40,600 - google_sheets_error_reporting - ERROR - Apps Script method failed: Access denied to Google Apps Script. The error reporting service configuration may need updating.
+2025-09-30 14:40:40,601 - google_sheets_error_reporting - ERROR - Apps Script method failed: Access denied to Google Apps Script. The error reporting service configuration may need updating.
+2025-09-30 14:40:40,603 - google_sheets_error_reporting - INFO - Error report failed to send
+2025-09-30 14:40:40,607 - google_sheets_error_reporting - INFO - Error report failed to send
+2025-09-30 14:40:40,673 - google_sheets_error_reporting - ERROR - Apps Script method failed: Access denied to Google Apps Script. The error reporting service configuration may need updating.
+2025-09-30 14:40:40,675 - google_sheets_error_reporting - INFO - Error report failed to send
+2025-09-30 14:40:41,586 - google_sheets_error_reporting - ERROR - Apps Script method failed: Access denied to Google Apps Script. The error reporting service configuration may need updating.
+2025-09-30 14:40:41,592 - google_sheets_error_reporting - INFO - Error report failed to send
+2025-09-30 14:40:57,008 - google_sheets_error_reporting - ERROR - Apps Script method failed: Access denied to Google Apps Script. The error reporting service configuration may need updating.
+2025-09-30 14:40:57,010 - google_sheets_error_reporting - INFO - Error report failed to send
