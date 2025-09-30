@@ -1,7 +1,3 @@
-# Temporary upload and output folders
-temp_uploads/
-temp_outputs/
-
 # Python
 __pycache__/
 *.py[cod]
@@ -17,18 +13,33 @@ venv/
 env/
 ENV/
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
+# Flask
+instance/
+.env
+.flaskenv
 
-# OS
-.DS_Store
-Thumbs.db
+# Temporary Files
+temp_uploads/*
+!temp_uploads/.gitkeep
+temp_outputs/*
+!temp_outputs/.gitkeep
 
 # Logs
 *.log
 
-# Environment variables
-.env
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
