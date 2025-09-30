@@ -379,8 +379,7 @@ class ExcelConsolidator:
         
         # Analyze template for format information (CRITICAL for accuracy)
         logger.info("🔍 Analyzing template cell formats...")
-        coord_format_info = self._analyze_template_formats_enhanced(output_ws)
-        template_coords = set(coord_format_info.keys())
+        coord_format_info, template_coords = self._analyze_template_formats_enhanced(output_ws)
         
         # Log percentage cells found for debugging
         percent_cells = [coord for coord, info in coord_format_info.items() if info.get('is_percentage')]
@@ -453,8 +452,10 @@ class ExcelConsolidator:
         """
         Enhanced template format analysis with comprehensive cell format verification
         Exactly as in desktop app for maximum accuracy
+        CRITICAL: Also creates template_coords set for filtering source file cells
         """
         format_info = {}
+        template_coords = set()  # CRITICAL: Track all template cell coordinates
         cell_count = 0
         processed_cells = 0
         
@@ -462,14 +463,16 @@ class ExcelConsolidator:
         
         for row in worksheet.iter_rows():
             for cell in row:
+                coord = cell.coordinate
+                template_coords.add(coord)  # CRITICAL: Add EVERY coord to set (matches desktop app line 1892)
                 cell_count += 1
                 
-                # Skip completely empty cells for performance
+                # Process cells for format info (but add ALL coords to set above)
+                # Skip completely empty cells for performance in format detection
                 if cell.value is None and not cell.number_format:
                     continue
                 
                 processed_cells += 1
-                coord = cell.coordinate
                 number_format = cell.number_format or ''
                 
                 # Comprehensive format detection
@@ -490,11 +493,13 @@ class ExcelConsolidator:
                 format_info[coord] = info
         
         logger.info(f"Analyzed {processed_cells} cells out of {cell_count} total cells in template")
+        logger.info(f"Template coordinates tracked: {len(template_coords)}")
         logger.info(f"Percentage cells: {len([c for c, i in format_info.items() if i.get('is_percentage')])}")
         logger.info(f"Currency cells: {len([c for c, i in format_info.items() if i.get('is_currency')])}")
         logger.info(f"Number cells: {len([c for c, i in format_info.items() if i.get('is_number')])}")
         
-        return format_info
+        # Return BOTH format_info AND template_coords (matches desktop app)
+        return format_info, template_coords
     
     def _process_file_enhanced(self, filepath, totals, contributions, percent_counts, 
                               coord_format_info, template_coords, total_files, file_idx):
