@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel Consolidator - Web Edition</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>📊 Excel Consolidator</h1>
+            <p class="subtitle">Merge multiple Excel files into one consolidated report</p>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Upload Section -->
+            <div class="upload-section" id="uploadSection">
+                <!-- Step 1: Template Upload -->
+                <div class="upload-card">
+                    <h2>📋 Step 1: Upload Template</h2>
+                    <div class="dropzone" id="templateDropzone">
+                        <div class="dropzone-content">
+                            <svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                            </svg>
+                            <p class="dropzone-text">Drag & drop template file here</p>
+                            <p class="dropzone-subtext">or click to browse</p>
+                            <input type="file" id="templateInput" accept=".xlsx,.xls" hidden>
+                        </div>
+                        <div class="file-info" id="templateInfo" style="display: none;">
+                            <span class="file-name" id="templateName"></span>
+                            <button class="btn-remove" id="removeTemplate">✕</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Source Files Upload -->
+                <div class="upload-card">
+                    <h2>📁 Step 2: Upload Source Files</h2>
+                    <div class="dropzone" id="sourcesDropzone">
+                        <div class="dropzone-content">
+                            <svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <p class="dropzone-text">Drag & drop Excel files here</p>
+                            <p class="dropzone-subtext">Multiple files allowed</p>
+                            <input type="file" id="sourcesInput" accept=".xlsx,.xls" multiple hidden>
+                        </div>
+                        <div class="file-list" id="sourcesList" style="display: none;"></div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Settings (Optional) -->
+                <div class="settings-card">
+                    <h2>⚙️ Settings (Optional)</h2>
+                    <div class="settings-grid">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="convertText" checked>
+                            <span>Convert text to numbers (e.g., "123" → 123)</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="convertPercent" checked>
+                            <span>Convert percentages (e.g., "50%" → 0.5)</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="createBackup">
+                            <span>Create backup of original files</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Start Button -->
+                <button class="btn-primary" id="startConsolidation" disabled>
+                    🚀 Start Consolidation
+                </button>
+            </div>
+
+            <!-- Progress Section (Hidden initially) -->
+            <div class="progress-section" id="progressSection" style="display: none;">
+                <h2>Processing...</h2>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                <p class="progress-text" id="progressText">Initializing...</p>
+                <p class="current-file" id="currentFile"></p>
+                
+                <!-- File Processing List -->
+                <div class="processed-files" id="processedFiles"></div>
+            </div>
+
+            <!-- Results Section (Hidden initially) -->
+            <div class="results-section" id="resultsSection" style="display: none;">
+                <div class="success-card">
+                    <div class="success-icon">✓</div>
+                    <h2>Consolidation Complete!</h2>
+                    <p class="success-message" id="successMessage"></p>
+                    
+                    <button class="btn-download" id="downloadBtn">
+                        ⬇️ Download Consolidated File
+                    </button>
+                    
+                    <button class="btn-secondary" id="newConsolidation">
+                        🔄 Start New Consolidation
+                    </button>
+                </div>
+            </div>
+
+            <!-- Error Section (Hidden initially) -->
+            <div class="error-section" id="errorSection" style="display: none;">
+                <div class="error-card">
+                    <div class="error-icon">⚠️</div>
+                    <h2>Error Occurred</h2>
+                    <p class="error-message" id="errorMessage"></p>
+                    
+                    <button class="btn-secondary" id="retryBtn">
+                        🔄 Try Again
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Excel Consolidator Web Edition © 2025 | Built with Python & Flask</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
