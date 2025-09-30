@@ -1,70 +1,229 @@
-// Excel Consolidator Web - Main JavaScript
+/**
+ * Excel Consolidator Pro - Main Application Script
+ * Professional UI/UX with Enhanced Interactions
+ */
 
-// State
-let templateFile = null;
-let sourceFiles = [];
-let currentJobId = null;
-let statusCheckInterval = null;
+// ========================================
+// Application State
+// ========================================
+const AppState = {
+    templateFile: null,
+    sourceFiles: [],
+    currentJobId: null,
+    statusCheckInterval: null,
+    startTime: null,
+    settings: {
+        convertText: true,
+        convertPercent: true,
+        createBackup: false,
+        skipValidation: true
+    }
+};
 
-// DOM Elements
-const templateDropzone = document.getElementById('templateDropzone');
-const templateInput = document.getElementById('templateInput');
-const templateInfo = document.getElementById('templateInfo');
-const templateName = document.getElementById('templateName');
-const removeTemplate = document.getElementById('removeTemplate');
-
-const sourcesDropzone = document.getElementById('sourcesDropzone');
-const sourcesInput = document.getElementById('sourcesInput');
-const sourcesList = document.getElementById('sourcesList');
-
-const startButton = document.getElementById('startConsolidation');
-const uploadSection = document.getElementById('uploadSection');
-const progressSection = document.getElementById('progressSection');
-const resultsSection = document.getElementById('resultsSection');
-const errorSection = document.getElementById('errorSection');
+// ========================================
+// DOM Elements Cache
+// ========================================
+const DOM = {
+    // Sections
+    uploadSection: document.getElementById('uploadSection'),
+    progressSection: document.getElementById('progressSection'),
+    resultsSection: document.getElementById('resultsSection'),
+    errorSection: document.getElementById('errorSection'),
+    
+    // Template elements
+    templateDropzone: document.getElementById('templateDropzone'),
+    templateDropContent: document.getElementById('templateDropContent'),
+    templateInput: document.getElementById('templateInput'),
+    templatePreview: document.getElementById('templatePreview'),
+    templateName: document.getElementById('templateName'),
+    templateSize: document.getElementById('templateSize'),
+    removeTemplate: document.getElementById('removeTemplate'),
+    
+    // Sources elements
+    sourcesDropzone: document.getElementById('sourcesDropzone'),
+    sourcesDropContent: document.getElementById('sourcesDropContent'),
+    sourcesInput: document.getElementById('sourcesInput'),
+    sourcesList: document.getElementById('sourcesList'),
 
 // Settings
-const convertTextCheckbox = document.getElementById('convertText');
-const convertPercentCheckbox = document.getElementById('convertPercent');
-const createBackupCheckbox = document.getElementById('createBackup');
+    settingsToggle: document.getElementById('settingsToggle'),
+    settingsContent: document.getElementById('settingsContent'),
+    convertTextCheck: document.getElementById('convertText'),
+    convertPercentCheck: document.getElementById('convertPercent'),
+    createBackupCheck: document.getElementById('createBackup'),
+    skipValidationCheck: document.getElementById('skipValidation'),
+    
+    // Buttons
+    startBtn: document.getElementById('startConsolidation'),
+    downloadBtn: document.getElementById('downloadBtn'),
+    newConsolidationBtn: document.getElementById('newConsolidation'),
+    retryBtn: document.getElementById('retryBtn'),
+    
+    // Theme & Help
+    themeToggle: document.getElementById('themeToggle'),
+    helpBtn: document.getElementById('helpBtn'),
+    helpModal: document.getElementById('helpModal'),
+    closeHelpModal: document.getElementById('closeHelpModal'),
+    
+    // Progress elements
+    statTotalFiles: document.getElementById('statTotalFiles'),
+    statProcessed: document.getElementById('statProcessed'),
+    statProgress: document.getElementById('statProgress'),
+    progressBar: document.getElementById('progressBar'),
+    progressStatus: document.getElementById('progressStatus'),
+    progressPercentage: document.getElementById('progressPercentage'),
+    progressSubtitle: document.getElementById('progressSubtitle'),
+    currentFileCard: document.getElementById('currentFileCard'),
+    currentFileName: document.getElementById('currentFileName'),
+    processedLogList: document.getElementById('processedLogList'),
+    
+    // Results elements
+    resultsMessage: document.getElementById('resultsMessage'),
+    resultFilesCount: document.getElementById('resultFilesCount'),
+    resultProcessTime: document.getElementById('resultProcessTime'),
+    
+    // Error elements
+    errorMessage: document.getElementById('errorMessage'),
+    
+    // Toast container
+    toastContainer: document.getElementById('toastContainer')
+};
 
-// Initialize
+// ========================================
+// Initialization
+// ========================================
 document.addEventListener('DOMContentLoaded', () => {
-    initializeDropzones();
+    initializeTheme();
     initializeEventListeners();
+    initializeDropzones();
+    console.log('Excel Consolidator Pro initialized successfully');
 });
 
-// Dropzone Initialization
-function initializeDropzones() {
-    // Template dropzone
-    templateDropzone.addEventListener('click', () => templateInput.click());
-    templateDropzone.addEventListener('dragover', handleDragOver);
-    templateDropzone.addEventListener('dragleave', handleDragLeave);
-    templateDropzone.addEventListener('drop', (e) => handleTemplateDrop(e));
-    templateInput.addEventListener('change', (e) => handleTemplateSelect(e));
-    
-    // Sources dropzone
-    sourcesDropzone.addEventListener('click', () => sourcesInput.click());
-    sourcesDropzone.addEventListener('dragover', handleDragOver);
-    sourcesDropzone.addEventListener('dragleave', handleDragLeave);
-    sourcesDropzone.addEventListener('drop', (e) => handleSourcesDrop(e));
-    sourcesInput.addEventListener('change', (e) => handleSourcesSelect(e));
+// ========================================
+// Theme Management
+// ========================================
+function initializeTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
 }
 
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    
+    showToast(
+        'Theme Updated',
+        `Switched to ${newTheme} mode`,
+        'success'
+    );
+}
+
+// ========================================
+// Event Listeners
+// ========================================
 function initializeEventListeners() {
-    removeTemplate.addEventListener('click', (e) => {
+    // Theme toggle
+    DOM.themeToggle?.addEventListener('click', toggleTheme);
+    
+    // Help modal
+    DOM.helpBtn?.addEventListener('click', () => {
+        DOM.helpModal.style.display = 'flex';
+    });
+    
+    DOM.closeHelpModal?.addEventListener('click', () => {
+        DOM.helpModal.style.display = 'none';
+    });
+    
+    DOM.helpModal?.addEventListener('click', (e) => {
+        if (e.target === DOM.helpModal) {
+            DOM.helpModal.style.display = 'none';
+        }
+    });
+    
+    // Settings toggle
+    DOM.settingsToggle?.addEventListener('click', () => {
+        DOM.settingsToggle.classList.toggle('active');
+        DOM.settingsContent.classList.toggle('expanded');
+    });
+    
+    // Settings checkboxes
+    DOM.convertTextCheck?.addEventListener('change', (e) => {
+        AppState.settings.convertText = e.target.checked;
+    });
+    
+    DOM.convertPercentCheck?.addEventListener('change', (e) => {
+        AppState.settings.convertPercent = e.target.checked;
+    });
+    
+    DOM.createBackupCheck?.addEventListener('change', (e) => {
+        AppState.settings.createBackup = e.target.checked;
+    });
+    
+    DOM.skipValidationCheck?.addEventListener('change', (e) => {
+        AppState.settings.skipValidation = e.target.checked;
+    });
+    
+    // File removal
+    DOM.removeTemplate?.addEventListener('click', (e) => {
         e.stopPropagation();
         clearTemplate();
     });
     
-    startButton.addEventListener('click', startConsolidation);
+    // Action buttons
+    DOM.startBtn?.addEventListener('click', startConsolidation);
+    DOM.downloadBtn?.addEventListener('click', downloadResult);
+    DOM.newConsolidationBtn?.addEventListener('click', resetApplication);
+    DOM.retryBtn?.addEventListener('click', resetApplication);
     
-    document.getElementById('downloadBtn').addEventListener('click', downloadResult);
-    document.getElementById('newConsolidation').addEventListener('click', resetApp);
-    document.getElementById('retryBtn').addEventListener('click', resetApp);
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+        // Escape key to close modal
+        if (e.key === 'Escape' && DOM.helpModal.style.display === 'flex') {
+            DOM.helpModal.style.display = 'none';
+        }
+        
+        // Ctrl/Cmd + K for theme toggle
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+            e.preventDefault();
+            toggleTheme();
+        }
+    });
 }
 
-// Drag and Drop Handlers
+// ========================================
+// Dropzone Initialization
+// ========================================
+function initializeDropzones() {
+    // Template dropzone
+    DOM.templateDropzone.addEventListener('click', () => {
+        if (!AppState.templateFile) {
+            DOM.templateInput.click();
+        }
+    });
+    
+    DOM.templateDropzone.addEventListener('dragover', handleDragOver);
+    DOM.templateDropzone.addEventListener('dragleave', handleDragLeave);
+    DOM.templateDropzone.addEventListener('drop', handleTemplateDrop);
+    DOM.templateInput.addEventListener('change', handleTemplateSelect);
+    
+    // Sources dropzone
+    DOM.sourcesDropzone.addEventListener('click', (e) => {
+        if (e.target.closest('.file-remove-btn')) return;
+        DOM.sourcesInput.click();
+    });
+    
+    DOM.sourcesDropzone.addEventListener('dragover', handleDragOver);
+    DOM.sourcesDropzone.addEventListener('dragleave', handleDragLeave);
+    DOM.sourcesDropzone.addEventListener('drop', handleSourcesDrop);
+    DOM.sourcesInput.addEventListener('change', handleSourcesSelect);
+}
+
+// ========================================
+// Drag & Drop Handlers
+// ========================================
 function handleDragOver(e) {
     e.preventDefault();
     e.stopPropagation();
@@ -74,13 +233,14 @@ function handleDragOver(e) {
 function handleDragLeave(e) {
     e.preventDefault();
     e.stopPropagation();
+    if (e.currentTarget.contains(e.relatedTarget)) return;
     e.currentTarget.classList.remove('dragover');
 }
 
 function handleTemplateDrop(e) {
     e.preventDefault();
     e.stopPropagation();
-    templateDropzone.classList.remove('dragover');
+    DOM.templateDropzone.classList.remove('dragover');
     
     const files = e.dataTransfer.files;
     if (files.length > 0) {
@@ -98,7 +258,7 @@ function handleTemplateSelect(e) {
 function handleSourcesDrop(e) {
     e.preventDefault();
     e.stopPropagation();
-    sourcesDropzone.classList.remove('dragover');
+    DOM.sourcesDropzone.classList.remove('dragover');
     
     const files = Array.from(e.dataTransfer.files);
     addSourceFiles(files);
@@ -109,117 +269,187 @@ function handleSourcesSelect(e) {
     addSourceFiles(files);
 }
 
+// ========================================
 // File Management
+// ========================================
 function setTemplateFile(file) {
-    if (!isExcelFile(file)) {
-        showError('Please select a valid Excel file (.xlsx or .xls)');
+    if (!isValidExcelFile(file)) {
+        showToast(
+            'Invalid File Type',
+            'Please select a valid Excel file (.xlsx or .xls)',
+            'error'
+        );
         return;
     }
     
-    templateFile = file;
-    templateName.textContent = file.name;
-    templateDropzone.querySelector('.dropzone-content').style.display = 'none';
-    templateInfo.style.display = 'flex';
+    AppState.templateFile = file;
+    
+    // Update UI
+    DOM.templateName.textContent = file.name;
+    DOM.templateSize.textContent = formatFileSize(file.size);
+    DOM.templateDropContent.style.display = 'none';
+    DOM.templatePreview.style.display = 'flex';
     
     updateStartButton();
+    
+    showToast(
+        'Template Added',
+        file.name,
+        'success'
+    );
 }
 
 function clearTemplate() {
-    templateFile = null;
-    templateDropzone.querySelector('.dropzone-content').style.display = 'block';
-    templateInfo.style.display = 'none';
-    templateInput.value = '';
-    
+    AppState.templateFile = null;
+    DOM.templateDropContent.style.display = 'block';
+    DOM.templatePreview.style.display = 'none';
+    DOM.templateInput.value = '';
     updateStartButton();
 }
 
 function addSourceFiles(files) {
-    const validFiles = files.filter(isExcelFile);
+    const validFiles = files.filter(isValidExcelFile);
     
     if (validFiles.length === 0) {
-        showError('Please select valid Excel files (.xlsx or .xls)');
+        showToast(
+            'Invalid Files',
+            'Please select valid Excel files (.xlsx or .xls)',
+            'error'
+        );
         return;
     }
     
-    // Add to existing files (prevent duplicates)
+    let addedCount = 0;
+    
+    // Add files, avoiding duplicates
     validFiles.forEach(file => {
-        if (!sourceFiles.some(f => f.name === file.name && f.size === file.size)) {
-            sourceFiles.push(file);
+        const isDuplicate = AppState.sourceFiles.some(
+            f => f.name === file.name && f.size === file.size
+        );
+        
+        if (!isDuplicate) {
+            AppState.sourceFiles.push(file);
+            addedCount++;
         }
     });
     
+    if (addedCount > 0) {
     renderSourceFiles();
     updateStartButton();
+        showToast(
+            'Files Added',
+            `${addedCount} file(s) added successfully`,
+            'success'
+        );
+    } else {
+        showToast(
+            'Duplicate Files',
+            'These files were already added',
+            'warning'
+        );
+    }
 }
 
 function removeSourceFile(index) {
-    sourceFiles.splice(index, 1);
+    const removedFile = AppState.sourceFiles[index];
+    AppState.sourceFiles.splice(index, 1);
     renderSourceFiles();
     updateStartButton();
+    
+    showToast(
+        'File Removed',
+        removedFile.name,
+        'warning'
+    );
 }
 
 function renderSourceFiles() {
-    if (sourceFiles.length === 0) {
-        sourcesDropzone.querySelector('.dropzone-content').style.display = 'block';
-        sourcesList.style.display = 'none';
+    if (AppState.sourceFiles.length === 0) {
+        DOM.sourcesDropContent.style.display = 'block';
+        DOM.sourcesList.style.display = 'none';
+        DOM.sourcesList.innerHTML = '';
         return;
     }
     
-    sourcesDropzone.querySelector('.dropzone-content').style.display = 'none';
-    sourcesList.style.display = 'block';
+    DOM.sourcesDropContent.style.display = 'none';
+    DOM.sourcesList.style.display = 'block';
     
-    sourcesList.innerHTML = '<h3 style="margin-bottom: 15px; color: #1e293b;">Selected Files (' + sourceFiles.length + ')</h3>';
+    // Create header
+    const header = document.createElement('div');
+    header.className = 'files-list-header';
+    header.textContent = `${AppState.sourceFiles.length} file(s) selected`;
     
-    sourceFiles.forEach((file, index) => {
-        const fileItem = document.createElement('div');
-        fileItem.className = 'file-item';
-        fileItem.innerHTML = `
-            <span class="file-item-name">${file.name}</span>
-            <span class="file-item-size">${formatFileSize(file.size)}</span>
-            <button class="btn-remove" onclick="removeSourceFile(${index})">✕</button>
-        `;
-        sourcesList.appendChild(fileItem);
+    DOM.sourcesList.innerHTML = '';
+    DOM.sourcesList.appendChild(header);
+    
+    // Render file items
+    AppState.sourceFiles.forEach((file, index) => {
+        const fileItem = createFileItem(file, index);
+        DOM.sourcesList.appendChild(fileItem);
     });
 }
 
-// Utilities
-function isExcelFile(file) {
-    const validExtensions = ['.xlsx', '.xls'];
-    const fileName = file.name.toLowerCase();
-    return validExtensions.some(ext => fileName.endsWith(ext));
+function createFileItem(file, index) {
+    const item = document.createElement('div');
+    item.className = 'file-item';
+    item.innerHTML = `
+        <div class="file-item-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+        </div>
+        <div class="file-item-info">
+            <div class="file-item-name">${escapeHtml(file.name)}</div>
+            <div class="file-item-size">${formatFileSize(file.size)}</div>
+        </div>
+        <button class="file-remove-btn" onclick="removeSourceFile(${index})" title="Remove file">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <line x1="18" y1="6" x2="6" y2="18" stroke-width="2"/>
+                <line x1="6" y1="6" x2="18" y2="18" stroke-width="2"/>
+            </svg>
+        </button>
+    `;
+    return item;
 }
 
-function formatFileSize(bytes) {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-}
-
-function updateStartButton() {
-    startButton.disabled = !(templateFile && sourceFiles.length > 0);
-}
-
+// ========================================
 // Consolidation Process
+// ========================================
 async function startConsolidation() {
+    if (!AppState.templateFile || AppState.sourceFiles.length === 0) {
+        showToast(
+            'Missing Files',
+            'Please upload both template and source files',
+            'error'
+        );
+        return;
+    }
+    
     // Prepare form data
     const formData = new FormData();
-    formData.append('template', templateFile);
+    formData.append('template', AppState.templateFile);
     
-    sourceFiles.forEach(file => {
+    AppState.sourceFiles.forEach(file => {
         formData.append('sources', file);
     });
     
     // Add settings
-    formData.append('convert_text_to_numbers', convertTextCheckbox.checked);
-    formData.append('convert_percentages', convertPercentCheckbox.checked);
-    formData.append('create_backup', createBackupCheckbox.checked);
+    formData.append('convert_text_to_numbers', AppState.settings.convertText);
+    formData.append('convert_percentages', AppState.settings.convertPercent);
+    formData.append('create_backup', AppState.settings.createBackup);
+    formData.append('skip_validation', AppState.settings.skipValidation);
     
     // Show progress section
-    uploadSection.style.display = 'none';
-    progressSection.style.display = 'block';
+    showSection('progress');
+    AppState.startTime = Date.now();
+    
+    // Initialize progress stats
+    DOM.statTotalFiles.textContent = AppState.sourceFiles.length;
+    DOM.statProcessed.textContent = '0';
+    DOM.statProgress.textContent = '0%';
     
     try {
-        // Upload and start consolidation
         const response = await fetch('/api/consolidate', {
             method: 'POST',
             body: formData
@@ -231,21 +461,38 @@ async function startConsolidation() {
         }
         
         const result = await response.json();
-        currentJobId = result.job_id;
+        AppState.currentJobId = result.job_id;
         
-        // Start polling for status
+        // Start status polling
         startStatusPolling();
         
+        showToast(
+            'Processing Started',
+            `Processing ${result.total_files} files...`,
+            'success'
+        );
+        
     } catch (error) {
+        console.error('Consolidation error:', error);
         showError(error.message);
     }
 }
 
 function startStatusPolling() {
-    // Poll every second
-    statusCheckInterval = setInterval(async () => {
+    let pollCount = 0;
+    const maxPolls = 600; // 10 minutes max (600 seconds at 1s interval)
+    
+    AppState.statusCheckInterval = setInterval(async () => {
+        pollCount++;
+        
+        if (pollCount > maxPolls) {
+            clearInterval(AppState.statusCheckInterval);
+            showError('Request timed out. The process may still be running.');
+            return;
+        }
+        
         try {
-            const response = await fetch(`/api/status/${currentJobId}`);
+            const response = await fetch(`/api/status/${AppState.currentJobId}`);
             
             if (!response.ok) {
                 throw new Error('Failed to get status');
@@ -254,126 +501,268 @@ function startStatusPolling() {
             const status = await response.json();
             updateProgress(status);
             
-            // Check if complete or error
             if (status.status === 'completed') {
-                clearInterval(statusCheckInterval);
+                clearInterval(AppState.statusCheckInterval);
                 showResults(status);
             } else if (status.status === 'error') {
-                clearInterval(statusCheckInterval);
+                clearInterval(AppState.statusCheckInterval);
                 showError(status.error || 'An error occurred during consolidation');
             }
             
         } catch (error) {
-            clearInterval(statusCheckInterval);
-            showError('Lost connection to server');
+            console.error('Status check error:', error);
+            clearInterval(AppState.statusCheckInterval);
+            showError('Lost connection to server. Please check your network.');
         }
-    }, 1000);
+    }, 1000); // Poll every second
 }
 
 function updateProgress(status) {
-    const progressBar = document.getElementById('progressBar');
-    const progressText = document.getElementById('progressText');
-    const currentFile = document.getElementById('currentFile');
-    const processedFiles = document.getElementById('processedFiles');
+    // Update stats
+    DOM.statProcessed.textContent = status.processed_files || 0;
+    DOM.statProgress.textContent = Math.round(status.progress) + '%';
     
     // Update progress bar
-    progressBar.style.width = status.progress + '%';
+    DOM.progressBar.style.width = status.progress + '%';
+    DOM.progressPercentage.textContent = Math.round(status.progress) + '%';
+    DOM.progressStatus.textContent = status.message || 'Processing...';
     
-    // Update text
-    progressText.textContent = status.message;
-    
-    if (status.current_file) {
-        currentFile.textContent = `Processing: ${status.current_file}`;
+    // Update subtitle with elapsed time
+    if (AppState.startTime) {
+        const elapsed = Math.floor((Date.now() - AppState.startTime) / 1000);
+        DOM.progressSubtitle.textContent = `Elapsed time: ${formatDuration(elapsed)}`;
     }
     
-    // Show processed files count
-    if (status.processed_files > 0) {
-        const fileItem = document.createElement('div');
-        fileItem.className = 'processed-file-item';
-        fileItem.textContent = `${status.current_file}`;
+    // Show/update current file
+    if (status.current_file) {
+        DOM.currentFileCard.style.display = 'block';
+        DOM.currentFileName.textContent = status.current_file;
         
-        // Only add if not already added
-        const existing = Array.from(processedFiles.children).some(
-            child => child.textContent === fileItem.textContent
+        // Add to processed log (avoid duplicates)
+        const existingItems = Array.from(DOM.processedLogList.children);
+        const alreadyLogged = existingItems.some(
+            item => item.textContent === status.current_file
         );
         
-        if (!existing) {
-            processedFiles.appendChild(fileItem);
-            // Scroll to bottom
-            processedFiles.scrollTop = processedFiles.scrollHeight;
+        if (!alreadyLogged && status.processed_files > 0) {
+            const logItem = document.createElement('div');
+            logItem.className = 'processed-log-item';
+            logItem.innerHTML = `<span>${escapeHtml(status.current_file)}</span>`;
+            DOM.processedLogList.appendChild(logItem);
+            
+            // Auto-scroll to bottom
+            DOM.processedLogList.scrollTop = DOM.processedLogList.scrollHeight;
         }
     }
 }
 
 function showResults(status) {
-    progressSection.style.display = 'none';
-    resultsSection.style.display = 'block';
+    showSection('results');
     
-    const successMessage = document.getElementById('successMessage');
-    successMessage.textContent = `Successfully consolidated ${status.total_files} files!`;
-}
-
-function showError(message) {
-    uploadSection.style.display = 'none';
-    progressSection.style.display = 'none';
-    resultsSection.style.display = 'none';
-    errorSection.style.display = 'block';
+    const processTime = AppState.startTime 
+        ? Math.floor((Date.now() - AppState.startTime) / 1000)
+        : 0;
     
-    document.getElementById('errorMessage').textContent = message;
+    DOM.resultFilesCount.textContent = status.total_files || AppState.sourceFiles.length;
+    DOM.resultProcessTime.textContent = formatDuration(processTime);
+    DOM.resultsMessage.textContent = `Successfully consolidated ${status.total_files} files into one workbook`;
     
-    if (statusCheckInterval) {
-        clearInterval(statusCheckInterval);
-    }
+    showToast(
+        'Consolidation Complete!',
+        'Your file is ready to download',
+        'success'
+    );
 }
 
 async function downloadResult() {
-    if (!currentJobId) {
-        showError('No job ID found');
+    if (!AppState.currentJobId) {
+        showToast('Error', 'No job ID found', 'error');
         return;
     }
     
     try {
-        // Open download in new window
-        window.location.href = `/api/download/${currentJobId}`;
+        // Trigger download
+        window.location.href = `/api/download/${AppState.currentJobId}`;
+        
+        showToast(
+            'Download Started',
+            'Your file is being downloaded',
+            'success'
+        );
     } catch (error) {
-        showError('Failed to download file');
+        console.error('Download error:', error);
+        showToast('Download Failed', error.message, 'error');
     }
 }
 
-function resetApp() {
-    // Clear state
-    templateFile = null;
-    sourceFiles = [];
-    currentJobId = null;
+function showError(message) {
+    showSection('error');
+    DOM.errorMessage.textContent = message;
     
-    if (statusCheckInterval) {
-        clearInterval(statusCheckInterval);
+    if (AppState.statusCheckInterval) {
+        clearInterval(AppState.statusCheckInterval);
+    }
+}
+
+// ========================================
+// UI Navigation
+// ========================================
+function showSection(section) {
+    DOM.uploadSection.style.display = 'none';
+    DOM.progressSection.style.display = 'none';
+    DOM.resultsSection.style.display = 'none';
+    DOM.errorSection.style.display = 'none';
+    
+    switch (section) {
+        case 'upload':
+            DOM.uploadSection.style.display = 'block';
+            break;
+        case 'progress':
+            DOM.progressSection.style.display = 'block';
+            break;
+        case 'results':
+            DOM.resultsSection.style.display = 'block';
+            break;
+        case 'error':
+            DOM.errorSection.style.display = 'block';
+            break;
+    }
+}
+
+function updateStartButton() {
+    const isValid = AppState.templateFile && AppState.sourceFiles.length > 0;
+    DOM.startBtn.disabled = !isValid;
+}
+
+function resetApplication() {
+    // Clear state
+    AppState.templateFile = null;
+    AppState.sourceFiles = [];
+    AppState.currentJobId = null;
+    AppState.startTime = null;
+    
+    if (AppState.statusCheckInterval) {
+        clearInterval(AppState.statusCheckInterval);
     }
     
     // Reset UI
     clearTemplate();
-    sourcesList.innerHTML = '';
-    sourcesDropzone.querySelector('.dropzone-content').style.display = 'block';
-    sourcesList.style.display = 'none';
+    DOM.sourcesList.innerHTML = '';
+    DOM.sourcesDropContent.style.display = 'block';
+    DOM.sourcesList.style.display = 'none';
     
-    // Reset file inputs
-    templateInput.value = '';
-    sourcesInput.value = '';
+    // Reset inputs
+    DOM.templateInput.value = '';
+    DOM.sourcesInput.value = '';
     
-    // Clear progress
-    document.getElementById('progressBar').style.width = '0%';
-    document.getElementById('progressText').textContent = '';
-    document.getElementById('currentFile').textContent = '';
-    document.getElementById('processedFiles').innerHTML = '';
+    // Reset progress
+    DOM.progressBar.style.width = '0%';
+    DOM.processedLogList.innerHTML = '';
+    DOM.currentFileCard.style.display = 'none';
     
     // Show upload section
-    uploadSection.style.display = 'block';
-    progressSection.style.display = 'none';
-    resultsSection.style.display = 'none';
-    errorSection.style.display = 'none';
-    
+    showSection('upload');
     updateStartButton();
 }
 
-// Make removeSourceFile globally accessible
+// ========================================
+// Toast Notifications
+// ========================================
+function showToast(title, message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    
+    const iconMap = {
+        success: '✓',
+        error: '✕',
+        warning: '⚠'
+    };
+    
+    toast.innerHTML = `
+        <div class="toast-icon">${iconMap[type] || '✓'}</div>
+        <div class="toast-content">
+            <div class="toast-title">${escapeHtml(title)}</div>
+            <div class="toast-message">${escapeHtml(message)}</div>
+        </div>
+    `;
+    
+    DOM.toastContainer.appendChild(toast);
+    
+    // Auto-remove after 4 seconds
+    setTimeout(() => {
+        toast.style.animation = 'slideOutRight 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 4000);
+}
+
+// ========================================
+// Utility Functions
+// ========================================
+function isValidExcelFile(file) {
+    if (!file) return false;
+    const validExtensions = ['.xlsx', '.xls'];
+    const fileName = file.name.toLowerCase();
+    return validExtensions.some(ext => fileName.endsWith(ext));
+}
+
+function formatFileSize(bytes) {
+    if (!bytes) return '0 B';
+    
+    const units = ['B', 'KB', 'MB', 'GB'];
+    let size = bytes;
+    let unitIndex = 0;
+    
+    while (size >= 1024 && unitIndex < units.length - 1) {
+        size /= 1024;
+        unitIndex++;
+    }
+    
+    return `${size.toFixed(unitIndex > 0 ? 1 : 0)} ${units[unitIndex]}`;
+}
+
+function formatDuration(seconds) {
+    if (seconds < 60) {
+        return `${seconds}s`;
+    }
+    
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    
+    if (minutes < 60) {
+        return `${minutes}m ${remainingSeconds}s`;
+    }
+    
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    
+    return `${hours}h ${remainingMinutes}m ${remainingSeconds}s`;
+}
+
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
+}
+
+// ========================================
+// Global Exposure for Inline Handlers
+// ========================================
 window.removeSourceFile = removeSourceFile;
+
+// ========================================
+// Performance Monitoring (Optional)
+// ========================================
+if (window.performance && window.performance.timing) {
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            const timing = window.performance.timing;
+            const loadTime = timing.loadEventEnd - timing.navigationStart;
+            console.log(`Page load time: ${loadTime}ms`);
+        }, 0);
+    });
+}

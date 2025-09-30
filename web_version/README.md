@@ -1,20 +1,79 @@
-# Excel Consolidator - Web Edition
+# Excel Consolidator Pro - Web Edition
 
-A simple, stateless web application for consolidating multiple Excel files into one. Built with HTML, CSS, JavaScript, and Python Flask - **no database required**.
+**Enterprise-grade web application** for consolidating multiple Excel files with a **highly professional UI/UX**. Built with modern web technologies and Python Flask - **no database required**.
+
+[![Version](https://img.shields.io/badge/version-2.0.0-green.svg)](CHANGELOG.md)
+[![UI](https://img.shields.io/badge/UI-Professional-purple.svg)](UI_UX_DOCUMENTATION.md)
+[![Status](https://img.shields.io/badge/status-production--ready-brightgreen.svg)](README.md)
+
+> 🎨 **NEW**: Completely redesigned with professional glassmorphism UI, dark mode, and enterprise-grade UX
 
 ## 🌟 Features
 
-- **Drag & Drop Interface** - Modern, intuitive file upload
-- **Real-time Progress** - Watch consolidation happen live
-- **No Database** - Completely stateless, files are temporary
-- **Auto-Cleanup** - Removes old files automatically
-- **Same Core Logic** - Uses the exact consolidation engine from the desktop app
-- **Responsive Design** - Works on desktop, tablet, and mobile
+### Core Functionality
+- **📁 Drag & Drop Interface** - Intuitive file upload with visual feedback
+- **📊 Real-time Progress** - Beautiful progress visualization with stats
+- **💾 No Database** - Completely stateless, files are temporary
+- **🗑️ Auto-Cleanup** - Smart file management, removes old files automatically
+- **⚡ Same Core Logic** - Uses the exact consolidation engine from the desktop app
+- **📱 Fully Responsive** - Perfect on desktop, tablet, and mobile
+
+### Professional UI/UX (NEW ✨)
+- **🎨 Teacher-Friendly Design** - Calming teal & indigo color theme designed for educators
+- **🌊 Glassmorphism Aesthetic** - Modern frosted-glass effect with backdrop blur
+- **🌓 Dark Mode Support** - Seamless theme switching with local storage persistence
+- **🎭 Smooth Animations** - Professional micro-interactions and transitions
+- **🔔 Toast Notifications** - Non-intrusive, auto-dismissing alerts
+- **⌨️ Keyboard Navigation** - Full accessibility with keyboard shortcuts
+- **♿ WCAG 2.1 AA Compliant** - Enterprise accessibility standards
+- **🎯 Progressive Disclosure** - Advanced settings hidden by default
+- **📈 Live Stats Dashboard** - Real-time processing metrics
+
+👉 **[View Color Theme](TEACHER_THEME_COLORS.md)** | **[Visual Showcase](VISUAL_SHOWCASE.md)** | **[UI/UX Documentation](UI_UX_DOCUMENTATION.md)**
+
+## 🎨 UI/UX Highlights
+
+### Visual Design (Teacher-Friendly Theme)
+- **Calming Teal Color Palette** - Professional teal & indigo designed specifically for educators
+- **Modern Glassmorphism** - Frosted-glass cards with backdrop blur
+- **Gradient Backgrounds** - Animated floating teal, indigo, and amber orbs
+- **Professional Typography** - Inter font family with optimized weights
+- **Consistent Spacing** - 8-point grid system throughout
+- **Smooth Transitions** - 250ms cubic-bezier easing on all interactions
+
+**Color Psychology for Teachers:**
+- 🌊 **Teal Primary** - Calming, reduces stress, promotes clarity
+- 💜 **Indigo Accent** - Educational, wisdom, trustworthy
+- ✅ **Emerald Success** - Warm, positive reinforcement
+- 🌹 **Rose Errors** - Softer than harsh red, approachable
+- 🔶 **Amber Warnings** - Attention-grabbing yet friendly
+
+### Interactive Elements
+- **Drag & Drop Zones** - Visual feedback with shimmer effects
+- **File Preview Cards** - Elegant file information display
+- **Progress Visualization** - Animated progress bar with real-time updates
+- **Stats Cards** - Live metrics with gradient icons
+- **Success Animation** - SVG checkmark with stroke animation
+
+### Theme Support
+- **Light Mode** - Clean white backgrounds with subtle shadows
+- **Dark Mode** - Deep slate backgrounds with enhanced contrast
+- **Theme Persistence** - Preference saved to localStorage
+- **Smooth Transitions** - All colors animate during theme switch
+
+### Keyboard Shortcuts
+- `Tab` - Navigate between interactive elements
+- `Enter` / `Space` - Activate buttons
+- `Escape` - Close modals
+- `Ctrl/Cmd + K` - Toggle dark/light mode
 
 ## 📋 Requirements
 
 - Python 3.9+
 - Modern web browser (Chrome, Firefox, Safari, Edge)
+  - Chrome/Edge 90+ (recommended)
+  - Firefox 88+
+  - Safari 14+
 
 ## 🚀 Quick Start
 

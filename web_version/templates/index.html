@@ -3,130 +3,480 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Excel Consolidator - Web Edition</title>
+    <meta name="description" content="Professional Excel Consolidator - Merge multiple Excel files effortlessly">
+    <title>Excel Consolidator Pro</title>
+    
+    <!-- Preload critical fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='images/logo.svg') }}">
+    
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <header class="header">
-            <h1>📊 Excel Consolidator</h1>
-            <p class="subtitle">Merge multiple Excel files into one consolidated report</p>
-        </header>
+    <!-- Background decoration -->
+    <div class="bg-decoration">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
 
-        <!-- Main Content -->
-        <main class="main-content">
+    <!-- Main App Container -->
+    <div class="app-container">
+        <!-- Navigation Header -->
+        <nav class="nav-header">
+            <div class="nav-content">
+                <div class="brand">
+                    <div class="brand-icon">
+                        <svg width="40" height="40" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Background circle with gradient -->
+                            <circle cx="24" cy="24" r="22" fill="url(#logoGradient)" opacity="0.15"/>
+                            
+                            <!-- Three small files merging into one -->
+                            <!-- Left file (slightly smaller, faded) -->
+                            <path d="M8 16 L8 20 L12 20 L12 16 Z" fill="currentColor" opacity="0.5"/>
+                            <rect x="8" y="20" width="4" height="8" rx="0.5" fill="currentColor" opacity="0.5"/>
+                            
+                            <!-- Top file (slightly smaller, faded) -->
+                            <path d="M18 10 L18 14 L22 14 L22 10 Z" fill="currentColor" opacity="0.5"/>
+                            <rect x="18" y="14" width="4" height="6" rx="0.5" fill="currentColor" opacity="0.5"/>
+                            
+                            <!-- Right file (slightly smaller, faded) -->
+                            <path d="M28 16 L28 20 L32 20 L32 16 Z" fill="currentColor" opacity="0.5"/>
+                            <rect x="28" y="20" width="4" height="8" rx="0.5" fill="currentColor" opacity="0.5"/>
+                            
+                            <!-- Merge arrows -->
+                            <path d="M13 24 L18 28" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+                            <path d="M21 20 L21 26" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+                            <path d="M27 24 L22 28" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+                            
+                            <!-- Main consolidated file (larger, prominent) -->
+                            <path d="M16 28 L16 32 L26 32 L26 28 L23 28 L23 25 L16 25 Z" fill="url(#logoGradient)"/>
+                            <rect x="16" y="32" width="10" height="10" rx="1" fill="url(#logoGradient)"/>
+                            
+                            <!-- Spreadsheet grid lines on main file -->
+                            <line x1="18" y1="34" x2="24" y2="34" stroke="white" stroke-width="0.5" opacity="0.8"/>
+                            <line x1="18" y1="36" x2="24" y2="36" stroke="white" stroke-width="0.5" opacity="0.8"/>
+                            <line x1="18" y1="38" x2="24" y2="38" stroke="white" stroke-width="0.5" opacity="0.8"/>
+                            <line x1="20" y1="32" x2="20" y2="40" stroke="white" stroke-width="0.5" opacity="0.8"/>
+                            <line x1="22" y1="32" x2="22" y2="40" stroke="white" stroke-width="0.5" opacity="0.8"/>
+                            
+                            <!-- Checkmark on main file -->
+                            <path d="M19 37 L20.5 38.5 L23 36" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            
+                            <!-- Gradient definition -->
+                            <defs>
+                                <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#14b8a6;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#0d9488;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                    <div class="brand-text">
+                        <h1 class="brand-title">Excel Consolidator</h1>
+                        <span class="brand-badge">PRO</span>
+                    </div>
+                </div>
+                
+                <div class="nav-actions">
+                    <button class="nav-btn" id="themeToggle" title="Toggle dark mode">
+                        <svg class="theme-icon sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <circle cx="12" cy="12" r="5"/>
+                            <line x1="12" y1="1" x2="12" y2="3"/>
+                            <line x1="12" y1="21" x2="12" y2="23"/>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                            <line x1="1" y1="12" x2="3" y2="12"/>
+                            <line x1="21" y1="12" x2="23" y2="12"/>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                        </svg>
+                        <svg class="theme-icon moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                        </svg>
+                    </button>
+                    <button class="nav-btn" id="helpBtn" title="Help & Documentation">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                            <line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-wrapper">
             <!-- Upload Section -->
-            <div class="upload-section" id="uploadSection">
+            <section class="section-upload" id="uploadSection">
+                <div class="section-header">
+                    <h2 class="section-title">Upload & Configure</h2>
+                    <p class="section-subtitle">Start by uploading your template and source files</p>
+                </div>
+
+                <div class="cards-grid">
                 <!-- Step 1: Template Upload -->
-                <div class="upload-card">
-                    <h2>📋 Step 1: Upload Template</h2>
+                    <div class="glass-card">
+                        <div class="card-header">
+                            <div class="step-badge">Step 1</div>
+                            <h3 class="card-title">Template File</h3>
+                            <p class="card-description">Your formatted Excel template</p>
+                        </div>
+                        
+                        <div class="dropzone-wrapper">
                     <div class="dropzone" id="templateDropzone">
-                        <div class="dropzone-content">
-                            <svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                <div class="dropzone-content" id="templateDropContent">
+                                    <div class="dropzone-icon-wrapper">
+                                        <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
                             </svg>
-                            <p class="dropzone-text">Drag & drop template file here</p>
-                            <p class="dropzone-subtext">or click to browse</p>
+                                    </div>
+                                    <p class="dropzone-title">Drop template here</p>
+                                    <p class="dropzone-subtitle">or <span class="link-text">browse files</span></p>
+                                    <span class="dropzone-hint">.xlsx or .xls files only</span>
+                                </div>
                             <input type="file" id="templateInput" accept=".xlsx,.xls" hidden>
                         </div>
-                        <div class="file-info" id="templateInfo" style="display: none;">
-                            <span class="file-name" id="templateName"></span>
-                            <button class="btn-remove" id="removeTemplate">✕</button>
-                        </div>
+                            
+                            <div class="file-preview" id="templatePreview" style="display: none;">
+                                <div class="file-preview-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                </div>
+                                <div class="file-preview-info">
+                                    <p class="file-preview-name" id="templateName"></p>
+                                    <p class="file-preview-size" id="templateSize"></p>
+                                </div>
+                                <button class="file-remove-btn" id="removeTemplate" title="Remove file">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <line x1="18" y1="6" x2="6" y2="18"/>
+                                        <line x1="6" y1="6" x2="18" y2="18"/>
+                                    </svg>
+                                </button>
+                            </div>
                     </div>
                 </div>
 
                 <!-- Step 2: Source Files Upload -->
-                <div class="upload-card">
-                    <h2>📁 Step 2: Upload Source Files</h2>
-                    <div class="dropzone" id="sourcesDropzone">
-                        <div class="dropzone-content">
-                            <svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            <p class="dropzone-text">Drag & drop Excel files here</p>
-                            <p class="dropzone-subtext">Multiple files allowed</p>
-                            <input type="file" id="sourcesInput" accept=".xlsx,.xls" multiple hidden>
+                    <div class="glass-card">
+                        <div class="card-header">
+                            <div class="step-badge">Step 2</div>
+                            <h3 class="card-title">Source Files</h3>
+                            <p class="card-description">Multiple Excel files to merge</p>
                         </div>
-                        <div class="file-list" id="sourcesList" style="display: none;"></div>
+                        
+                        <div class="dropzone-wrapper">
+                    <div class="dropzone" id="sourcesDropzone">
+                                <div class="dropzone-content" id="sourcesDropContent">
+                                    <div class="dropzone-icon-wrapper">
+                                        <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6"/>
+                            </svg>
+                                    </div>
+                                    <p class="dropzone-title">Drop files here</p>
+                                    <p class="dropzone-subtitle">or <span class="link-text">browse files</span></p>
+                                    <span class="dropzone-hint">Multiple files allowed</span>
+                                </div>
+                            <input type="file" id="sourcesInput" accept=".xlsx,.xls" multiple hidden>
+                            </div>
+                            
+                            <div class="files-list" id="sourcesList" style="display: none;"></div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Step 3: Settings (Optional) -->
-                <div class="settings-card">
-                    <h2>⚙️ Settings (Optional)</h2>
+                <!-- Advanced Settings -->
+                <div class="glass-card settings-card">
+                    <div class="card-header">
+                        <div class="settings-header-content">
+                            <div>
+                                <h3 class="card-title">Advanced Settings</h3>
+                                <p class="card-description">Customize consolidation behavior</p>
+                            </div>
+                            <button class="settings-toggle" id="settingsToggle">
+                                <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <polyline points="6 9 12 15 18 9"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-content" id="settingsContent">
                     <div class="settings-grid">
-                        <label class="checkbox-label">
+                            <div class="setting-item">
+                                <label class="toggle-label">
                             <input type="checkbox" id="convertText" checked>
-                            <span>Convert text to numbers (e.g., "123" → 123)</span>
+                                    <span class="toggle-slider"></span>
+                                    <div class="toggle-content">
+                                        <span class="toggle-title">Convert Text to Numbers</span>
+                                        <span class="toggle-description">Auto-convert "123" → 123</span>
+                                    </div>
                         </label>
-                        <label class="checkbox-label">
+                            </div>
+                            
+                            <div class="setting-item">
+                                <label class="toggle-label">
                             <input type="checkbox" id="convertPercent" checked>
-                            <span>Convert percentages (e.g., "50%" → 0.5)</span>
+                                    <span class="toggle-slider"></span>
+                                    <div class="toggle-content">
+                                        <span class="toggle-title">Convert Percentages</span>
+                                        <span class="toggle-description">Auto-convert "50%" → 0.5</span>
+                                    </div>
                         </label>
-                        <label class="checkbox-label">
+                            </div>
+                            
+                            <div class="setting-item">
+                                <label class="toggle-label">
                             <input type="checkbox" id="createBackup">
-                            <span>Create backup of original files</span>
+                                    <span class="toggle-slider"></span>
+                                    <div class="toggle-content">
+                                        <span class="toggle-title">Create Backup</span>
+                                        <span class="toggle-description">Save original files copy</span>
+                                    </div>
+                                </label>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <label class="toggle-label">
+                                    <input type="checkbox" id="skipValidation" checked>
+                                    <span class="toggle-slider"></span>
+                                    <div class="toggle-content">
+                                        <span class="toggle-title">Skip Validation</span>
+                                        <span class="toggle-description">Faster processing</span>
+                                    </div>
                         </label>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Start Button -->
-                <button class="btn-primary" id="startConsolidation" disabled>
-                    🚀 Start Consolidation
+                <!-- Action Button -->
+                <div class="action-section">
+                    <button class="btn-primary btn-xl" id="startConsolidation" disabled>
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <polygon points="5 3 19 12 5 21 5 3"/>
+                        </svg>
+                        <span>Start Consolidation</span>
+                        <div class="btn-shimmer"></div>
                 </button>
+                </div>
+            </section>
+
+            <!-- Progress Section -->
+            <section class="section-progress" id="progressSection" style="display: none;">
+                <div class="progress-container">
+                    <div class="progress-header">
+                        <h2 class="section-title">Processing Files</h2>
+                        <p class="section-subtitle" id="progressSubtitle">Consolidating your data...</p>
+                    </div>
+
+                    <!-- Stats Cards -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon stat-icon-primary">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                            </div>
+                            <div class="stat-content">
+                                <p class="stat-label">Total Files</p>
+                                <p class="stat-value" id="statTotalFiles">0</p>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon stat-icon-success">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <polyline points="20 6 9 17 4 12" stroke-width="2"/>
+                                </svg>
+                            </div>
+                            <div class="stat-content">
+                                <p class="stat-label">Processed</p>
+                                <p class="stat-value" id="statProcessed">0</p>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon stat-icon-warning">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <circle cx="12" cy="12" r="10" stroke-width="2"/>
+                                    <polyline points="12 6 12 12 16 14" stroke-width="2"/>
+                                </svg>
+                            </div>
+                            <div class="stat-content">
+                                <p class="stat-label">Progress</p>
+                                <p class="stat-value" id="statProgress">0%</p>
+                            </div>
+                        </div>
             </div>
 
-            <!-- Progress Section (Hidden initially) -->
-            <div class="progress-section" id="progressSection" style="display: none;">
-                <h2>Processing...</h2>
+                    <!-- Progress Bar -->
+                    <div class="progress-bar-wrapper">
                 <div class="progress-bar-container">
-                    <div class="progress-bar" id="progressBar"></div>
+                            <div class="progress-bar-fill" id="progressBar">
+                                <div class="progress-bar-shimmer"></div>
+                            </div>
+                        </div>
+                        <div class="progress-info">
+                            <span class="progress-status" id="progressStatus">Initializing...</span>
+                            <span class="progress-percentage" id="progressPercentage">0%</span>
+                        </div>
+                    </div>
+
+                    <!-- Current File Processing -->
+                    <div class="current-file-card" id="currentFileCard" style="display: none;">
+                        <div class="current-file-pulse"></div>
+                        <div class="current-file-content">
+                            <svg class="current-file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            <div class="current-file-info">
+                                <span class="current-file-label">Currently Processing</span>
+                                <span class="current-file-name" id="currentFileName">—</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Processed Files Log -->
+                    <div class="processed-log">
+                        <h3 class="processed-log-title">Processing History</h3>
+                        <div class="processed-log-list" id="processedLogList"></div>
+                    </div>
                 </div>
-                <p class="progress-text" id="progressText">Initializing...</p>
-                <p class="current-file" id="currentFile"></p>
-                
-                <!-- File Processing List -->
-                <div class="processed-files" id="processedFiles"></div>
+            </section>
+
+            <!-- Results Section -->
+            <section class="section-results" id="resultsSection" style="display: none;">
+                <div class="results-container">
+                    <div class="success-animation">
+                        <div class="success-checkmark">
+                            <svg class="checkmark" viewBox="0 0 52 52">
+                                <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+                                <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                            </svg>
+                        </div>
             </div>
 
-            <!-- Results Section (Hidden initially) -->
-            <div class="results-section" id="resultsSection" style="display: none;">
-                <div class="success-card">
-                    <div class="success-icon">✓</div>
-                    <h2>Consolidation Complete!</h2>
-                    <p class="success-message" id="successMessage"></p>
+                    <h2 class="results-title">Consolidation Complete!</h2>
+                    <p class="results-message" id="resultsMessage">Your files have been successfully merged</p>
                     
-                    <button class="btn-download" id="downloadBtn">
-                        ⬇️ Download Consolidated File
+                    <div class="results-stats">
+                        <div class="result-stat">
+                            <span class="result-stat-value" id="resultFilesCount">0</span>
+                            <span class="result-stat-label">Files Merged</span>
+                        </div>
+                        <div class="result-stat-divider"></div>
+                        <div class="result-stat">
+                            <span class="result-stat-value" id="resultProcessTime">—</span>
+                            <span class="result-stat-label">Process Time</span>
+                        </div>
+                    </div>
+
+                    <div class="results-actions">
+                        <button class="btn-primary btn-lg" id="downloadBtn">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4m4-5l5 5m0 0l5-5m-5 5V3"/>
+                            </svg>
+                            <span>Download Result</span>
                     </button>
                     
-                    <button class="btn-secondary" id="newConsolidation">
-                        🔄 Start New Consolidation
+                        <button class="btn-secondary btn-lg" id="newConsolidation">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                            </svg>
+                            <span>New Consolidation</span>
                     </button>
+                    </div>
                 </div>
+            </section>
+
+            <!-- Error Section -->
+            <section class="section-error" id="errorSection" style="display: none;">
+                <div class="error-container">
+                    <div class="error-icon-wrapper">
+                        <svg class="error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <circle cx="12" cy="12" r="10" stroke-width="2"/>
+                            <line x1="12" y1="8" x2="12" y2="12" stroke-width="2"/>
+                            <line x1="12" y1="16" x2="12.01" y2="16" stroke-width="2"/>
+                        </svg>
             </div>
 
-            <!-- Error Section (Hidden initially) -->
-            <div class="error-section" id="errorSection" style="display: none;">
-                <div class="error-card">
-                    <div class="error-icon">⚠️</div>
-                    <h2>Error Occurred</h2>
+                    <h2 class="error-title">Something Went Wrong</h2>
+                    <div class="error-message-box">
                     <p class="error-message" id="errorMessage"></p>
+                    </div>
                     
-                    <button class="btn-secondary" id="retryBtn">
-                        🔄 Try Again
+                    <div class="error-actions">
+                        <button class="btn-primary btn-lg" id="retryBtn">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                            </svg>
+                            <span>Try Again</span>
                     </button>
                 </div>
             </div>
+            </section>
         </main>
 
         <!-- Footer -->
-        <footer class="footer">
-            <p>Excel Consolidator Web Edition © 2025 | Built with Python & Flask</p>
+        <footer class="app-footer">
+            <div class="footer-content">
+                <p class="footer-text">© 2025 Excel Consolidator Pro. Built with precision and care.</p>
+                <div class="footer-links">
+                    <a href="#" class="footer-link">Privacy</a>
+                    <span class="footer-divider">•</span>
+                    <a href="#" class="footer-link">Terms</a>
+                    <span class="footer-divider">•</span>
+                    <a href="#" class="footer-link">Support</a>
+                </div>
+            </div>
         </footer>
     </div>
+
+    <!-- Help Modal -->
+    <div class="modal-overlay" id="helpModal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Help & Documentation</h3>
+                <button class="modal-close" id="closeHelpModal">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="help-section">
+                    <h4>How to Use</h4>
+                    <ol>
+                        <li>Upload your formatted Excel template in Step 1</li>
+                        <li>Upload multiple source files in Step 2</li>
+                        <li>Configure optional settings</li>
+                        <li>Click "Start Consolidation" to begin</li>
+                        <li>Download your merged file when complete</li>
+                    </ol>
+                </div>
+                <div class="help-section">
+                    <h4>Supported Formats</h4>
+                    <p>.xlsx and .xls files are supported</p>
+                </div>
+                <div class="help-section">
+                    <h4>File Size Limits</h4>
+                    <p>Maximum upload size: 100MB total</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
