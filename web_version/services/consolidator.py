@@ -505,6 +505,7 @@ class ExcelConsolidator:
                               coord_format_info, template_coords, total_files, file_idx):
         """
         Enhanced file processing with full desktop app logic
+        CRITICAL: Handle merged cells (EmptyCell objects) - they don't have .coordinate attribute
         """
         wb = openpyxl.load_workbook(filepath, data_only=True, read_only=True)
         ws = wb.active
@@ -513,6 +514,16 @@ class ExcelConsolidator:
         
         for row in ws.iter_rows():
             for cell in row:
+                # CRITICAL FIX: Skip EmptyCell/MergedCell objects - they have no .coordinate
+                # This matches desktop app behavior which also skips merged cells
+                if isinstance(cell, MergedCell):
+                    continue
+                
+                # Additional safety check for cells without coordinate attribute
+                if not hasattr(cell, 'coordinate'):
+                    continue
+                
+                # Now safe to access coordinate
                 value = cell.value
                 coord = cell.coordinate
                 
