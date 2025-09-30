@@ -422,6 +422,17 @@ class ExcelConsolidator:
             total_files_count
         )
         
+        # Add Contributions Sheet (matches desktop app)
+        logger.info("📊 Creating Contributions sheet...")
+        self._create_contributions_sheet(
+            template_wb, 
+            output_ws, 
+            contributions, 
+            totals, 
+            coord_format_info,
+            files
+        )
+        
         # Save output file
         output_path = self._generate_output_path()
         logger.info(f"💾 Saving consolidated file: {output_path}")
@@ -718,3 +729,180 @@ class ExcelConsolidator:
         filename = f"Consolidated_{date_str}{template_ext}"
         
         return os.path.join(template_dir, filename)
+    
+    def _create_contributions_sheet(self, workbook, main_ws, contributions, totals, coord_format_info, files):
+        """
+        Create Contributions sheet with detailed breakdown
+        Matches desktop app (lines 2325-2462) with:
+        - Cell | File Name | Contribution columns
+        - Auto-filter
+        - Hyperlinks from main sheet to contributions
+        - Consolidated (Plain) sheet without hyperlinks
+        """
+        try:
+            # Create Contributions worksheet
+            contrib_ws = workbook.create_sheet("Contributions")
+            
+            # Header
+            contrib_ws["A1"] = "Excel Consolidator - Detailed Contributions"
+            contrib_ws["A1"].font = Font(bold=True, size=14)
+            contrib_ws["A3"] = "This sheet shows exactly which files contributed to each consolidated cell."
+            contrib_ws["A5"] = "Cell"
+            contrib_ws["B5"] = "File Name"
+            contrib_ws["C5"] = "Contribution"
+            
+            # Make header bold
+            for cell in [contrib_ws["A5"], contrib_ws["B5"], contrib_ws["C5"]]:
+                cell.font = Font(bold=True)
+            
+            # Get all file labels sorted
+            all_file_labels = [os.path.splitext(os.path.basename(f))[0] for f in files]
+            all_file_labels.sort(key=lambda n: n.lower())
+            
+            r = 6
+            coord_to_first_row = {}  # Track first row for each coordinate (for hyperlinks)
+            
+            # Helper function to sort coordinates naturally (A1, A2, ..., B1, B2, ...)
+            def _col_to_num(col_letters):
+                result = 0
+                for ch in col_letters:
+                    if 'a' <= ch <= 'z':
+                        ch = chr(ord(ch) - 32)
+                    result = result * 26 + (ord(ch) - 64)
+                return result
+            
+            def _cell_sort_key(cell_ref):
+                col = ""
+                row_str = ""
+                for ch in cell_ref:
+                    if ch.isalpha():
+                        col += ch
+                    elif ch.isdigit():
+                        row_str += ch
+                return (_col_to_num(col), int(row_str) if row_str else 0)
+            
+            # Fill contribution data
+            for coord in sorted(contributions.keys(), key=_cell_sort_key):
+                file_map = contributions.get(coord, {})
+                
+                # Iterate through ALL files (show 0 for files that didn't contribute)
+                for fname in all_file_labels:
+                    v = file_map.get(fname, 0)
+                    contrib_ws[f"A{r}"] = coord
+                    contrib_ws[f"B{r}"] = fname
+                    
+                    try:
+                        format_info = coord_format_info.get(coord, {})
+                        v_out = v
+                        
+                        if format_info.get('is_percentage', False):
+                            # Percentage values: v_out is in percentage points (e.g., 84.36)
+                            # Excel needs decimal format (0.8436) with percentage format
+                            contrib_ws[f"C{r}"] = float(v_out) / 100
+                            template_format = format_info.get('number_format', '0.00%')
+                            contrib_ws[f"C{r}"].number_format = template_format
+                            
+                        elif format_info.get('is_currency', False):
+                            # Currency values
+                            contrib_ws[f"C{r}"] = float(v_out)
+                            template_format = format_info.get('number_format', '$#,##0.00')
+                            contrib_ws[f"C{r}"].number_format = template_format
+                            
+                        elif format_info.get('is_number', False):
+                            # Number values
+                            contrib_ws[f"C{r}"] = float(v_out)
+                            template_format = format_info.get('number_format', '#,##0.00')
+                            contrib_ws[f"C{r}"].number_format = template_format
+                            
+                        else:
+                            # Default - unformatted values
+                            contrib_ws[f"C{r}"] = float(v_out)
+                            
+                    except Exception:
+                        # Fallback: Use raw value if formatting fails
+                        contrib_ws[f"C{r}"] = v
+                    
+                    # Track first row for this coordinate (for hyperlinks)
+                    if coord not in coord_to_first_row:
+                        coord_to_first_row[coord] = r
+                    
+                    r += 1
+                
+                # Add visual break between cell groups
+                r += 1
+            
+            # Add auto-filter
+            if r > 6:
+                contrib_ws.auto_filter.ref = f"A5:C{r-1}"
+            
+            # Set column widths
+            contrib_ws.column_dimensions['A'].width = 12
+            contrib_ws.column_dimensions['B'].width = 40
+            contrib_ws.column_dimensions['C'].width = 16
+            
+            # Add hyperlinks from main sheet to contributions sheet
+            try:
+                for coord in totals.keys():
+                    first_row = coord_to_first_row.get(coord)
+                    if first_row:
+                        cell = main_ws[coord]
+                        if isinstance(cell, MergedCell):
+                            continue
+                        # Create hyperlink to Contributions sheet
+                        link = f"#'Contributions'!A{first_row}"
+                        cell.hyperlink = link
+            except Exception as e:
+                logger.warning(f"Could not create hyperlinks: {e}")
+            
+            # Create Consolidated (Plain) sheet - copy of main sheet WITHOUT hyperlinks/comments
+            try:
+                from copy import copy
+                
+                plain_ws = workbook.create_sheet("Consolidated (Plain)")
+                
+                # Copy merged cells first
+                for merged_range in main_ws.merged_cells.ranges:
+                    plain_ws.merge_cells(str(merged_range))
+                
+                # Copy column widths
+                for col_letter, col_dim in main_ws.column_dimensions.items():
+                    plain_ws.column_dimensions[col_letter].width = col_dim.width
+                
+                # Copy row heights
+                for row_num, row_dim in main_ws.row_dimensions.items():
+                    plain_ws.row_dimensions[row_num].height = row_dim.height
+                
+                # Copy all cells with formatting and values
+                for row in main_ws.iter_rows():
+                    for cell in row:
+                        plain_cell = plain_ws[cell.coordinate]
+                        
+                        # Skip merged cells (already handled above)
+                        if isinstance(cell, MergedCell) or isinstance(plain_cell, MergedCell):
+                            continue
+                        
+                        # Copy value (not formula - use calculated value)
+                        plain_cell.value = cell.value
+                        
+                        # Copy all formatting
+                        if cell.has_style:
+                            plain_cell.font = copy(cell.font)
+                            plain_cell.border = copy(cell.border)
+                            plain_cell.fill = copy(cell.fill)
+                            plain_cell.number_format = copy(cell.number_format)
+                            plain_cell.protection = copy(cell.protection)
+                            plain_cell.alignment = copy(cell.alignment)
+                        
+                        # Explicitly do NOT copy hyperlinks or comments
+                        # (plain_cell.hyperlink and plain_cell.comment remain None)
+                
+                logger.info("✅ Created 'Consolidated (Plain)' sheet")
+                
+            except Exception as e:
+                logger.warning(f"Could not create plain sheet: {e}")
+            
+            logger.info(f"✅ Created Contributions sheet with {r-6} rows")
+            
+        except Exception as e:
+            logger.error(f"Error creating Contributions sheet: {e}")
+            # Continue anyway - main consolidation still works
