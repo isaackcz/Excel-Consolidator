@@ -111,26 +111,26 @@
     --font-weight-extrabold: 800;
 }
 
-/* Dark Mode Theme (20% lighter) */
+/* Dark Mode Theme - Frosted Dark Slate */
 [data-theme="dark"] {
-    --bg-primary: #263545;
-    --bg-secondary: #354657;
-    --bg-tertiary: #4a5c6f;
-    --text-primary: #f7f9fb;
-    --text-secondary: #b3bec9;
-    --text-tertiary: #8694a3;
-    --border-color: #4a5c6f;
-    --border-hover: #5d6f82;
+    --bg-primary: #1c2833;
+    --bg-secondary: #273746;
+    --bg-tertiary: #34495e;
+    --text-primary: #ecf3f8;
+    --text-secondary: #a9cce3;
+    --text-tertiary: #7fb3d5;
+    --border-color: #34495e;
+    --border-hover: #4a5f75;
     
-    --glass-bg: rgba(53, 70, 87, 0.85);
-    --glass-border: rgba(255, 255, 255, 0.15);
+    --glass-bg: rgba(39, 55, 70, 0.9);
+    --glass-border: rgba(169, 204, 227, 0.15);
     
-    --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.4);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
-    --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.5), 0 1px 2px -1px rgba(0, 0, 0, 0.5);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.5);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+    --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
 }
 
 /* ========================================
@@ -468,7 +468,7 @@ body {
 }
 
 [data-theme="dark"] .dropzone:hover {
-    background: rgba(37, 99, 235, 0.1);
+    background: rgba(93, 109, 126, 0.15);
 }
 
 .dropzone.dragover {
@@ -478,7 +478,7 @@ body {
 }
 
 [data-theme="dark"] .dropzone.dragover {
-    background: rgba(37, 99, 235, 0.2);
+    background: rgba(93, 109, 126, 0.25);
 }
 
 .dropzone.dragover::before {
@@ -502,7 +502,7 @@ body {
 }
 
 [data-theme="dark"] .dropzone-icon-wrapper {
-    background: var(--primary-900);
+    background: var(--primary-800);
 }
 
 .dropzone:hover .dropzone-icon-wrapper {
@@ -1406,7 +1406,7 @@ body {
 }
 
 [data-theme="dark"] .error-icon-wrapper {
-    background: var(--error-900);
+    background: rgba(224, 122, 95, 0.2);
 }
 
 @keyframes shake {
