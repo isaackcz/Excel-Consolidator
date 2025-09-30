@@ -7,41 +7,41 @@
    CSS Custom Properties (Design Tokens)
    ======================================== */
 :root {
-    /* Primary Colors - Teal (Calming & Professional for Teachers) */
-    --primary-50: #f0fdfa;
-    --primary-100: #ccfbf1;
-    --primary-200: #99f6e4;
-    --primary-300: #5eead4;
-    --primary-400: #2dd4bf;
-    --primary-500: #14b8a6;
-    --primary-600: #0d9488;
-    --primary-700: #0f766e;
-    --primary-800: #115e59;
-    --primary-900: #134e4a;
+    /* Primary Colors - Frosted Blue/Slate (Calming & Professional) */
+    --primary-50: #ecf3f8;
+    --primary-100: #d4e6f1;
+    --primary-200: #a9cce3;
+    --primary-300: #85c1e2;
+    --primary-400: #7fb3d5;
+    --primary-500: #5d6d7e;
+    --primary-600: #34495e;
+    --primary-700: #2c3e50;
+    --primary-800: #273746;
+    --primary-900: #1c2833;
     
-    /* Success Colors - Emerald (Warm & Positive) */
-    --success-50: #ecfdf5;
-    --success-500: #10b981;
-    --success-600: #059669;
-    --success-700: #047857;
+    /* Success Colors - Soft Blue-Green */
+    --success-50: #e8f5f0;
+    --success-500: #52b788;
+    --success-600: #40916c;
+    --success-700: #2d6a4f;
     
-    /* Warning Colors - Warm Amber */
-    --warning-50: #fffbeb;
-    --warning-500: #f59e0b;
-    --warning-600: #d97706;
+    /* Warning Colors - Soft Amber */
+    --warning-50: #fef3e2;
+    --warning-500: #f4a261;
+    --warning-600: #e76f51;
     
-    /* Error Colors - Softer Rose/Coral */
-    --error-50: #fff1f2;
-    --error-500: #f43f5e;
-    --error-600: #e11d48;
-    --error-700: #be123c;
+    /* Error Colors - Muted Rose */
+    --error-50: #fdeef1;
+    --error-500: #e07a5f;
+    --error-600: #c1666b;
+    --error-700: #a4555b;
     
-    /* Accent Colors - Indigo (Educational & Trustworthy) */
-    --accent-50: #eef2ff;
-    --accent-100: #e0e7ff;
-    --accent-500: #6366f1;
-    --accent-600: #4f46e5;
-    --accent-700: #4338ca;
+    /* Accent Colors - Medium Slate (Harmonious with Frosted theme) */
+    --accent-50: #eaeff2;
+    --accent-100: #d5dfe5;
+    --accent-500: #5d6d7e;
+    --accent-600: #4a5568;
+    --accent-700: #34495e;
     
     /* Neutral Colors - Light Mode */
     --neutral-50: #f9fafb;
@@ -55,21 +55,21 @@
     --neutral-800: #1f2937;
     --neutral-900: #111827;
     
-    /* Semantic Colors */
-    --bg-primary: #ffffff;
-    --bg-secondary: #f9fafb;
-    --bg-tertiary: #f3f4f6;
-    --text-primary: #111827;
-    --text-secondary: #6b7280;
-    --text-tertiary: #9ca3af;
-    --border-color: #e5e7eb;
-    --border-hover: #d1d5db;
+    /* Semantic Colors - Light Mode (40% darker) */
+    --bg-primary: #e8eef3;
+    --bg-secondary: #d4dce4;
+    --bg-tertiary: #c5cdd6;
+    --text-primary: #0a0f14;
+    --text-secondary: #404b56;
+    --text-tertiary: #5d6a78;
+    --border-color: #b8c2cc;
+    --border-hover: #a3b0bc;
     
-    /* Gradients - Warm & Inviting for Teachers */
-    --gradient-primary: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
-    --gradient-accent: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-    --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    --gradient-warm: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+    /* Gradients - Frosted & Professional */
+    --gradient-primary: linear-gradient(135deg, #5d6d7e 0%, #34495e 100%);
+    --gradient-accent: linear-gradient(135deg, #85c1e2 0%, #5d6d7e 100%);
+    --gradient-success: linear-gradient(135deg, #52b788 0%, #40916c 100%);
+    --gradient-warm: linear-gradient(135deg, #f4a261 0%, #e76f51 100%);
     --gradient-shimmer: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
     
     /* Shadows */
@@ -79,11 +79,11 @@
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
     --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    --shadow-colored: 0 10px 40px rgba(20, 184, 166, 0.2);
+    --shadow-colored: 0 10px 40px rgba(93, 109, 126, 0.2);
     
-    /* Glass Effect */
-    --glass-bg: rgba(255, 255, 255, 0.7);
-    --glass-border: rgba(255, 255, 255, 0.3);
+    /* Glass Effect - Light Mode (darker glass) */
+    --glass-bg: rgba(232, 238, 243, 0.85);
+    --glass-border: rgba(184, 194, 204, 0.4);
     --glass-blur: 12px;
     
     /* Transitions */
@@ -111,19 +111,19 @@
     --font-weight-extrabold: 800;
 }
 
-/* Dark Mode Theme */
+/* Dark Mode Theme (20% lighter) */
 [data-theme="dark"] {
-    --bg-primary: #0f172a;
-    --bg-secondary: #1e293b;
-    --bg-tertiary: #334155;
-    --text-primary: #f1f5f9;
-    --text-secondary: #94a3b8;
-    --text-tertiary: #64748b;
-    --border-color: #334155;
-    --border-hover: #475569;
+    --bg-primary: #263545;
+    --bg-secondary: #354657;
+    --bg-tertiary: #4a5c6f;
+    --text-primary: #f7f9fb;
+    --text-secondary: #b3bec9;
+    --text-tertiary: #8694a3;
+    --border-color: #4a5c6f;
+    --border-hover: #5d6f82;
     
-    --glass-bg: rgba(30, 41, 59, 0.7);
-    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-bg: rgba(53, 70, 87, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.15);
     
     --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
     --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.4);
@@ -271,7 +271,7 @@ body {
 }
 
 .brand-icon svg {
-    filter: drop-shadow(0 4px 12px rgba(20, 184, 166, 0.3));
+    filter: drop-shadow(0 4px 12px rgba(93, 109, 126, 0.3));
 }
 
 .brand-text {
@@ -415,8 +415,8 @@ body {
 }
 
 [data-theme="dark"] .step-badge {
-    background: var(--primary-900);
-    color: var(--primary-200);
+    background: var(--primary-800);
+    color: var(--primary-100);
 }
 
 .card-title {
@@ -545,8 +545,8 @@ body {
 }
 
 [data-theme="dark"] .dropzone-hint {
-    background: var(--neutral-800);
-    color: var(--neutral-400);
+    background: var(--neutral-700);
+    color: var(--neutral-300);
 }
 
 /* File Preview */
@@ -586,7 +586,7 @@ body {
 }
 
 [data-theme="dark"] .file-preview-icon {
-    background: var(--primary-900);
+    background: var(--primary-800);
 }
 
 .file-preview-icon svg {
@@ -634,7 +634,7 @@ body {
 }
 
 [data-theme="dark"] .file-remove-btn {
-    background: var(--error-900);
+    background: var(--error-800);
 }
 
 .file-remove-btn:hover {
@@ -698,7 +698,7 @@ body {
 }
 
 [data-theme="dark"] .file-item-icon {
-    background: var(--primary-900);
+    background: var(--primary-800);
 }
 
 .file-item-icon svg {
@@ -896,7 +896,7 @@ body {
 
 .btn-primary:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 12px 48px rgba(20, 184, 166, 0.3);
+    box-shadow: 0 12px 48px rgba(93, 109, 126, 0.3);
 }
 
 .btn-primary:active:not(:disabled) {
@@ -911,8 +911,8 @@ body {
 }
 
 [data-theme="dark"] .btn-primary:disabled {
-    background: var(--neutral-700);
-    color: var(--neutral-500);
+    background: var(--neutral-600);
+    color: var(--neutral-400);
 }
 
 .btn-secondary {
@@ -1438,8 +1438,8 @@ body {
 }
 
 [data-theme="dark"] .error-message-box {
-    background: var(--error-900);
-    border-color: var(--error-700);
+    background: rgba(224, 122, 95, 0.15);
+    border-color: var(--error-600);
 }
 
 .error-message {
@@ -1449,7 +1449,7 @@ body {
 }
 
 [data-theme="dark"] .error-message {
-    color: var(--error-300);
+    color: #f5a89a;
 }
 
 .error-actions {
